@@ -104,9 +104,26 @@ const Map<String, String> kmKH = {
   'save': 'រក្សាទុក',
   'save_changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
   'profile_updated': 'បានធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប។',
+  'email': 'អ៊ីមែល',
+  'email_invalid': 'សូមបញ្ចូលអ៊ីមែលឲ្យត្រឹមត្រូវ',
+  'save_photo': 'រក្សាទុករូបភាព',
+  'take_photo': 'ថតរូប',
+  'choose_gallery': 'ជ្រើសពីវិចិត្រសាល',
+  'photo_updated': 'បានធ្វើបច្ចុប្បន្នភាពរូបភាព។',
   'first_name_required': 'តម្រូវឲ្យបញ្ចូលនាមខ្លួន',
   'last_name_required': 'តម្រូវឲ្យបញ្ចូលនាមត្រកូល',
   'app_version': 'កំណែកម្មវិធី',
+
+  // Documents
+  'documents': 'ឯកសារ',
+  'my_documents': 'ឯកសាររបស់ខ្ញុំ',
+  'documents_subtitle': 'ប័ណ្ណបើកបរ និងអត្តសញ្ញាណប័ណ្ណ',
+  'documents_note': 'មើលបានតែប៉ុណ្ណោះ — ទាក់ទងអ្នកគ្រប់គ្រងដើម្បីកែប្រែ។',
+  'no_documents': 'មិនទាន់មានឯកសារទេ',
+  'card_number': 'លេខ',
+  'issued': 'ចេញនៅ',
+  'expires': 'ផុតកំណត់',
+  'view_file': 'មើលឯកសារ',
 
   // Generic
   'retry': 'ព្យាយាមម្តងទៀត',

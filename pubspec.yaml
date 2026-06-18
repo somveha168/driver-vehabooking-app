@@ -44,6 +44,7 @@ dependencies:
   flutter_animate: ^4.5.2
   google_fonts: ^8.1.0
   iconsax_plus: ^1.0.0
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:

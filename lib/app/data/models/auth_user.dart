@@ -31,6 +31,25 @@ class AuthUser {
         imageUrl: json['image_url']?.toString(),
       );
 
+  AuthUser copyWith({
+    String? name,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? email,
+    String? imageUrl,
+  }) =>
+      AuthUser(
+        id: id,
+        uuid: uuid,
+        name: name ?? this.name,
+        firstName: firstName ?? this.firstName,
+        lastName: lastName ?? this.lastName,
+        phone: phone ?? this.phone,
+        email: email ?? this.email,
+        imageUrl: imageUrl ?? this.imageUrl,
+      );
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'uuid': uuid,

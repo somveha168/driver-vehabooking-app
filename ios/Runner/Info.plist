@@ -73,6 +73,11 @@
 		<string>https</string>
 		<string>comgooglemaps</string>
 	</array>
+	<!-- Profile photo upload -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow access to your photos to set your profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow camera access to take your profile picture.</string>
 	<!-- ATS: permit cleartext only for the local dev host; prod stays https -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

@@ -58,12 +58,27 @@ class AuthService extends GetxService {
     String? firstName,
     String? lastName,
     String? phone,
+    String? email,
   }) async {
     final user = await _repo.updateProfile(
       firstName: firstName,
       lastName: lastName,
       phone: phone,
+      email: email,
     );
+    await _persistUser(user);
+  }
+
+  /// Upload a new profile photo and update the cached user's image URL.
+  Future<void> uploadAvatar(String filePath) async {
+    final imageUrl = await _repo.uploadAvatar(filePath);
+    final current = currentUser.value;
+    if (current != null) {
+      await _persistUser(current.copyWith(imageUrl: imageUrl));
+    }
+  }
+
+  Future<void> _persistUser(AuthUser user) async {
     currentUser.value = user;
     await _storage.writeUser(jsonEncode(user.toJson()));
   }

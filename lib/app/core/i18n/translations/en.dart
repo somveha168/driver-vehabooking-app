@@ -104,9 +104,26 @@ const Map<String, String> enUS = {
   'save': 'Save',
   'save_changes': 'Save changes',
   'profile_updated': 'Profile updated.',
+  'email': 'Email',
+  'email_invalid': 'Enter a valid email',
+  'save_photo': 'Save photo',
+  'take_photo': 'Take photo',
+  'choose_gallery': 'Choose from gallery',
+  'photo_updated': 'Photo updated.',
   'first_name_required': 'First name is required',
   'last_name_required': 'Last name is required',
   'app_version': 'App version',
+
+  // Documents
+  'documents': 'Documents',
+  'my_documents': 'My documents',
+  'documents_subtitle': 'Driving licence & ID card',
+  'documents_note': 'View only — contact admin to update.',
+  'no_documents': 'No documents yet',
+  'card_number': 'Number',
+  'issued': 'Issued',
+  'expires': 'Expires',
+  'view_file': 'View file',
 
   // Generic
   'retry': 'Retry',
