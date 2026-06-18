@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../theme/app_spacing.dart';
 
@@ -23,6 +24,9 @@ class SwipeToConfirm extends StatefulWidget {
 class _SwipeToConfirmState extends State<SwipeToConfirm> {
   static const double _thumb = 56;
   double _dx = 0;
+  double _maxDx = 0;
+
+  double get _progress => _maxDx <= 0 ? 0.0 : (_dx / _maxDx).clamp(0.0, 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +35,8 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxDx = constraints.maxWidth - _thumb;
-        final progress = maxDx <= 0 ? 0.0 : (_dx / maxDx).clamp(0.0, 1.0);
+        _maxDx = constraints.maxWidth - _thumb;
+        final progress = _progress;
 
         return Container(
           height: _thumb,
@@ -61,11 +65,9 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
                     onHorizontalDragUpdate: widget.loading
                         ? null
                         : (d) => setState(
-                              () => _dx = (_dx + d.delta.dx).clamp(0.0, maxDx),
+                              () => _dx = (_dx + d.delta.dx).clamp(0.0, _maxDx),
                             ),
-                    onHorizontalDragEnd: widget.loading
-                        ? null
-                        : (_) => _onDragEnd(progress, maxDx),
+                    onHorizontalDragEnd: widget.loading ? null : (_) => _onDragEnd(),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 120),
                       transform: Matrix4.translationValues(_dx, 0, 0),
@@ -83,7 +85,7 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
                                 color: Colors.white,
                               ),
                             )
-                          : Icon(Icons.chevron_right, color: scheme.onPrimary),
+                          : Icon(IconsaxPlusLinear.arrow_right_3, color: scheme.onPrimary),
                     ),
                   ),
                 ),
@@ -95,9 +97,9 @@ class _SwipeToConfirmState extends State<SwipeToConfirm> {
     );
   }
 
-  Future<void> _onDragEnd(double progress, double maxDx) async {
-    if (progress >= 0.85) {
-      setState(() => _dx = maxDx);
+  Future<void> _onDragEnd() async {
+    if (_progress >= 0.85) {
+      setState(() => _dx = _maxDx);
       await widget.onConfirmed();
       if (mounted) setState(() => _dx = 0); // reset for retry/next state
     } else {

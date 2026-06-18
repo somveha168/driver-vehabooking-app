@@ -5,8 +5,18 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  /// Veha brand seed (modern teal) — drives the whole M3 palette.
-  static const Color seed = Color(0xFF0E9488);
+  /// Veha brand colors.
+  static const Color primary = Color(0xFF00B39F); // teal
+  static const Color secondary = Color(0xFF0A1F4D); // deep navy
+
+  /// Seed for the M3 tonal palette (brand primary).
+  static const Color seed = primary;
+
+  /// Solid header band color (brand navy) for the Home hero.
+  static const Color header = secondary;
+
+  /// Soft off-white page canvas (light mode), tinted by a primary radial glow.
+  static const Color canvas = Color(0xFFF4F7F8);
 
   // Booking stage colors (used by StatusChip).
   static const Color assigned = Color(0xFFF59E0B); // amber

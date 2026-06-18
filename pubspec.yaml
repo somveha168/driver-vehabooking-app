@@ -43,6 +43,7 @@ dependencies:
   connectivity_plus: ^7.1.1
   flutter_animate: ^4.5.2
   google_fonts: ^8.1.0
+  iconsax_plus: ^1.0.0
 
 dev_dependencies:
   flutter_test:

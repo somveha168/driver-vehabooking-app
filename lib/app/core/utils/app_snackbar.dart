@@ -20,6 +20,21 @@ class AppSnackbar {
     );
   }
 
+  static void info(String message) {
+    Get.closeAllSnackbars();
+    Get.snackbar(
+      '',
+      message,
+      titleText: const SizedBox.shrink(),
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(12),
+      backgroundColor: const Color(0xFF0A1F4D),
+      colorText: Colors.white,
+      icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+      duration: const Duration(seconds: 2),
+    );
+  }
+
   static void error(String message) {
     Get.closeAllSnackbars();
     Get.snackbar(

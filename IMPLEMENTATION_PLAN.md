@@ -45,10 +45,9 @@ So: **Track A (Laravel) ships first**, Track B (Flutter) builds against it.
 
 > Follows CLAUDE.md rules: Form Requests, Actions over services, `response()->jsonSuccess()/jsonError()`, API Resources, never break existing code, Pest tests, run `vendor/bin/pint --dirty`.
 
-### A1. Fix the `driver` auth guard
-- Add a `driver` guard + provider to `config/auth.php` (provider → `Modules\Driver\Models\Driver`).
-- Keep `auth:sanctum` on protected routes (token auth unchanged); the guard fix makes `Auth::guard('driver')->attempt()` actually work.
-- **Non-breaking**: purely additive to the guards/providers arrays.
+### A1. ~~Fix the `driver` auth guard~~ — NOT NEEDED (already provided by the module)
+- **Correction:** the earlier "guard not configured" finding was wrong. `DriverServiceProvider::register()` already injects `auth.guards.driver` + `auth.providers.drivers` (→ `Modules\Driver\Models\Driver`) at runtime. The static `config/auth.php` doesn't show it, which is why it looked missing.
+- A guard + provider edit to root `config/auth.php` was made and then **reverted** — the module owns this, no core change required. `Auth::guard('driver')->attempt()` works as-is.
 
 ### A2. Phone **or** email login
 - `AuthController::login` accepts a single **`login`** field (phone or email) + `password` + `device_name`.
@@ -120,7 +119,7 @@ Since v1 uses polling (no FCM), the pickup reminder is an **in-app banner/highli
 - Action-level tests for the two Taxi actions if not already covered.
 
 ### A7. Deliverable for Track B
-A short **API contract doc** (`docs/DRIVER_APP_API.md`) listing each endpoint, request, and exact JSON response — the Flutter app codes against this.
+A short **API contract doc** (`modules/Taxi/docs/DRIVER_APP_API.md`) listing each endpoint, request, and exact JSON response — the Flutter app codes against this.
 
 ---
 

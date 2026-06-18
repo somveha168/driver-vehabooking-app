@@ -1,0 +1,44 @@
+/// Authenticated driver, as returned by the backend `UserResource`.
+class AuthUser {
+  const AuthUser({
+    required this.id,
+    required this.uuid,
+    required this.name,
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.email,
+    this.imageUrl,
+  });
+
+  final int id;
+  final String uuid;
+  final String name;
+  final String? firstName;
+  final String? lastName;
+  final String? phone;
+  final String? email;
+  final String? imageUrl;
+
+  factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
+        id: (json['id'] as num).toInt(),
+        uuid: json['uuid']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        firstName: json['first_name']?.toString(),
+        lastName: json['last_name']?.toString(),
+        phone: json['phone']?.toString(),
+        email: json['email']?.toString(),
+        imageUrl: json['image_url']?.toString(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'uuid': uuid,
+        'name': name,
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'email': email,
+        'image_url': imageUrl,
+      };
+}

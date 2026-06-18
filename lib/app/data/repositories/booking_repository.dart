@@ -1,0 +1,64 @@
+import '../../core/config/app_config.dart';
+import '../../core/network/api_client.dart';
+import '../models/booking_detail.dart';
+import '../models/booking_list_item.dart';
+import '../models/dashboard_summary.dart';
+
+/// Paged list result for the bookings screen.
+typedef BookingPage = ({List<BookingListItem> items, int currentPage, int lastPage});
+
+/// Driver booking API calls (Taxi module). Failures surface as [ApiException].
+class BookingRepository {
+  BookingRepository(this._api);
+
+  final ApiClient _api;
+
+  String get _base => AppConfig.bookingsApiUrl;
+
+  /// Home dashboard summary: online state, pipeline counts, next pickup.
+  Future<DashboardSummary> dashboard() async {
+    final res = await _api.get('$_base/dashboard');
+    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    return DashboardSummary.fromJson(data);
+  }
+
+  /// List the driver's bookings, optionally filtered by [status]
+  /// (assigned | accepted | on_trip | completed).
+  Future<BookingPage> list({String? status, int page = 1, int limit = 20}) async {
+    final res = await _api.get('$_base/bookings', query: {
+      'status': ?status,
+      'page': page,
+      'limit': limit,
+    });
+
+    final body = res.data as Map;
+    final items = (body['data'] as List? ?? [])
+        .map((e) => BookingListItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+    final meta = body['meta'] as Map?;
+
+    return (
+      items: items,
+      currentPage: (meta?['current_page'] as num?)?.toInt() ?? page,
+      lastPage: (meta?['last_page'] as num?)?.toInt() ?? page,
+    );
+  }
+
+  Future<BookingDetail> show(String uuid) =>
+      _detail(_api.get('$_base/bookings/$uuid'));
+
+  Future<BookingDetail> accept(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/accept'));
+
+  Future<BookingDetail> confirmPickup(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/confirm-pickup'));
+
+  Future<BookingDetail> complete(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/complete'));
+
+  Future<BookingDetail> _detail(Future<dynamic> request) async {
+    final res = await request;
+    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    return BookingDetail.fromJson(data);
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:get/get.dart';
 
 import '../theme/app_spacing.dart';
@@ -18,7 +19,7 @@ class EmptyView extends StatelessWidget {
     super.key,
     required this.title,
     this.hint,
-    this.icon = Icons.inbox_outlined,
+    this.icon = IconsaxPlusLinear.box,
   });
 
   final String title;
@@ -69,14 +70,14 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 64, color: theme.colorScheme.error),
+            Icon(IconsaxPlusLinear.cloud_cross, size: 64, color: theme.colorScheme.error),
             const SizedBox(height: AppSpacing.lg),
             Text(message, style: theme.textTheme.bodyLarge, textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: AppSpacing.lg),
               OutlinedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(IconsaxPlusLinear.refresh),
                 label: Text('retry'.tr),
               ),
             ],
