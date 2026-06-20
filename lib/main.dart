@@ -35,17 +35,17 @@ Future<void> main() async {
   // On a 401 anywhere, reset to login.
   api.onUnauthorized = () => Get.offAllNamed(Routes.login);
 
-  runApp(VehaDriverApp(startLoggedIn: auth.isLoggedIn, settings: settings));
+  // Every launch starts on the animated splash, which then routes to
+  // Welcome (first run) / Home (logged in) / Login.
+  runApp(VehaDriverApp(settings: settings));
 }
 
 class VehaDriverApp extends StatelessWidget {
   const VehaDriverApp({
     super.key,
-    required this.startLoggedIn,
     required this.settings,
   });
 
-  final bool startLoggedIn;
   final SettingsService settings;
 
   @override
@@ -60,7 +60,7 @@ class VehaDriverApp extends StatelessWidget {
       locale: settings.locale.value,
       fallbackLocale: AppTranslations.fallbackLocale,
       supportedLocales: AppTranslations.supportedLocales,
-      initialRoute: startLoggedIn ? Routes.home : Routes.login,
+      initialRoute: Routes.splash,
       getPages: AppPages.pages,
     );
   }

@@ -1,5 +1,10 @@
 # Veha Driver App — Implementation Plan (v1)
 
+> ⚠️ **HISTORICAL — superseded.** Original v1 plan, kept for context. The shipped
+> flow is **Start Now → Arrived → Meet Passenger → Drop Passenger** (+ couldn't-
+> meet-passenger), **not** the accept→confirm→complete flow described below.
+> Current state: **[README.md](README.md)** (app) + backend **DRIVER_OVERVIEW.md**.
+>
 > Status: **DRAFT — awaiting approval.** No code is written until this plan is confirmed.
 > Last updated: 2026-06-18
 

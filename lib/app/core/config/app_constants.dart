@@ -13,6 +13,9 @@ class AppConstants {
   // A stable per-install device name sent with login/logout.
   static const String deviceNameKey = 'device_name';
 
+  // First-run welcome/onboarding seen flag.
+  static const String onboardingSeenKey = 'onboarding_seen';
+
   // Default list page size (backend honours `limit`).
   static const int pageSize = 20;
 }

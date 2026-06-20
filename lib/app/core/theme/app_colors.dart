@@ -24,6 +24,7 @@ class AppColors {
   static const Color onTrip = Color(0xFF7C3AED); // violet
   static const Color completed = Color(0xFF10B981); // green
   static const Color cancelled = Color(0xFFDC2626); // red
+  static const Color notMet = Color(0xFF64748B); // slate (couldn't meet passenger)
 
   /// Map a stage string from the API to its display color.
   static Color forStage(String stage) {
@@ -42,6 +43,8 @@ class AppColors {
         return onTrip;
       case 'completed':
         return completed;
+      case 'not_met_passenger':
+        return notMet;
       case 'cancelled':
         return cancelled;
       default:

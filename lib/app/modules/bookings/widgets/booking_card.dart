@@ -52,7 +52,7 @@ class BookingCard extends StatelessWidget {
                   StatusChip(stage: booking.stage),
                 ],
               ),
-              if (booking.stage != 'cancelled') ...[
+              if (booking.stage != 'cancelled' && booking.stage != 'not_met_passenger') ...[
                 const SizedBox(height: AppSpacing.md),
                 _progressBar(theme),
               ],

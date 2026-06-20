@@ -24,6 +24,9 @@ class DashboardController extends GetxController {
   final Rxn<DashboardSummary> summary = Rxn<DashboardSummary>();
   final isOnline = false.obs;
 
+  /// Operational status (available / assign / on_duty / day_off / pending_verification).
+  final status = 'available'.obs;
+
   AuthUser? get user => _auth.currentUser.value;
 
   @override
@@ -38,6 +41,7 @@ class DashboardController extends GetxController {
     try {
       final data = await _bookingRepo.dashboard();
       summary.value = data;
+      status.value = data.status;
       isOnline.value = data.isOnline;
     } on ApiException catch (e) {
       error.value = e.message;
@@ -71,7 +75,12 @@ class DashboardController extends GetxController {
   void openNextPickup() {
     final next = summary.value?.nextPickup;
     if (next == null) return;
-    Get.toNamed(Routes.bookingDetail, arguments: next.uuid)?.then((_) => load());
+    openBooking(next.uuid);
+  }
+
+  /// Open any booking's detail by uuid; refresh on return.
+  void openBooking(String uuid) {
+    Get.toNamed(Routes.bookingDetail, arguments: uuid)?.then((_) => load());
   }
 
   Future<void> navigateToNextPickup() async {

@@ -2,6 +2,12 @@
 const Map<String, String> kmKH = {
   'app_name': 'Veha Driver',
 
+  // Welcome / onboarding (first run)
+  'welcome_eyebrow': 'សូមស្វាគមន៍មកកាន់',
+  'welcome_title': 'បើកបរជាមួយ Veha',
+  'welcome_subtitle': 'ការធ្វើដំណើររបស់អ្នកគ្រប់ផ្លូវ — បើកបរដោយទំនុកចិត្ត។',
+  'welcome_cta': 'ចាប់ផ្តើមឥឡូវ',
+
   // Auth
   'login_title': 'សូមស្វាគមន៍ការត្រឡប់មកវិញ',
   'login_subtitle': 'ចូលគណនី ដើម្បីមើលការធ្វើដំណើរដែលបានកំណត់ឲ្យអ្នក',
@@ -40,6 +46,26 @@ const Map<String, String> kmKH = {
   'you_are_offline': 'អ្នកកំពុងoffline',
   'ready_for_trips': 'ត្រៀមរួចសម្រាប់ការធ្វើដំណើរ',
   'offline_hint': 'ចូល online ដើម្បីទទួលការធ្វើដំណើរ',
+  // ស្ថានភាពការងាររបស់អ្នកបើកបរ
+  'status_available': 'ទំនេរ',
+  'status_available_hint': 'ត្រៀមរួចសម្រាប់ការធ្វើដំណើរដែលបានកំណត់',
+  'status_on_trip': 'កំពុងធ្វើដំណើរ',
+  'status_on_trip_hint': 'អ្នកមានការកក់កំពុងដំណើរការ',
+  'status_day_off': 'ថ្ងៃឈប់សម្រាក',
+  'status_day_off_hint': 'ថ្ងៃនេះអ្នកមិនធ្វើការទេ',
+  'status_pending': 'កំពុងផ្ទៀងផ្ទាត់',
+  'status_pending_hint': 'គណនីរបស់អ្នកកំពុងត្រូវបានពិនិត្យ',
+  'section_now': 'ឥឡូវនេះ',
+  'section_upcoming': 'ការធ្វើដំណើរបន្ទាប់',
+  // ស្ថានភាពទទេនៅទំព័រដើម (តាមស្ថានភាព)
+  'empty_ready_title': 'អ្នកត្រៀមរួចហើយ',
+  'empty_ready_hint': 'មិនទាន់មានដំណើរទេ។ ការធ្វើដំណើរថ្មីដែលបានកំណត់ឲ្យអ្នកនឹងបង្ហាញនៅទីនេះ។',
+  'empty_dayoff_title': 'សូមរីករាយថ្ងៃឈប់សម្រាក',
+  'empty_dayoff_hint': 'ថ្ងៃនេះអ្នកមិនធ្វើការទេ — នឹងមិនមានការកំណត់ដំណើរទេ។',
+  'empty_pending_title': 'ជិតរួចរាល់ហើយ',
+  'empty_pending_hint': 'គណនីរបស់អ្នកកំពុងត្រូវបានពិនិត្យ។ អ្នកនឹងទទួលដំណើរនៅពេលអនុម័ត។',
+  'empty_upcoming_title': 'គ្មានការធ្វើដំណើរបន្ទាប់',
+  'empty_upcoming_hint': 'កាលវិភាគរបស់អ្នកទំនេរ។ ការធ្វើដំណើរថ្មីនឹងបន្ថែមនៅទីនេះ។',
   'next_pickup': 'ការទទួលបន្ទាប់',
   'no_next_pickup': 'គ្មានការទទួលខាងមុខ',
   'no_next_pickup_hint': 'បច្ចុប្បន្នអ្នកគ្មានដំណើរដែលរង់ចាំទទួលទេ។',
@@ -74,11 +100,25 @@ const Map<String, String> kmKH = {
   'trip_progress': 'ដំណើរការ',
   'in_progress': 'កំពុងដំណើរការ…',
   'call': 'ហៅ',
+  // Couldn't meet passenger
+  'cant_find_passenger': 'រកអ្នកដំណើរមិនឃើញ?',
+  'report_not_met_title': 'មិនអាចជួបអ្នកដំណើរ',
+  'report_not_met_hint': 'ប្រាប់យើងពីអ្វីដែលបានកើតឡើង — វានឹងបិទដំណើរ និងបញ្ចប់ការងារនេះ ដើម្បីទទួលការកក់បន្ទាប់។',
+  'reason_didnt_show': 'អ្នកដំណើរមិនបានមក',
+  'reason_cant_reach': 'ទាក់ទងអ្នកដំណើរមិនបាន',
+  'reason_customer_cancelled': 'អតិថិជនបានលុបចោលនៅពេលទទួល',
+  'add_note_optional': 'បន្ថែមកំណត់ចំណាំ (ស្រេចចិត្ត)',
+  'submit_report': 'ដាក់ស្នើ',
+  'not_met_reported': 'បានរាយការណ៍ — អ្នកអាចទទួលការកក់បន្ទាប់។',
+  'stage_not_met_passenger': 'មិនបានជួប',
   'stage_start': 'កំពុងធ្វើដំណើរ',
   'stage_arrived_location': 'នៅទីតាំងទទួល',
   'stage_meet_passenger': 'នៅលើរថយន្ត',
   'no_bookings': 'មិនទាន់មានការកក់ទេ',
   'no_bookings_hint': 'ការធ្វើដំណើរថ្មីដែលបានកំណត់ឲ្យអ្នកនឹងបង្ហាញនៅទីនេះ។',
+  'section_today': 'ថ្ងៃនេះ',
+  'section_tomorrow': 'ថ្ងៃស្អែក',
+  'section_later': 'ក្រោយៗ',
   'pull_to_refresh': 'ទាញដើម្បីផ្ទុកឡើងវិញ',
 
   // Stages

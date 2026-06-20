@@ -284,73 +284,122 @@ class _EditForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextFormField(
-          controller: controller.firstNameCtrl,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            labelText: 'first_name'.tr,
-            prefixIcon: const Icon(IconsaxPlusLinear.profile),
-          ),
+        _field(
+          context,
+          label: 'first_name'.tr,
+          ctrl: controller.firstNameCtrl,
+          icon: IconsaxPlusLinear.profile,
           validator: (v) =>
               (v == null || v.trim().isEmpty) ? 'first_name_required'.tr : null,
         ),
-        const SizedBox(height: AppSpacing.lg),
-        TextFormField(
-          controller: controller.lastNameCtrl,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            labelText: 'last_name'.tr,
-            prefixIcon: const Icon(IconsaxPlusLinear.profile),
-          ),
+        const SizedBox(height: AppSpacing.md),
+        _field(
+          context,
+          label: 'last_name'.tr,
+          ctrl: controller.lastNameCtrl,
+          icon: IconsaxPlusLinear.profile,
           validator: (v) =>
               (v == null || v.trim().isEmpty) ? 'last_name_required'.tr : null,
         ),
-        const SizedBox(height: AppSpacing.lg),
-        TextFormField(
-          controller: controller.phoneCtrl,
+        const SizedBox(height: AppSpacing.md),
+        _field(
+          context,
+          label: 'phone'.tr,
+          ctrl: controller.phoneCtrl,
+          icon: IconsaxPlusLinear.call,
           keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            labelText: 'phone'.tr,
-            prefixIcon: const Icon(IconsaxPlusLinear.call),
-          ),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        TextFormField(
-          controller: controller.emailCtrl,
+        const SizedBox(height: AppSpacing.md),
+        _field(
+          context,
+          label: 'email'.tr,
+          ctrl: controller.emailCtrl,
+          icon: IconsaxPlusLinear.sms,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.done,
           autocorrect: false,
-          decoration: InputDecoration(
-            labelText: 'email'.tr,
-            prefixIcon: const Icon(IconsaxPlusLinear.sms),
-          ),
           validator: (v) {
             if (v == null || v.trim().isEmpty) return null;
             return GetUtils.isEmail(v.trim()) ? null : 'email_invalid'.tr;
           },
         ),
         const SizedBox(height: AppSpacing.lg),
+
+        // Compact action row.
         Row(
           children: [
             Expanded(
               child: Obx(() => FilledButton(
                     onPressed: controller.isSaving.value ? null : controller.save,
+                    style: _btnStyle,
                     child: controller.isSaving.value
                         ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
                         : Text('save_changes'.tr),
                   )),
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.sm),
             OutlinedButton(
               onPressed: controller.cancelEdit,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 46),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
               child: Text('cancel'.tr),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  static final ButtonStyle _btnStyle = FilledButton.styleFrom(
+    minimumSize: const Size(0, 46),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+  );
+
+  /// Compact labeled field: a small caption label above a dense filled input.
+  Widget _field(
+    BuildContext context, {
+    required String label,
+    required TextEditingController ctrl,
+    required IconData icon,
+    TextInputType? keyboardType,
+    TextInputAction textInputAction = TextInputAction.next,
+    bool autocorrect = true,
+    String? Function(String?)? validator,
+  }) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 5),
+          child: Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        TextFormField(
+          controller: ctrl,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          autocorrect: autocorrect,
+          validator: validator,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            prefixIcon: Icon(icon, size: 19),
+            prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 0),
+          ),
         ),
       ],
     );

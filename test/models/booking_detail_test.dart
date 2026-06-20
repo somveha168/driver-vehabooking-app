@@ -61,6 +61,29 @@ void main() {
       expect(b.allows('meet_passenger'), isTrue);
     });
 
+    test('offers report_not_met_passenger and parses the not-met reason', () {
+      final b = BookingDetail.fromJson({
+        'uuid': 'u2',
+        'stage': 'arrived_location',
+        'driver_trip_status': 'arrived_location',
+        'allowed_actions': ['meet_passenger', 'report_not_met_passenger'],
+      });
+
+      expect(b.allows('report_not_met_passenger'), isTrue);
+
+      final closed = BookingDetail.fromJson({
+        'uuid': 'u3',
+        'stage': 'not_met_passenger',
+        'driver_trip_status': 'not_met_passenger',
+        'not_met_passenger_reason': 'didnt_show',
+        'allowed_actions': [],
+      });
+
+      expect(closed.stage, 'not_met_passenger');
+      expect(closed.notMetPassengerReason, 'didnt_show');
+      expect(closed.can, isFalse);
+    });
+
     test('handles missing optional blocks gracefully', () {
       final b = BookingDetail.fromJson({'uuid': 'x', 'stage': 'assigned'});
 

@@ -2,6 +2,12 @@
 const Map<String, String> enUS = {
   'app_name': 'Veha Driver',
 
+  // Welcome / onboarding (first run)
+  'welcome_eyebrow': 'Welcome to',
+  'welcome_title': 'Drive with Veha',
+  'welcome_subtitle': 'Your assigned trips on every route — drive with confidence.',
+  'welcome_cta': 'Start Now',
+
   // Auth
   'login_title': 'Welcome back',
   'login_subtitle': 'Sign in to see your assigned trips',
@@ -40,6 +46,26 @@ const Map<String, String> enUS = {
   'you_are_offline': "You're offline",
   'ready_for_trips': 'Ready for trips',
   'offline_hint': 'Go online to receive trips',
+  // Driver operational status (reflects DriverStatusEnum)
+  'status_available': 'Available',
+  'status_available_hint': 'Ready for your assigned trips',
+  'status_on_trip': 'On a trip',
+  'status_on_trip_hint': 'You have an active booking',
+  'status_day_off': 'Day off',
+  'status_day_off_hint': "You're not working today",
+  'status_pending': 'Pending verification',
+  'status_pending_hint': 'Your account is under review',
+  'section_now': 'Now',
+  'section_upcoming': 'Upcoming',
+  // Home empty states (status-aware)
+  'empty_ready_title': "You're ready to roll",
+  'empty_ready_hint': 'No trips yet. New pickups assigned to you will appear here.',
+  'empty_dayoff_title': 'Enjoy your day off',
+  'empty_dayoff_hint': "You're off today — no trips will be assigned.",
+  'empty_pending_title': 'Almost there',
+  'empty_pending_hint': 'Your account is under review. You\'ll get trips once approved.',
+  'empty_upcoming_title': 'No upcoming pickups',
+  'empty_upcoming_hint': 'Your schedule is clear. New trips will be added here.',
   'next_pickup': 'Next pickup',
   'no_next_pickup': 'No upcoming pickup',
   'no_next_pickup_hint': 'You have no trips awaiting pickup right now.',
@@ -74,11 +100,25 @@ const Map<String, String> enUS = {
   'trip_progress': 'Trip progress',
   'in_progress': 'In progress…',
   'call': 'Call',
+  // Couldn't meet passenger
+  'cant_find_passenger': 'Can\'t find the passenger?',
+  'report_not_met_title': 'Couldn\'t meet passenger',
+  'report_not_met_hint': 'Tell us what happened — this closes the trip and frees you for the next booking.',
+  'reason_didnt_show': 'Passenger didn\'t show up',
+  'reason_cant_reach': 'Can\'t reach passenger',
+  'reason_customer_cancelled': 'Customer cancelled at pickup',
+  'add_note_optional': 'Add a note (optional)',
+  'submit_report': 'Submit',
+  'not_met_reported': 'Reported — take your next booking.',
+  'stage_not_met_passenger': 'Couldn\'t meet',
   'stage_start': 'On the way',
   'stage_arrived_location': 'At pickup',
   'stage_meet_passenger': 'On board',
   'no_bookings': 'No bookings here yet',
   'no_bookings_hint': 'New trips assigned to you will show up here.',
+  'section_today': 'Today',
+  'section_tomorrow': 'Tomorrow',
+  'section_later': 'Later',
   'pull_to_refresh': 'Pull to refresh',
 
   // Stages

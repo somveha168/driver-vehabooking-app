@@ -60,6 +60,17 @@ class BookingRepository {
   Future<BookingDetail> complete(String uuid) =>
       _detail(_api.post('$_base/bookings/$uuid/complete'));
 
+  /// Driver couldn't meet the passenger → terminal note (frees the driver).
+  Future<BookingDetail> reportNotMetPassenger(
+    String uuid, {
+    required String reason,
+    String? note,
+  }) =>
+      _detail(_api.post('$_base/bookings/$uuid/report-not-met-passenger', data: {
+        'reason': reason,
+        if (note != null && note.isNotEmpty) 'note': note,
+      }));
+
   Future<BookingDetail> _detail(Future<dynamic> request) async {
     final res = await request;
     final data = (res.data as Map)['data'] as Map<String, dynamic>;

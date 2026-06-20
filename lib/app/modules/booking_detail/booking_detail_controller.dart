@@ -46,6 +46,12 @@ class BookingDetailController extends GetxController {
 
   Future<void> complete() => _act(() => _repo.complete(uuid), 'completed_done'.tr);
 
+  /// Driver couldn't meet the passenger → terminal note, frees the driver.
+  Future<void> reportNotMetPassenger(String reason, String? note) => _act(
+        () => _repo.reportNotMetPassenger(uuid, reason: reason, note: note),
+        'not_met_reported'.tr,
+      );
+
   /// Run the action key from `allowed_actions`.
   Future<void> runAction(String action) {
     switch (action) {

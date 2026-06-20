@@ -10,6 +10,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/section_label.dart';
 import '../../core/widgets/state_views.dart';
+import '../../core/widgets/status_chip.dart';
 import '../../data/models/booking_list_item.dart';
 import 'dashboard_controller.dart';
 
@@ -58,7 +59,7 @@ class DashboardView extends GetView<DashboardController> {
         if (controller.error.value != null && controller.summary.value == null) {
           return ErrorView(message: controller.error.value!, onRetry: controller.load);
         }
-        final assigned = controller.summary.value?.counts.assigned ?? 0;
+        final upcoming = controller.summary.value?.upcoming ?? const [];
 
         return Container(
           // Brand wash: a soft primary radial glow from the top-right corner
@@ -86,13 +87,23 @@ class DashboardView extends GetView<DashboardController> {
                 children: [
                   _Hero(controller: controller),
                   const SizedBox(height: AppSpacing.xl),
-                  _OnlineCard(controller: controller),
-                  if (assigned > 0) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    _AcceptAlert(count: assigned, controller: controller),
-                  ],
-                  const SizedBox(height: AppSpacing.xl),
+                  // NOW — the one trip to act on, or its own empty template.
+                  SectionLabel('section_now'.tr),
+                  const SizedBox(height: AppSpacing.lg),
                   _nextPickup(context),
+                  const SizedBox(height: AppSpacing.xxl),
+                  // UPCOMING — the queue, or its own empty template.
+                  SectionLabel('section_upcoming'.tr),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (upcoming.isNotEmpty)
+                    ...[
+                      for (final b in upcoming) ...[
+                        _UpcomingItem(booking: b, controller: controller),
+                        const SizedBox(height: AppSpacing.sm),
+                      ],
+                    ]
+                  else
+                    _emptyUpcoming(),
                   const SizedBox(height: AppSpacing.xxl),
                   SectionLabel('overview'.tr),
                   const SizedBox(height: AppSpacing.lg),
@@ -108,31 +119,51 @@ class DashboardView extends GetView<DashboardController> {
 
   Widget _nextPickup(BuildContext context) {
     final next = controller.summary.value?.nextPickup;
-    final theme = Theme.of(context);
     if (next == null) {
-      return Container(
-        decoration: _softCard(context),
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          children: [
-            Icon(IconsaxPlusLinear.calendar_tick,
-                size: 40, color: theme.colorScheme.outline),
-            const SizedBox(height: AppSpacing.sm),
-            Text('no_next_pickup'.tr, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 2),
-            Text('no_next_pickup_hint'.tr,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.outline)),
-          ],
-        ),
-      );
+      return _emptyNow()
+          .animate()
+          .fadeIn(duration: 300.ms)
+          .slideY(begin: 0.04);
     }
     return _NextPickupCard(next: next, controller: controller)
         .animate()
         .fadeIn(duration: 300.ms)
         .slideY(begin: 0.05);
   }
+
+  /// NOW empty — status-aware (reflects why there's no active trip).
+  Widget _emptyNow() {
+    final (Color color, IconData icon, String title, String hint) =
+        switch (controller.status.value) {
+      'day_off' => (
+          AppColors.notMet,
+          IconsaxPlusBold.coffee,
+          'empty_dayoff_title'.tr,
+          'empty_dayoff_hint'.tr,
+        ),
+      'pending_verification' => (
+          AppColors.assigned,
+          IconsaxPlusBold.clock,
+          'empty_pending_title'.tr,
+          'empty_pending_hint'.tr,
+        ),
+      _ => (
+          AppColors.primary,
+          IconsaxPlusBold.car,
+          'empty_ready_title'.tr,
+          'empty_ready_hint'.tr,
+        ),
+    };
+    return _EmptyCard(color: color, icon: icon, title: title, hint: hint);
+  }
+
+  /// UPCOMING empty — the schedule queue is clear.
+  Widget _emptyUpcoming() => _EmptyCard(
+        color: AppColors.primary,
+        icon: IconsaxPlusBold.calendar,
+        title: 'empty_upcoming_title'.tr,
+        hint: 'empty_upcoming_hint'.tr,
+      );
 
   Widget _stats() {
     final counts = controller.summary.value?.counts;
@@ -191,8 +222,9 @@ class _Hero extends StatelessWidget {
         Row(
           children: [
             // Date eyebrow with brand dot.
-            Expanded(
+            Flexible(
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: 6,
@@ -224,6 +256,10 @@ class _Hero extends StatelessWidget {
                 ],
               ),
             ),
+            const Spacer(),
+            // Compact operational-status pill.
+            _StatusPill(controller: controller),
+            const SizedBox(width: AppSpacing.sm),
             // Notification bell.
             InkWell(
               onTap: controller.openNotifications,
@@ -232,14 +268,8 @@ class _Hero extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: scheme.surface,
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: AppColors.secondary.withValues(alpha: 0.06),
-                        blurRadius: 8),
-                  ],
                 ),
                 child: const Icon(IconsaxPlusLinear.notification,
                     size: 20, color: AppColors.primary),
@@ -280,14 +310,6 @@ class _Hero extends StatelessWidget {
                 fontWeight: FontWeight.w600, color: AppColors.primary)),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          'home_subtitle'.tr,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: scheme.onSurfaceVariant,
-            height: 1.45,
-          ),
-        ),
         const SizedBox(height: AppSpacing.lg),
         Container(
           height: 1,
@@ -304,9 +326,11 @@ class _Hero extends StatelessWidget {
   }
 }
 
-/// Clean white availability card with a status dot.
-class _OnlineCard extends StatelessWidget {
-  const _OnlineCard({required this.controller});
+/// Compact operational-status pill (header): a colored dot + one short word.
+/// Reflects the driver's real `status` (Available · On a trip · Day off ·
+/// Pending) — not a presence toggle; the vendor pre-assigns trips.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.controller});
 
   final DashboardController controller;
 
@@ -314,39 +338,34 @@ class _OnlineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Obx(() {
-      final online = controller.isOnline.value;
-      final dot = online ? AppColors.completed : theme.colorScheme.outline;
+      final (Color color, String label) = switch (controller.status.value) {
+        'available' => (AppColors.completed, 'status_available'.tr),
+        'assign' || 'on_duty' => (AppColors.onTrip, 'status_on_trip'.tr),
+        'day_off' => (theme.colorScheme.outline, 'status_day_off'.tr),
+        'pending_verification' => (AppColors.assigned, 'status_pending'.tr),
+        _ => (AppColors.completed, 'status_available'.tr),
+      };
+
       return Container(
-        decoration: _softCard(context),
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 10, height: 10, decoration: BoxDecoration(
-              color: dot, shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: dot.withValues(alpha: 0.4), blurRadius: 6)],
-            )),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(online ? 'you_are_online'.tr : 'you_are_offline'.tr,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600)),
-                  Text(online ? 'ready_for_trips'.tr : 'offline_hint'.tr,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline)),
-                ],
-              ),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            if (controller.isToggling.value)
-              const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-            else
-              Switch(value: online, onChanged: controller.toggleOnline),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: theme.textTheme.labelMedium
+                  ?.copyWith(color: color, fontWeight: FontWeight.w700),
+            ),
           ],
         ),
       );
@@ -354,33 +373,59 @@ class _OnlineCard extends StatelessWidget {
   }
 }
 
-class _AcceptAlert extends StatelessWidget {
-  const _AcceptAlert({required this.count, required this.controller});
+/// Compact upcoming pickup row: time · name · pickup → detail.
+class _UpcomingItem extends StatelessWidget {
+  const _UpcomingItem({required this.booking, required this.controller});
 
-  final int count;
+  final BookingListItem booking;
   final DashboardController controller;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Material(
-      color: AppColors.assigned.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        onTap: () => controller.goToBookings('assigned'),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+        onTap: () => controller.openBooking(booking.uuid),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        child: Container(
+          decoration: _softCard(context),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           child: Row(
             children: [
-              const Icon(IconsaxPlusLinear.notification_bing, color: AppColors.assigned),
+              Text(
+                Formatters.time(booking.departureDatetime),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text('$count ${'awaiting_acceptance'.tr}',
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking.customerName ?? '—',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      booking.pickupLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.outline),
+                    ),
+                  ],
+                ),
               ),
-              const Icon(IconsaxPlusLinear.arrow_right_3, color: AppColors.assigned),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(IconsaxPlusLinear.arrow_right_3,
+                  size: 18, color: theme.colorScheme.outline),
             ],
           ),
         ),
@@ -410,12 +455,7 @@ class _NextPickupCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('next_pickup'.tr.toUpperCase(),
-                    style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2)),
+                StatusChip(stage: next.stage),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -439,6 +479,10 @@ class _NextPickupCard extends StatelessWidget {
             _line(theme, IconsaxPlusLinear.clock, Formatters.dateTime(next.departureDatetime)),
             const SizedBox(height: AppSpacing.xs),
             _line(theme, IconsaxPlusLinear.location, next.pickupLabel),
+            if (next.stage != 'cancelled' && next.stage != 'not_met_passenger') ...[
+              const SizedBox(height: AppSpacing.md),
+              _miniProgress(theme, next.stage),
+            ],
             const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
@@ -491,6 +535,99 @@ class _NextPickupCard extends StatelessWidget {
                   style: theme.textTheme.bodyMedium, overflow: TextOverflow.ellipsis)),
         ],
       );
+
+  /// 4-segment stage progress: Start → Arrived → Pickup → Drop-off.
+  Widget _miniProgress(ThemeData theme, String stage) {
+    final reached = switch (stage) {
+      'start' => 1,
+      'arrived_location' => 2,
+      'meet_passenger' => 3,
+      'drop_passenger' || 'completed' => 4,
+      _ => 0,
+    };
+    return Row(
+      children: List.generate(4, (i) {
+        final done = i < reached;
+        return Expanded(
+          child: Container(
+            height: 4,
+            margin: EdgeInsets.only(right: i == 3 ? 0 : 4),
+            decoration: BoxDecoration(
+              color: done ? AppColors.primary : theme.colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+/// Compact, modern empty template — a brand-haloed icon + title + hint. Used by
+/// both the NOW and UPCOMING sections so each has its own purposeful empty state.
+class _EmptyCard extends StatelessWidget {
+  const _EmptyCard({
+    required this.color,
+    required this.icon,
+    required this.title,
+    required this.hint,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String title;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      decoration: _softCard(context),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          // Concentric brand halo behind the icon.
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 22, color: color),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  hint,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.outline, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StatCard extends StatelessWidget {

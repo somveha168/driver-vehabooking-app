@@ -16,6 +16,7 @@ class BookingDetail {
     this.arrivedAt,
     this.metPassengerAt,
     this.droppedAt,
+    this.notMetPassengerReason,
     this.allowedActions = const [],
     this.customerName,
     this.customerPhone,
@@ -45,6 +46,7 @@ class BookingDetail {
   final String? arrivedAt;
   final String? metPassengerAt;
   final String? droppedAt;
+  final String? notMetPassengerReason;
   final List<String> allowedActions;
 
   final String? customerName;
@@ -88,6 +90,7 @@ class BookingDetail {
       arrivedAt: json['arrived_at']?.toString(),
       metPassengerAt: json['met_passenger_at']?.toString(),
       droppedAt: json['dropped_at']?.toString(),
+      notMetPassengerReason: json['not_met_passenger_reason']?.toString(),
       allowedActions: (json['allowed_actions'] as List?)
               ?.map((e) => e.toString())
               .toList() ??

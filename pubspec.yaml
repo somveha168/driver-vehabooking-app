@@ -45,6 +45,7 @@ dependencies:
   google_fonts: ^8.1.0
   iconsax_plus: ^1.0.0
   image_picker: ^1.2.2
+  path_drawing: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +58,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   mocktail: ^1.0.5
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
+  image: ^4.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -69,10 +73,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/branding/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,3 +101,27 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# ── App launcher icon (run: dart run flutter_launcher_icons) ──
+# Source = the Veha cloud+road mark (no wordmark) for crisp small sizes.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  # Square, trimmed, centered sources (see tool/generate_icons.dart) so the mark
+  # sits properly inside the round/adaptive mask.
+  image_path: "assets/branding/icon.png"
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/branding/icon_foreground.png"
+  min_sdk_android: 21
+
+# ── Native splash / launch screen (run: dart run flutter_native_splash:create) ──
+# Intentionally a plain white screen (no logo): the in-app Splash screen draws
+# the logo, so the OS splash just bridges to it seamlessly (no double logo).
+flutter_native_splash:
+  color: "#FFFFFF"
+  android: true
+  ios: true
+  android_12:
+    color: "#FFFFFF"

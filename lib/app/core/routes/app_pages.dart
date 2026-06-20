@@ -8,6 +8,10 @@ import '../../modules/documents/documents_binding.dart';
 import '../../modules/documents/documents_view.dart';
 import '../../modules/home/home_binding.dart';
 import '../../modules/home/home_view.dart';
+import '../../modules/splash/splash_binding.dart';
+import '../../modules/splash/splash_view.dart';
+import '../../modules/welcome/welcome_binding.dart';
+import '../../modules/welcome/welcome_view.dart';
 import 'app_routes.dart';
 
 /// Route table. Bindings register each screen's controllers lazily.
@@ -15,6 +19,16 @@ class AppPages {
   AppPages._();
 
   static final List<GetPage> pages = [
+    GetPage(
+      name: Routes.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
+    GetPage(
+      name: Routes.welcome,
+      page: () => const WelcomeView(),
+      binding: WelcomeBinding(),
+    ),
     GetPage(
       name: Routes.login,
       page: () => const LoginView(),

@@ -50,4 +50,8 @@ class StorageService extends GetxService {
 
   String? get deviceName => _box.read<String>(AppConstants.deviceNameKey);
   set deviceName(String? value) => _box.write(AppConstants.deviceNameKey, value);
+
+  /// Whether the first-run welcome screen has been seen.
+  bool get seenOnboarding => _box.read<bool>(AppConstants.onboardingSeenKey) ?? false;
+  set seenOnboarding(bool value) => _box.write(AppConstants.onboardingSeenKey, value);
 }
