@@ -82,14 +82,30 @@ class DashboardController extends GetxController {
     );
   }
 
-  /// Quick-accept the next pickup from the hero card.
-  Future<void> acceptNextPickup() async {
+  /// Advance the next pickup one step from the hero (Start Now / Arrived /
+  /// Meet Passenger). The final "drop" step is done on the detail screen.
+  Future<void> advanceNextPickup() async {
     final next = summary.value?.nextPickup;
     if (next == null || isActing.value) return;
+    final action = next.allowedActions.isNotEmpty ? next.allowedActions.first : null;
+    if (action == null || action == 'complete') {
+      openNextPickup();
+      return;
+    }
+
     isActing.value = true;
     try {
-      await _bookingRepo.accept(next.uuid);
-      AppSnackbar.success('accepted_done'.tr);
+      switch (action) {
+        case 'start':
+          await _bookingRepo.start(next.uuid);
+          break;
+        case 'arrived':
+          await _bookingRepo.arrived(next.uuid);
+          break;
+        case 'meet_passenger':
+          await _bookingRepo.meetPassenger(next.uuid);
+          break;
+      }
       await load();
     } on ApiException catch (e) {
       AppSnackbar.error(e.message);

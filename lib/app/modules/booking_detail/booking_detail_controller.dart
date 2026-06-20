@@ -37,13 +37,30 @@ class BookingDetailController extends GetxController {
     }
   }
 
-  Future<void> accept() => _act(() => _repo.accept(uuid), 'accepted_done'.tr);
+  // Trip lifecycle.
+  Future<void> start() => _act(() => _repo.start(uuid), 'started_done'.tr);
 
-  Future<void> confirmPickup() =>
-      _act(() => _repo.confirmPickup(uuid), 'pickup_done'.tr);
+  Future<void> arrived() => _act(() => _repo.arrived(uuid), 'arrived_done'.tr);
 
-  Future<void> complete() =>
-      _act(() => _repo.complete(uuid), 'completed_done'.tr);
+  Future<void> meetPassenger() => _act(() => _repo.meetPassenger(uuid), 'met_done'.tr);
+
+  Future<void> complete() => _act(() => _repo.complete(uuid), 'completed_done'.tr);
+
+  /// Run the action key from `allowed_actions`.
+  Future<void> runAction(String action) {
+    switch (action) {
+      case 'start':
+        return start();
+      case 'arrived':
+        return arrived();
+      case 'meet_passenger':
+        return meetPassenger();
+      case 'complete':
+        return complete();
+      default:
+        return Future.value();
+    }
+  }
 
   Future<void> _act(Future<BookingDetail> Function() action, String successMsg) async {
     if (isActing.value) return;

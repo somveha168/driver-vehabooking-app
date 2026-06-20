@@ -4,14 +4,12 @@ import 'booking_list_item.dart';
 class DashboardCounts {
   const DashboardCounts({
     this.assigned = 0,
-    this.accepted = 0,
-    this.onTrip = 0,
+    this.active = 0,
     this.completed = 0,
   });
 
   final int assigned;
-  final int accepted;
-  final int onTrip;
+  final int active;
   final int completed;
 
   factory DashboardCounts.fromJson(Map<String, dynamic>? json) {
@@ -19,8 +17,7 @@ class DashboardCounts {
     int n(dynamic v) => (v as num?)?.toInt() ?? 0;
     return DashboardCounts(
       assigned: n(json['assigned']),
-      accepted: n(json['accepted']),
-      onTrip: n(json['on_trip']),
+      active: n(json['active']),
       completed: n(json['completed']),
     );
   }

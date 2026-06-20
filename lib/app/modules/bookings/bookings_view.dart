@@ -22,8 +22,7 @@ class BookingsView extends GetView<BookingsController> {
           tabAlignment: TabAlignment.start,
           tabs: [
             Tab(text: 'tab_assigned'.tr),
-            Tab(text: 'tab_accepted'.tr),
-            Tab(text: 'tab_on_trip'.tr),
+            Tab(text: 'tab_active'.tr),
             Tab(text: 'tab_completed'.tr),
           ],
         ),

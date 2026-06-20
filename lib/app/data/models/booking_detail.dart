@@ -10,7 +10,12 @@ class BookingDetail {
     this.tripType,
     this.status,
     this.driverPickupStatus,
+    this.driverTripStatus,
     this.acceptedAt,
+    this.startedAt,
+    this.arrivedAt,
+    this.metPassengerAt,
+    this.droppedAt,
     this.allowedActions = const [],
     this.customerName,
     this.customerPhone,
@@ -34,7 +39,12 @@ class BookingDetail {
   final String? tripType;
   final String? status;
   final String? driverPickupStatus;
+  final String? driverTripStatus;
   final String? acceptedAt;
+  final String? startedAt;
+  final String? arrivedAt;
+  final String? metPassengerAt;
+  final String? droppedAt;
   final List<String> allowedActions;
 
   final String? customerName;
@@ -72,7 +82,12 @@ class BookingDetail {
       tripType: json['trip_type']?.toString(),
       status: json['status']?.toString(),
       driverPickupStatus: json['driver_pickup_status']?.toString(),
+      driverTripStatus: json['driver_trip_status']?.toString(),
       acceptedAt: json['accepted_at']?.toString(),
+      startedAt: json['started_at']?.toString(),
+      arrivedAt: json['arrived_at']?.toString(),
+      metPassengerAt: json['met_passenger_at']?.toString(),
+      droppedAt: json['dropped_at']?.toString(),
       allowedActions: (json['allowed_actions'] as List?)
               ?.map((e) => e.toString())
               .toList() ??

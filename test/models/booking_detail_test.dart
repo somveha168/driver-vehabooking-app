@@ -42,6 +42,25 @@ void main() {
       expect(b.flightNumber, 'QR123');
     });
 
+    test('parses the trip lifecycle status, timestamps and next action', () {
+      final b = BookingDetail.fromJson({
+        'uuid': 'u1',
+        'stage': 'arrived_location',
+        'driver_trip_status': 'arrived_location',
+        'started_at': '2026-06-19T09:00:00+07:00',
+        'arrived_at': '2026-06-19T09:20:00+07:00',
+        'met_passenger_at': null,
+        'dropped_at': null,
+        'allowed_actions': ['meet_passenger'],
+      });
+
+      expect(b.driverTripStatus, 'arrived_location');
+      expect(b.startedAt, isNotNull);
+      expect(b.arrivedAt, isNotNull);
+      expect(b.metPassengerAt, isNull);
+      expect(b.allows('meet_passenger'), isTrue);
+    });
+
     test('handles missing optional blocks gracefully', () {
       final b = BookingDetail.fromJson({'uuid': 'x', 'stage': 'assigned'});
 

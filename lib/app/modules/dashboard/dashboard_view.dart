@@ -138,8 +138,7 @@ class DashboardView extends GetView<DashboardController> {
     final counts = controller.summary.value?.counts;
     final items = [
       ('assigned', counts?.assigned ?? 0, 'tab_assigned'),
-      ('accepted', counts?.accepted ?? 0, 'tab_accepted'),
-      ('on_trip', counts?.onTrip ?? 0, 'tab_on_trip'),
+      ('active', counts?.active ?? 0, 'tab_active'),
       ('completed', counts?.completed ?? 0, 'tab_completed'),
     ];
     return Row(
@@ -453,20 +452,25 @@ class _NextPickupCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Obx(() {
-                    final canAccept = next.allowedActions.contains('accept');
+                    final action =
+                        next.allowedActions.isNotEmpty ? next.allowedActions.first : null;
+                    final label = switch (action) {
+                      'start' => 'start_now'.tr,
+                      'arrived' => 'mark_arrived'.tr,
+                      'meet_passenger' => 'meet_passenger'.tr,
+                      _ => 'booking_detail'.tr,
+                    };
                     return FilledButton(
                       onPressed: controller.isActing.value
                           ? null
-                          : (canAccept
-                              ? controller.acceptNextPickup
-                              : controller.openNextPickup),
+                          : controller.advanceNextPickup,
                       child: controller.isActing.value
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : Text(canAccept ? 'accept_booking'.tr : 'booking_detail'.tr),
+                          : Text(label),
                     );
                   }),
                 ),

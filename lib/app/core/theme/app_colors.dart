@@ -30,8 +30,14 @@ class AppColors {
     switch (stage) {
       case 'assigned':
         return assigned;
+      case 'start': // on the way
       case 'accepted':
         return accepted;
+      case 'arrived_location':
+        return onTrip;
+      case 'meet_passenger':
+        return primary;
+      case 'active':
       case 'on_trip':
         return onTrip;
       case 'completed':

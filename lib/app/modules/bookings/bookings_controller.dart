@@ -13,7 +13,7 @@ class BookingsController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final BookingRepository _repo = Get.find<BookingRepository>();
 
-  static const List<String> tabs = ['assigned', 'accepted', 'on_trip', 'completed'];
+  static const List<String> tabs = ['assigned', 'active', 'completed'];
 
   late final TabController tabController;
 

@@ -47,11 +47,15 @@ class BookingRepository {
   Future<BookingDetail> show(String uuid) =>
       _detail(_api.get('$_base/bookings/$uuid'));
 
-  Future<BookingDetail> accept(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/accept'));
+  // Trip lifecycle: Start Now → Arrived → Meet Passenger → Drop Passenger.
+  Future<BookingDetail> start(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/start'));
 
-  Future<BookingDetail> confirmPickup(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/confirm-pickup'));
+  Future<BookingDetail> arrived(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/arrived'));
+
+  Future<BookingDetail> meetPassenger(String uuid) =>
+      _detail(_api.post('$_base/bookings/$uuid/meet-passenger'));
 
   Future<BookingDetail> complete(String uuid) =>
       _detail(_api.post('$_base/bookings/$uuid/complete'));
