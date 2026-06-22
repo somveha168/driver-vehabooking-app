@@ -33,6 +33,24 @@ class Formatters {
   /// Weekday + day + month for the home header, e.g. "Thu, 18 Jun".
   static String todayLabel() => DateFormat('EEE, d MMM').format(DateTime.now());
 
+  /// Short day + month, e.g. "21 Jun". Returns '—' for null/invalid input.
+  static String shortDate(String? iso) {
+    final dt = _parse(iso);
+    if (dt == null) return '—';
+    return DateFormat('d MMM').format(dt.toLocal());
+  }
+
+  /// Whole days from today to [iso] in local time: 0 = today, 1 = tomorrow,
+  /// negative = past. Null when the input can't be parsed.
+  static int? daysFromToday(String? iso) {
+    final dt = _parse(iso);
+    if (dt == null) return null;
+    final l = dt.toLocal();
+    final then = DateTime(l.year, l.month, l.day);
+    final now = DateTime.now();
+    return then.difference(DateTime(now.year, now.month, now.day)).inDays;
+  }
+
   static DateTime? _parse(String? iso) {
     if (iso == null || iso.isEmpty) return null;
     return DateTime.tryParse(iso);

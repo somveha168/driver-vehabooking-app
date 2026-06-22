@@ -24,9 +24,16 @@ class BookingDetail {
     this.dropoff = const Place(),
     this.departureDatetime,
     this.passengerCount,
+    this.nationality,
     this.notes,
-    this.vehicleType,
-    this.plateNumber,
+    this.vehicleBooked,
+    this.vehicleModel,
+    this.vehiclePlate,
+    this.vehicleColor,
+    this.vehicleSeats,
+    this.isReturn = false,
+    this.returnDate,
+    this.returnTime,
     this.flightNumber,
     this.airline,
     this.terminal,
@@ -57,10 +64,18 @@ class BookingDetail {
 
   final String? departureDatetime;
   final int? passengerCount;
+  final String? nationality;
   final String? notes;
 
-  final String? vehicleType;
-  final String? plateNumber;
+  final String? vehicleBooked; // class the customer booked, e.g. "Van 10 Seats"
+  final String? vehicleModel; // real assigned vehicle, e.g. "Luxis Camary"
+  final String? vehiclePlate;
+  final String? vehicleColor;
+  final int? vehicleSeats;
+
+  final bool isReturn;
+  final String? returnDate; // ISO date (yyyy-MM-dd)
+  final String? returnTime; // HH:mm
 
   final String? flightNumber;
   final String? airline;
@@ -71,10 +86,29 @@ class BookingDetail {
   bool get can => allowedActions.isNotEmpty;
   bool allows(String action) => allowedActions.contains(action);
 
+  /// A round-trip booking with a usable return date.
+  bool get hasReturn => isReturn && returnDate != null && returnDate!.isNotEmpty;
+
+  /// Whether any vehicle info (booked or assigned) exists.
+  bool get hasVehicle =>
+      (vehicleBooked?.isNotEmpty ?? false) ||
+      (vehicleModel?.isNotEmpty ?? false) ||
+      (vehiclePlate?.isNotEmpty ?? false);
+
+  /// The real assigned vehicle line, e.g. "Luxis Camary · 2A-2025".
+  String? get assignedVehicleLabel {
+    final parts = <String>[
+      if (vehicleModel != null && vehicleModel!.isNotEmpty) vehicleModel!,
+      if (vehiclePlate != null && vehiclePlate!.isNotEmpty) vehiclePlate!,
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
+  }
+
   factory BookingDetail.fromJson(Map<String, dynamic> json) {
     final customer = json['customer'] as Map<String, dynamic>?;
     final vehicle = json['vehicle'] as Map<String, dynamic>?;
     final flight = json['flight'] as Map<String, dynamic>?;
+    final returnTrip = json['return_trip'] as Map<String, dynamic>?;
 
     return BookingDetail(
       uuid: json['uuid']?.toString() ?? '',
@@ -101,9 +135,16 @@ class BookingDetail {
       dropoff: Place.fromJson(json['dropoff'] as Map<String, dynamic>?),
       departureDatetime: json['departure_datetime']?.toString(),
       passengerCount: (json['passenger_count'] as num?)?.toInt(),
+      nationality: json['nationality']?.toString(),
       notes: json['notes']?.toString(),
-      vehicleType: vehicle?['type']?.toString(),
-      plateNumber: vehicle?['plate_number']?.toString(),
+      vehicleBooked: vehicle?['booked_name']?.toString(),
+      vehicleModel: vehicle?['model']?.toString(),
+      vehiclePlate: vehicle?['plate_number']?.toString(),
+      vehicleColor: vehicle?['color']?.toString(),
+      vehicleSeats: (vehicle?['seats'] as num?)?.toInt(),
+      isReturn: json['is_return'] == true,
+      returnDate: returnTrip?['date']?.toString(),
+      returnTime: returnTrip?['time']?.toString(),
       flightNumber: flight?['number']?.toString(),
       airline: flight?['airline']?.toString(),
       terminal: flight?['terminal']?.toString(),

@@ -83,24 +83,14 @@ class DashboardController extends GetxController {
     Get.toNamed(Routes.bookingDetail, arguments: uuid)?.then((_) => load());
   }
 
-  Future<void> navigateToNextPickup() async {
-    final next = summary.value?.nextPickup;
-    if (next == null) return;
-    await ExternalLauncher.navigateTo(
-      address: next.pickupPoint ?? next.pickupLocationName,
-    );
-  }
+  /// Dial the passenger from the NOW card.
+  Future<void> callCustomer(String phone) => ExternalLauncher.call(phone);
 
-  /// Advance the next pickup one step from the hero (Start Now / Arrived /
-  /// Meet Passenger). The final "drop" step is done on the detail screen.
-  Future<void> advanceNextPickup() async {
+  /// Advance the NOW pickup one step (start / arrived / meet_passenger /
+  /// complete) straight from the Home card, then refresh the dashboard.
+  Future<void> runNextAction(String action) async {
     final next = summary.value?.nextPickup;
     if (next == null || isActing.value) return;
-    final action = next.allowedActions.isNotEmpty ? next.allowedActions.first : null;
-    if (action == null || action == 'complete') {
-      openNextPickup();
-      return;
-    }
 
     isActing.value = true;
     try {
@@ -113,6 +103,9 @@ class DashboardController extends GetxController {
           break;
         case 'meet_passenger':
           await _bookingRepo.meetPassenger(next.uuid);
+          break;
+        case 'complete':
+          await _bookingRepo.complete(next.uuid);
           break;
       }
       await load();

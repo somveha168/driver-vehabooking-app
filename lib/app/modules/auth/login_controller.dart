@@ -18,6 +18,10 @@ class LoginController extends GetxController {
 
   void toggleObscure() => obscure.toggle();
 
+  /// Driver credentials are issued by dispatch — point the user to support
+  /// rather than a self-serve reset/registration flow.
+  void showHelp() => AppSnackbar.info('login_help_message'.tr);
+
   Future<void> submit() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
 

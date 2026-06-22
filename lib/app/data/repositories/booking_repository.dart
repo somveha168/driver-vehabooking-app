@@ -17,21 +17,21 @@ class BookingRepository {
 
   /// Home dashboard summary: online state, pipeline counts, next pickup.
   Future<DashboardSummary> dashboard() async {
-    final res = await _api.get('$_base/dashboard');
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final res = await _api.getJson('$_base/dashboard');
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return DashboardSummary.fromJson(data);
   }
 
   /// List the driver's bookings, optionally filtered by [status]
   /// (assigned | accepted | on_trip | completed).
   Future<BookingPage> list({String? status, int page = 1, int limit = 20}) async {
-    final res = await _api.get('$_base/bookings', query: {
+    final res = await _api.getJson('$_base/bookings', query: {
       'status': ?status,
       'page': page,
       'limit': limit,
     });
 
-    final body = res.data as Map;
+    final body = res as Map;
     final items = (body['data'] as List? ?? [])
         .map((e) => BookingListItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -45,20 +45,20 @@ class BookingRepository {
   }
 
   Future<BookingDetail> show(String uuid) =>
-      _detail(_api.get('$_base/bookings/$uuid'));
+      _detail(_api.getJson('$_base/bookings/$uuid'));
 
   // Trip lifecycle: Start Now → Arrived → Meet Passenger → Drop Passenger.
   Future<BookingDetail> start(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/start'));
+      _detail(_api.postJson('$_base/bookings/$uuid/start'));
 
   Future<BookingDetail> arrived(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/arrived'));
+      _detail(_api.postJson('$_base/bookings/$uuid/arrived'));
 
   Future<BookingDetail> meetPassenger(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/meet-passenger'));
+      _detail(_api.postJson('$_base/bookings/$uuid/meet-passenger'));
 
   Future<BookingDetail> complete(String uuid) =>
-      _detail(_api.post('$_base/bookings/$uuid/complete'));
+      _detail(_api.postJson('$_base/bookings/$uuid/complete'));
 
   /// Driver couldn't meet the passenger → terminal note (frees the driver).
   Future<BookingDetail> reportNotMetPassenger(
@@ -66,14 +66,14 @@ class BookingRepository {
     required String reason,
     String? note,
   }) =>
-      _detail(_api.post('$_base/bookings/$uuid/report-not-met-passenger', data: {
+      _detail(_api.postJson('$_base/bookings/$uuid/report-not-met-passenger', data: {
         'reason': reason,
         if (note != null && note.isNotEmpty) 'note': note,
       }));
 
   Future<BookingDetail> _detail(Future<dynamic> request) async {
     final res = await request;
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return BookingDetail.fromJson(data);
   }
 }

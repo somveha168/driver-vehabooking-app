@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
@@ -284,23 +285,39 @@ class _EditForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _field(
-          context,
-          label: 'first_name'.tr,
-          ctrl: controller.firstNameCtrl,
-          icon: IconsaxPlusLinear.profile,
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'first_name_required'.tr : null,
+        // First + last name share a row.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _field(
+                context,
+                label: 'first_name'.tr,
+                ctrl: controller.firstNameCtrl,
+                icon: IconsaxPlusLinear.profile,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'first_name_required'.tr
+                    : null,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _field(
+                context,
+                label: 'last_name'.tr,
+                ctrl: controller.lastNameCtrl,
+                icon: IconsaxPlusLinear.profile,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'last_name_required'.tr
+                    : null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _field(
-          context,
-          label: 'last_name'.tr,
-          ctrl: controller.lastNameCtrl,
-          icon: IconsaxPlusLinear.profile,
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'last_name_required'.tr : null,
-        ),
+        _dateField(context),
+        const SizedBox(height: AppSpacing.md),
+        _genderField(context),
         const SizedBox(height: AppSpacing.md),
         _field(
           context,
@@ -316,12 +333,22 @@ class _EditForm extends StatelessWidget {
           ctrl: controller.emailCtrl,
           icon: IconsaxPlusLinear.sms,
           keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.done,
           autocorrect: false,
           validator: (v) {
             if (v == null || v.trim().isEmpty) return null;
             return GetUtils.isEmail(v.trim()) ? null : 'email_invalid'.tr;
           },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _field(
+          context,
+          label: 'current_address'.tr,
+          ctrl: controller.currentAddressCtrl,
+          icon: IconsaxPlusLinear.location,
+          hint: 'current_address_hint'.tr,
+          keyboardType: TextInputType.streetAddress,
+          textInputAction: TextInputAction.newline,
+          maxLines: 3,
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -372,8 +399,169 @@ class _EditForm extends StatelessWidget {
     TextInputType? keyboardType,
     TextInputAction textInputAction = TextInputAction.next,
     bool autocorrect = true,
+    String? hint,
+    int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    return _labeled(
+      context,
+      label: label,
+      child: TextFormField(
+        controller: ctrl,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        autocorrect: autocorrect,
+        maxLines: maxLines,
+        validator: validator,
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: hint,
+          alignLabelWithHint: maxLines > 1,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          prefixIcon: Padding(
+            // Top-align the icon when the field grows to multiple lines.
+            padding: EdgeInsets.only(bottom: maxLines > 1 ? (maxLines - 1) * 19.0 : 0),
+            child: Icon(icon, size: 19),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 0),
+        ),
+      ),
+    );
+  }
+
+  /// A modern tappable date-of-birth tile: a tinted calendar badge, the chosen
+  /// date (or placeholder), and a chevron — opens the native picker.
+  Widget _dateField(BuildContext context) {
+    final theme = Theme.of(context);
+    return _labeled(
+      context,
+      label: 'date_of_birth'.tr,
+      child: Obx(() {
+        final dob = controller.dateOfBirth.value;
+        final hasValue = dob != null;
+        final text = hasValue
+            ? DateFormat('dd MMM yyyy').format(dob)
+            : 'select_date'.tr;
+        return Material(
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: InkWell(
+            onTap: () => controller.pickDateOfBirth(context),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    ),
+                    child: const Icon(IconsaxPlusLinear.calendar_1,
+                        size: 18, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: hasValue
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  Icon(IconsaxPlusLinear.arrow_down_1,
+                      size: 16, color: theme.colorScheme.outline),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  /// A compact Male / Female tab control with icons and a sliding active pill.
+  Widget _genderField(BuildContext context) {
+    final theme = Theme.of(context);
+    return _labeled(
+      context,
+      label: 'gender'.tr,
+      child: Obx(() {
+        final selected = controller.gender.value;
+        Widget tab(String value, String label, IconData icon) {
+          final active = selected == value;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setGender(value),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: active ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.28),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon,
+                        size: 17,
+                        color: active
+                            ? Colors.white
+                            : theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: active
+                            ? Colors.white
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            children: [
+              tab('male', 'male'.tr, Icons.male_rounded),
+              const SizedBox(width: 4),
+              tab('female', 'female'.tr, Icons.female_rounded),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  /// Small caption label above an arbitrary input control.
+  Widget _labeled(BuildContext context,
+      {required String label, required Widget child}) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,19 +576,7 @@ class _EditForm extends StatelessWidget {
             ),
           ),
         ),
-        TextFormField(
-          controller: ctrl,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          autocorrect: autocorrect,
-          validator: validator,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            prefixIcon: Icon(icon, size: 19),
-            prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 0),
-          ),
-        ),
+        child,
       ],
     );
   }

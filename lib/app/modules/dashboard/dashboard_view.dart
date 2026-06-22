@@ -10,7 +10,9 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/section_label.dart';
 import '../../core/widgets/state_views.dart';
-import '../../core/widgets/status_chip.dart';
+import '../../core/widgets/step_action_button.dart';
+import '../../core/widgets/swipe_to_confirm.dart';
+import '../../core/widgets/trip_steps.dart';
 import '../../data/models/booking_list_item.dart';
 import 'dashboard_controller.dart';
 
@@ -133,8 +135,16 @@ class DashboardView extends GetView<DashboardController> {
 
   /// NOW empty — status-aware (reflects why there's no active trip).
   Widget _emptyNow() {
+    final hasUpcoming = (controller.summary.value?.upcoming.isNotEmpty) ?? false;
     final (Color color, IconData icon, String title, String hint) =
         switch (controller.status.value) {
+      // Assigned but nothing departs today — the next pickup sits in Upcoming.
+      'assign' when hasUpcoming => (
+          AppColors.assigned,
+          IconsaxPlusBold.calendar_tick,
+          'empty_assigned_title'.tr,
+          'empty_assigned_hint'.tr,
+        ),
       'day_off' => (
           AppColors.notMet,
           IconsaxPlusBold.coffee,
@@ -340,7 +350,8 @@ class _StatusPill extends StatelessWidget {
     return Obx(() {
       final (Color color, String label) = switch (controller.status.value) {
         'available' => (AppColors.completed, 'status_available'.tr),
-        'assign' || 'on_duty' => (AppColors.onTrip, 'status_on_trip'.tr),
+        'assign' => (AppColors.assigned, 'status_assigned'.tr),
+        'on_duty' => (AppColors.onTrip, 'status_on_trip'.tr),
         'day_off' => (theme.colorScheme.outline, 'status_day_off'.tr),
         'pending_verification' => (AppColors.assigned, 'status_pending'.tr),
         _ => (AppColors.completed, 'status_available'.tr),
@@ -380,6 +391,16 @@ class _UpcomingItem extends StatelessWidget {
   final BookingListItem booking;
   final DashboardController controller;
 
+  /// Relative departure day: "Today" / "Tomorrow" / "21 Jun".
+  String _dayLabel() {
+    final diff = Formatters.daysFromToday(booking.departureDatetime);
+    return switch (diff) {
+      0 => 'section_today'.tr,
+      1 => 'section_tomorrow'.tr,
+      _ => Formatters.shortDate(booking.departureDatetime),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -394,11 +415,32 @@ class _UpcomingItem extends StatelessWidget {
               horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           child: Row(
             children: [
-              Text(
-                Formatters.time(booking.departureDatetime),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+              SizedBox(
+                width: 72,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _dayLabel(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      Formatters.time(booking.departureDatetime),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -414,7 +456,9 @@ class _UpcomingItem extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      booking.pickupLabel,
+                      booking.hasDropoff
+                          ? '${booking.pickupLabel}  →  ${booking.dropoffLabel}'
+                          : booking.pickupLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall
@@ -443,124 +487,260 @@ class _NextPickupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final until = Formatters.timeUntil(next.departureDatetime);
+    final showProgress =
+        next.stage != 'cancelled' && next.stage != 'not_met_passenger';
 
     return Container(
       decoration: _softCard(context),
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: controller.openNextPickup,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                StatusChip(stage: next.stage),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Contact header: passenger name + phone, with a call action.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          next.customerName ?? '—',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 3),
+                        _meta(theme),
+                        if (next.hasPhone) ...[
+                          const SizedBox(height: 4),
+                          _phone(theme),
+                        ],
+                      ],
+                    ),
                   ),
-                  child: Text(
-                    until != null ? '${'departing_in'.tr} $until' : 'departing_now'.tr,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(next.customerName ?? '—',
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: AppSpacing.xs),
-            _line(theme, IconsaxPlusLinear.clock, Formatters.dateTime(next.departureDatetime)),
-            const SizedBox(height: AppSpacing.xs),
-            _line(theme, IconsaxPlusLinear.location, next.pickupLabel),
-            if (next.stage != 'cancelled' && next.stage != 'not_met_passenger') ...[
+                  if (next.hasPhone) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    _callButton(),
+                  ],
+                ],
+              ),
               const SizedBox(height: AppSpacing.md),
-              _miniProgress(theme, next.stage),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: controller.navigateToNextPickup,
-                    icon: const Icon(IconsaxPlusLinear.routing, size: 18),
-                    label: Text('navigate'.tr),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Obx(() {
-                    final action =
-                        next.allowedActions.isNotEmpty ? next.allowedActions.first : null;
-                    final label = switch (action) {
-                      'start' => 'start_now'.tr,
-                      'arrived' => 'mark_arrived'.tr,
-                      'meet_passenger' => 'meet_passenger'.tr,
-                      _ => 'booking_detail'.tr,
-                    };
-                    return FilledButton(
-                      onPressed: controller.isActing.value
-                          ? null
-                          : controller.advanceNextPickup,
-                      child: controller.isActing.value
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : Text(label),
-                    );
-                  }),
-                ),
+              _departure(theme),
+              const SizedBox(height: AppSpacing.sm + 2),
+
+              // Origin → destination timeline.
+              _stop(theme,
+                  isOrigin: true, caption: 'pickup'.tr, value: next.pickupLabel),
+              if (next.hasDropoff)
+                _stop(theme,
+                    isOrigin: false,
+                    caption: 'dropoff'.tr,
+                    value: next.dropoffLabel),
+
+              if (showProgress) ...[
+                const SizedBox(height: AppSpacing.md),
+                TripSteps(stage: next.stage),
               ],
-            ),
-          ],
+              if (next.nextAction != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _action(theme, next.nextAction!),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _line(ThemeData theme, IconData icon, String text) => Row(
+  /// The advance control: an animated next-step button for start/arrived/meet,
+  /// and a deliberate swipe for the irreversible final drop. Lives on the card
+  /// so the driver advances the trip without leaving Home.
+  Widget _action(ThemeData theme, String action) {
+    if (action == 'complete') {
+      return Obx(
+        () => SwipeToConfirm(
+          label: 'swipe_to_drop'.tr,
+          loading: controller.isActing.value,
+          onConfirmed: () => controller.runNextAction('complete'),
+        ),
+      );
+    }
+
+    final (String label, IconData icon) = switch (action) {
+      'start' => ('start_now'.tr, IconsaxPlusLinear.play),
+      'arrived' => ('mark_arrived'.tr, IconsaxPlusLinear.location_tick),
+      'meet_passenger' => ('meet_passenger'.tr, IconsaxPlusLinear.profile_tick),
+      _ => ('start_now'.tr, IconsaxPlusLinear.play),
+    };
+
+    return Obx(
+      () => StepActionButton(
+        label: label,
+        icon: icon,
+        loading: controller.isActing.value,
+        onPressed: () => controller.runNextAction(action),
+      ),
+    );
+  }
+
+  /// Passenger phone, with a call glyph.
+  Widget _phone(ThemeData theme) => Row(
         children: [
-          Icon(icon, size: 16, color: theme.colorScheme.outline),
-          const SizedBox(width: 4),
-          Expanded(
-              child: Text(text,
-                  style: theme.textTheme.bodyMedium, overflow: TextOverflow.ellipsis)),
+          Icon(IconsaxPlusLinear.call, size: 13, color: theme.colorScheme.outline),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              next.customerPhone!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       );
 
-  /// 4-segment stage progress: Start → Arrived → Pickup → Drop-off.
-  Widget _miniProgress(ThemeData theme, String stage) {
-    final reached = switch (stage) {
-      'start' => 1,
-      'arrived_location' => 2,
-      'meet_passenger' => 3,
-      'drop_passenger' || 'completed' => 4,
-      _ => 0,
-    };
+  /// Round call button — dials the passenger straight from the card.
+  Widget _callButton() => Material(
+        color: AppColors.primary.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => controller.callCustomer(next.customerPhone!),
+          child: const Padding(
+            padding: EdgeInsets.all(9),
+            child: Icon(IconsaxPlusBold.call, size: 18, color: AppColors.primary),
+          ),
+        ),
+      );
+
+  Widget _meta(ThemeData theme) {
+    final outline = theme.colorScheme.outline;
     return Row(
-      children: List.generate(4, (i) {
-        final done = i < reached;
-        return Expanded(
-          child: Container(
-            height: 4,
-            margin: EdgeInsets.only(right: i == 3 ? 0 : 4),
-            decoration: BoxDecoration(
-              color: done ? AppColors.primary : theme.colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+      children: [
+        if (next.serviceType != null)
+          Text(
+            next.serviceType!.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
           ),
-        );
-      }),
+        if (next.serviceType != null && next.passengerCount != null) ...[
+          const SizedBox(width: 8),
+          Container(
+            width: 3,
+            height: 3,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: outline),
+          ),
+          const SizedBox(width: 8),
+        ],
+        if (next.passengerCount != null) ...[
+          Icon(IconsaxPlusLinear.profile, size: 13, color: outline),
+          const SizedBox(width: 4),
+          Text(
+            '${next.passengerCount}',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: outline, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ],
     );
   }
+
+  Widget _departure(ThemeData theme) => Row(
+        children: [
+          Icon(IconsaxPlusLinear.calendar,
+              size: 16, color: theme.colorScheme.outline),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            Formatters.dateTime(next.departureDatetime),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      );
+
+  /// One stop in the route timeline. Origin is a filled dot, destination a ring;
+  /// a connector drops from the origin when there's a destination below.
+  Widget _stop(ThemeData theme,
+      {required bool isOrigin, required String caption, required String value}) {
+    final showConnector = isOrigin && next.hasDropoff;
+    final marker = Container(
+      width: 13,
+      height: 13,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isOrigin ? AppColors.primary : Colors.white,
+        border: Border.all(
+          color: isOrigin
+              ? AppColors.primary.withValues(alpha: 0.25)
+              : AppColors.secondary,
+          width: 3,
+        ),
+      ),
+    );
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              Padding(padding: const EdgeInsets.only(top: 3), child: marker),
+              if (showConnector)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    color: AppColors.primary.withValues(alpha: 0.22),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: showConnector ? AppSpacing.sm : 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    caption.toUpperCase(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 /// Compact, modern empty template — a brand-haloed icon + title + hint. Used by

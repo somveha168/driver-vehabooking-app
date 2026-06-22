@@ -61,6 +61,10 @@ class BookingCard extends StatelessWidget {
                   Formatters.dateTime(booking.departureDatetime)),
               const SizedBox(height: AppSpacing.xs),
               _line(theme, IconsaxPlusLinear.location, booking.pickupLabel),
+              if (booking.hasDropoff) ...[
+                const SizedBox(height: AppSpacing.xs),
+                _line(theme, IconsaxPlusLinear.location_tick, booking.dropoffLabel),
+              ],
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [

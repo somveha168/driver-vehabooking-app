@@ -59,12 +59,18 @@ class AuthService extends GetxService {
     String? lastName,
     String? phone,
     String? email,
+    String? gender,
+    String? dateOfBirth,
+    String? currentAddress,
   }) async {
     final user = await _repo.updateProfile(
       firstName: firstName,
       lastName: lastName,
       phone: phone,
       email: email,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+      currentAddress: currentAddress,
     );
     await _persistUser(user);
   }

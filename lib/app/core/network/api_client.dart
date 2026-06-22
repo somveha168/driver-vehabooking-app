@@ -1,76 +1,82 @@
-import 'package:dio/dio.dart';
-import 'package:get/get.dart' hide Response;
+import 'package:get/get.dart';
 
 import '../config/app_config.dart';
 import '../storage/storage_service.dart';
 import 'api_exception.dart';
 
-/// Configured [Dio] wrapper, registered once as a service.
+/// App HTTP client — the standard GetConnect structure: it **extends
+/// [GetConnect]** and configures the shared [httpClient] in [onInit].
 ///
-/// Responsibilities:
-///   - inject the bearer token on every request (kept in-memory, mirrored to
-///     [StorageService] by AuthService);
-///   - normalize every failure into an [ApiException];
-///   - on a 401, clear the session and bounce to the login route.
-class ApiClient extends GetxService {
+/// On top of GetConnect it adds:
+///   - a request modifier that injects the bearer token (kept in-memory,
+///     mirrored to [StorageService] by AuthService) + the `Accept` header;
+///   - a response modifier that resets the session on a 401 and bounces to
+///     login;
+///   - guarded [getJson]/[postJson] verbs that normalize every failure into an
+///     [ApiException] and return the decoded body on success.
+///
+/// We intentionally skip `defaultDecoder` (models are decoded per-repository)
+/// and `addAuthenticator` (Sanctum tokens don't refresh — a 401 means logout).
+class ApiClient extends GetConnect {
   ApiClient(this._storage);
 
   final StorageService _storage;
-  late final Dio dio;
 
-  /// In-memory token, set by AuthService so the interceptor stays synchronous.
+  /// In-memory token, set by AuthService so the request modifier stays sync.
   String? token;
 
   /// Called on a 401 so the app can reset to the login screen. Wired by main()
   /// to avoid a hard dependency on the routing/auth layers from here.
   void Function()? onUnauthorized;
 
-  ApiClient init() {
-    dio = Dio(
-      BaseOptions(
-        connectTimeout: AppConfig.connectTimeout,
-        receiveTimeout: AppConfig.receiveTimeout,
-        headers: {'Accept': 'application/json'},
-      ),
-    );
+  @override
+  void onInit() {
+    httpClient
+      ..timeout = AppConfig.receiveTimeout
+      ..defaultContentType = 'application/json';
 
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          if (token != null && token!.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          handler.next(options);
-        },
-        onError: (error, handler) {
-          if (error.response?.statusCode == 401) {
-            token = null;
-            _storage.clearSecure();
-            onUnauthorized?.call();
-          }
-          handler.next(error);
-        },
-      ),
-    );
+    // Attach the bearer token + Accept header to every request.
+    httpClient.addRequestModifier<dynamic>((request) {
+      request.headers['Accept'] = 'application/json';
+      if (token != null && token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      return request;
+    });
 
-    return this;
+    // Reset the session on a 401 and bounce to login.
+    httpClient.addResponseModifier<dynamic>((request, response) {
+      if (response.statusCode == 401) {
+        token = null;
+        _storage.clearSecure();
+        onUnauthorized?.call();
+      }
+      return response;
+    });
+
+    super.onInit();
   }
 
-  // ---- Thin verbs that always throw [ApiException] on failure ---------------
+  // ---- Guarded verbs: throw [ApiException] on failure, return decoded body --
 
-  Future<Response<dynamic>> get(String url, {Map<String, dynamic>? query}) =>
-      _guard(() => dio.get(url, queryParameters: query));
+  Future<dynamic> getJson(String url, {Map<String, dynamic>? query}) =>
+      _guard(() => get(url, query: _stringifyQuery(query)));
 
-  Future<Response<dynamic>> post(String url, {Object? data}) =>
-      _guard(() => dio.post(url, data: data));
+  Future<dynamic> postJson(String url, {Object? data}) =>
+      _guard(() => post(url, data));
 
-  Future<Response<dynamic>> _guard(
-    Future<Response<dynamic>> Function() request,
-  ) async {
+  Future<dynamic> _guard(Future<Response<dynamic>> Function() request) async {
+    final Response<dynamic> res;
     try {
-      return await request();
-    } on DioException catch (e) {
-      throw ApiException.fromDio(e);
+      res = await request();
+    } catch (_) {
+      throw const ApiException(message: 'Network error. Please try again.');
     }
+    if (!res.isOk) throw ApiException.fromResponse(res);
+    return res.body;
   }
+
+  /// GetConnect query values must be strings.
+  Map<String, String>? _stringifyQuery(Map<String, dynamic>? query) =>
+      query?.map((key, value) => MapEntry(key, '$value'));
 }

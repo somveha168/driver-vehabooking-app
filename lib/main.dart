@@ -19,7 +19,7 @@ Future<void> main() async {
 
   // Core singletons (order matters: storage → client → repos → services).
   final storage = Get.put(StorageService(), permanent: true);
-  final api = Get.put(ApiClient(storage).init(), permanent: true);
+  final api = Get.put(ApiClient(storage), permanent: true);
 
   Get.put(AuthRepository(api), permanent: true);
   Get.put(BookingRepository(api), permanent: true);

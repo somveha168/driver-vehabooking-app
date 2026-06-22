@@ -1,4 +1,6 @@
-import 'package:dio/dio.dart';
+import 'dart:io';
+
+import 'package:get/get.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/network/api_client.dart';
@@ -17,12 +19,12 @@ class AuthRepository {
     required String password,
     required String deviceName,
   }) async {
-    final res = await _api.post(
+    final res = await _api.postJson(
       '${AppConfig.authApiUrl}/auth/login',
       data: {'login': login, 'password': password, 'device_name': deviceName},
     );
 
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return (
       token: data['token'].toString(),
       user: AuthUser.fromJson(data['user'] as Map<String, dynamic>),
@@ -31,7 +33,7 @@ class AuthRepository {
 
   /// Revoke the current device token on the server.
   Future<void> logout(String deviceName) async {
-    await _api.post(
+    await _api.postJson(
       '${AppConfig.authApiUrl}/auth/logout',
       data: {'device_name': deviceName},
     );
@@ -43,44 +45,51 @@ class AuthRepository {
     String? lastName,
     String? phone,
     String? email,
+    String? gender,
+    String? dateOfBirth,
+    String? currentAddress,
   }) async {
-    final res = await _api.post(
+    final res = await _api.postJson(
       '${AppConfig.authApiUrl}/auth/update_profile',
       data: {
         'first_name': ?firstName,
         'last_name': ?lastName,
         'phone': ?phone,
         'email': ?email,
+        'gender': ?gender,
+        'date_of_birth': ?dateOfBirth,
+        'current_address': ?currentAddress,
       },
     );
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return AuthUser.fromJson(data['user'] as Map<String, dynamic>);
   }
 
   /// Upload a new profile photo (multipart). Returns the new image URL.
   Future<String?> uploadAvatar(String filePath) async {
-    final form = FormData.fromMap({
-      'image': await MultipartFile.fromFile(filePath),
+    final bytes = await File(filePath).readAsBytes();
+    final form = FormData({
+      'image': MultipartFile(bytes, filename: filePath.split('/').last),
     });
-    final res = await _api.post('${AppConfig.authApiUrl}/auth/avatar', data: form);
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final res = await _api.postJson('${AppConfig.authApiUrl}/auth/avatar', data: form);
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return data['image_url']?.toString();
   }
 
   /// Set the driver's online/availability state. Returns the new state.
   Future<bool> setAvailability(bool isOnline) async {
-    final res = await _api.post(
+    final res = await _api.postJson(
       '${AppConfig.authApiUrl}/availability',
       data: {'is_online': isOnline},
     );
-    final data = (res.data as Map)['data'] as Map<String, dynamic>;
+    final data = (res as Map)['data'] as Map<String, dynamic>;
     return data['is_online'] == true;
   }
 
   /// The driver's read-only documents (Personal ID, Driving License).
   Future<List<DriverDocument>> documents() async {
-    final res = await _api.get('${AppConfig.authApiUrl}/documents');
-    final list = (res.data as Map)['data'] as List? ?? [];
+    final res = await _api.getJson('${AppConfig.authApiUrl}/documents');
+    final list = (res as Map)['data'] as List? ?? [];
     return list
         .map((e) => DriverDocument.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -88,8 +97,8 @@ class AuthRepository {
 
   /// Fetch the authenticated driver (used to validate a persisted token).
   Future<AuthUser> me() async {
-    final res = await _api.get('${AppConfig.authApiUrl}/auth/user');
-    final body = res.data as Map;
+    final res = await _api.getJson('${AppConfig.authApiUrl}/auth/user');
+    final body = res as Map;
     final data = (body['data'] ?? body) as Map<String, dynamic>;
     return AuthUser.fromJson(data);
   }
