@@ -71,19 +71,12 @@ class AuthRepository {
     final form = FormData({
       'image': MultipartFile(bytes, filename: filePath.split('/').last),
     });
-    final res = await _api.postJson('${AppConfig.authApiUrl}/auth/avatar', data: form);
-    final data = (res as Map)['data'] as Map<String, dynamic>;
-    return data['image_url']?.toString();
-  }
-
-  /// Set the driver's online/availability state. Returns the new state.
-  Future<bool> setAvailability(bool isOnline) async {
     final res = await _api.postJson(
-      '${AppConfig.authApiUrl}/availability',
-      data: {'is_online': isOnline},
+      '${AppConfig.authApiUrl}/auth/avatar',
+      data: form,
     );
     final data = (res as Map)['data'] as Map<String, dynamic>;
-    return data['is_online'] == true;
+    return data['image_url']?.toString();
   }
 
   /// The driver's read-only documents (Personal ID, Driving License).

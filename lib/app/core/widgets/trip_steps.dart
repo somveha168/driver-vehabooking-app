@@ -21,12 +21,12 @@ class TripSteps extends StatelessWidget {
   ];
 
   int get _stageIndex => switch (stage) {
-        'start' => 0,
-        'arrived_location' => 1,
-        'meet_passenger' => 2,
-        'drop_passenger' || 'completed' => 3,
-        _ => -1,
-      };
+    'start' => 0,
+    'arrived_location' => 1,
+    'meet_passenger' => 2,
+    'drop_passenger' || 'completed' => 3,
+    _ => -1,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +52,15 @@ class TripSteps extends StatelessWidget {
         child: done
             ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
             : current
-                ? Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                        shape: BoxShape.circle, color: Colors.white),
-                  )
-                : null,
+            ? Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              )
+            : null,
       );
       final marker = !current
           ? circle
@@ -67,15 +69,20 @@ class TripSteps extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                  ),
-                )
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                      ),
+                    )
                     .animate(onPlay: (c) => c.repeat())
-                    .scaleXY(begin: 0.9, end: 1.9, duration: 1300.ms, curve: Curves.easeOut)
+                    .scaleXY(
+                      begin: 0.9,
+                      end: 1.9,
+                      duration: 1300.ms,
+                      curve: Curves.easeOut,
+                    )
                     .fadeOut(duration: 1300.ms),
                 circle,
               ],
@@ -97,8 +104,8 @@ class TripSteps extends StatelessWidget {
               color: current
                   ? AppColors.primary
                   : done
-                      ? theme.colorScheme.onSurface
-                      : theme.colorScheme.outline,
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.outline,
             ),
           ),
         ],
@@ -106,25 +113,26 @@ class TripSteps extends StatelessWidget {
     }
 
     Widget connector(int seg) => Expanded(
-          child: Padding(
-            // Align to the circle centers when labels push the row taller.
-            padding: EdgeInsets.only(top: showLabels ? size / 2 - 1.5 : 0),
-            child: Container(
-              height: 3,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                color: (isCompleted || seg < stageIndex)
-                    ? AppColors.primary
-                    : muted,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+      child: Padding(
+        // Align to the circle centers when labels push the row taller.
+        padding: EdgeInsets.only(top: showLabels ? size / 2 - 1.5 : 0),
+        child: Container(
+          height: 3,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: (isCompleted || seg < stageIndex)
+                ? AppColors.primary
+                : muted,
+            borderRadius: BorderRadius.circular(2),
           ),
-        );
+        ),
+      ),
+    );
 
     return Row(
-      crossAxisAlignment:
-          showLabels ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      crossAxisAlignment: showLabels
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
       children: [
         step(0),
         connector(0),

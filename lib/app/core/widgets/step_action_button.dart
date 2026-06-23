@@ -34,11 +34,19 @@ class StepActionButton extends StatelessWidget {
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : Icon(icon, size: 20)
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .moveX(begin: -1, end: 3, duration: 700.ms, curve: Curves.easeInOut),
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .moveX(
+                    begin: -1,
+                    end: 3,
+                    duration: 700.ms,
+                    curve: Curves.easeInOut,
+                  ),
         label: Text(label),
       ),
     );
@@ -46,20 +54,25 @@ class StepActionButton extends StatelessWidget {
     if (loading) return button;
 
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: button,
-    )
+          child: button,
+        )
         .animate(onPlay: (c) => c.repeat(reverse: true))
-        .scaleXY(begin: 1, end: 1.012, duration: 1100.ms, curve: Curves.easeInOut)
+        .scaleXY(
+          begin: 1,
+          end: 1.012,
+          duration: 1100.ms,
+          curve: Curves.easeInOut,
+        )
         .animate(onPlay: (c) => c.repeat())
         .shimmer(
           delay: 1500.ms,

@@ -55,16 +55,19 @@ class LoginView extends GetView<LoginController> {
                     AppSpacing.xl,
                   ),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: IntrinsicHeight(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Align(
                             alignment: Alignment.centerRight,
-                            child: _langToggle(context, settings)
-                                .animate()
-                                .fadeIn(duration: 400.ms),
+                            child: _langToggle(
+                              context,
+                              settings,
+                            ).animate().fadeIn(duration: 400.ms),
                           ),
                           const Spacer(flex: 2),
 
@@ -108,49 +111,49 @@ class LoginView extends GetView<LoginController> {
 
   /// Logo mark + "VEHA BOOKING" wordmark.
   Widget _brand(ThemeData theme) => Column(
-        children: [
-          Image.asset('assets/branding/app_icon.png', height: 88)
-              .animate()
-              .fadeIn(duration: 550.ms)
-              .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'VEHA BOOKING',
-            style: GoogleFonts.kantumruyPro(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 3.0,
-              color: AppColors.secondary,
-            ),
-          ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-        ],
-      );
+    children: [
+      Image.asset('assets/branding/app_icon.png', height: 88)
+          .animate()
+          .fadeIn(duration: 550.ms)
+          .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
+      const SizedBox(height: AppSpacing.xs),
+      Text(
+        'VEHA BOOKING',
+        style: GoogleFonts.kantumruyPro(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 3.0,
+          color: AppColors.secondary,
+        ),
+      ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+    ],
+  );
 
   /// "Welcome back" display title + subtitle.
   Widget _headline(ThemeData theme, ColorScheme scheme) => Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'login_title'.tr,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.fraunces(
-              fontSize: 34,
-              height: 1.05,
-              letterSpacing: -0.5,
-              fontWeight: FontWeight.w700,
-              color: scheme.onSurface,
-            ),
-          ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.12),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'login_subtitle'.tr,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ).animate().fadeIn(delay: 420.ms, duration: 500.ms),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Text(
+        'login_title'.tr,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.fraunces(
+          fontSize: 34,
+          height: 1.05,
+          letterSpacing: -0.5,
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurface,
+        ),
+      ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.12),
+      const SizedBox(height: AppSpacing.xs),
+      Text(
+        'login_subtitle'.tr,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+      ).animate().fadeIn(delay: 420.ms, duration: 500.ms),
+    ],
+  );
 
   /// The form, lifted into a soft glass card.
   Widget _card(
@@ -158,168 +161,175 @@ class LoginView extends GetView<LoginController> {
     ThemeData theme,
     ColorScheme scheme,
     bool isDark,
-  ) =>
-      Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          color: isDark
-              ? scheme.surfaceContainerHigh.withValues(alpha: 0.6)
-              : Colors.white.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          border: Border.all(
-            color: isDark
-                ? scheme.outlineVariant.withValues(alpha: 0.3)
-                : Colors.white.withValues(alpha: 0.9),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.06),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
+  ) => Container(
+    padding: const EdgeInsets.all(AppSpacing.xl),
+    decoration: BoxDecoration(
+      color: isDark
+          ? scheme.surfaceContainerHigh.withValues(alpha: 0.6)
+          : Colors.white.withValues(alpha: 0.72),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      border: Border.all(
+        color: isDark
+            ? scheme.outlineVariant.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.9),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.06),
+          blurRadius: 30,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: Form(
+      key: controller.formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _field(
+            theme,
+            label: 'login_field'.tr,
+            child: TextFormField(
+              controller: controller.loginCtrl,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              decoration: InputDecoration(
+                hintText: 'login_field_hint'.tr,
+                prefixIcon: const Icon(IconsaxPlusLinear.call, size: 20),
+              ),
+              validator: Validators.loginField,
             ),
-          ],
-        ),
-        child: Form(
-          key: controller.formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _field(
-                theme,
-                label: 'login_field'.tr,
-                child: TextFormField(
-                  controller: controller.loginCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: 'login_field_hint'.tr,
-                    prefixIcon: const Icon(IconsaxPlusLinear.call, size: 20),
-                  ),
-                  validator: Validators.loginField,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _field(
-                theme,
-                label: 'password'.tr,
-                child: Obx(
-                  () => TextFormField(
-                    controller: controller.passwordCtrl,
-                    obscureText: controller.obscure.value,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => controller.submit(),
-                    decoration: InputDecoration(
-                      hintText: 'password_hint'.tr,
-                      prefixIcon: const Icon(IconsaxPlusLinear.lock, size: 20),
-                      suffixIcon: IconButton(
-                        onPressed: controller.toggleObscure,
-                        icon: Icon(
-                          controller.obscure.value
-                              ? IconsaxPlusLinear.eye_slash
-                              : IconsaxPlusLinear.eye,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    validator: Validators.password,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: controller.showHelp,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    'forgot_password'.tr,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Obx(
-                () => FilledButton(
-                  onPressed:
-                      controller.isLoading.value ? null : controller.submit,
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('sign_in'.tr),
-                            const SizedBox(width: AppSpacing.sm),
-                            const Icon(IconsaxPlusLinear.arrow_right_3, size: 20),
-                          ],
-                        ),
-                ),
-              ),
-            ],
           ),
-        ),
-      ).animate().fadeIn(delay: 480.ms, duration: 550.ms).slideY(begin: 0.08);
+          const SizedBox(height: AppSpacing.lg),
+          _field(
+            theme,
+            label: 'password'.tr,
+            child: Obx(
+              () => TextFormField(
+                controller: controller.passwordCtrl,
+                obscureText: controller.obscure.value,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => controller.submit(),
+                decoration: InputDecoration(
+                  hintText: 'password_hint'.tr,
+                  prefixIcon: const Icon(IconsaxPlusLinear.lock, size: 20),
+                  suffixIcon: IconButton(
+                    onPressed: controller.toggleObscure,
+                    icon: Icon(
+                      controller.obscure.value
+                          ? IconsaxPlusLinear.eye_slash
+                          : IconsaxPlusLinear.eye,
+                      size: 20,
+                    ),
+                  ),
+                ),
+                validator: Validators.password,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: controller.showHelp,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'forgot_password'.tr,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Obx(
+            () => FilledButton(
+              onPressed: controller.isLoading.value ? null : controller.submit,
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('sign_in'.tr),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Icon(IconsaxPlusLinear.arrow_right_3, size: 20),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ).animate().fadeIn(delay: 480.ms, duration: 550.ms).slideY(begin: 0.08);
 
   /// A labeled form field — small bold label above its input.
-  Widget _field(ThemeData theme, {required String label, required Widget child}) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.sm),
-            child: Text(
-              label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
+  Widget _field(
+    ThemeData theme, {
+    required String label,
+    required Widget child,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(
+          left: AppSpacing.xs,
+          bottom: AppSpacing.sm,
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
           ),
-          child,
-        ],
-      );
+        ),
+      ),
+      child,
+    ],
+  );
 
   // ---- Bits --------------------------------------------------------------
 
   /// A soft radial brand glow (an "aurora" blob).
   Widget _glow(Color color, double size, double opacity) => IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                color.withValues(alpha: opacity),
-                color.withValues(alpha: 0.0),
-              ],
-            ),
-          ),
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withValues(alpha: opacity),
+            color.withValues(alpha: 0.0),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   /// Segmented EN / ខ្មែរ toggle (matches the Welcome screen).
   Widget _langToggle(BuildContext context, SettingsService settings) {
     final theme = Theme.of(context);
     return Obx(() {
       final isKm = settings.isKhmer;
-      Widget seg(String label, bool active, VoidCallback onTap) => GestureDetector(
+      Widget seg(String label, bool active, VoidCallback onTap) =>
+          GestureDetector(
             onTap: onTap,
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
@@ -332,7 +342,9 @@ class LoginView extends GetView<LoginController> {
               child: Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: active ? Colors.white : theme.colorScheme.onSurfaceVariant,
+                  color: active
+                      ? Colors.white
+                      : theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -348,8 +360,16 @@ class LoginView extends GetView<LoginController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            seg('EN', !isKm, () => settings.setLocale(AppTranslations.englishLocale)),
-            seg('ខ្មែរ', isKm, () => settings.setLocale(AppTranslations.khmerLocale)),
+            seg(
+              'EN',
+              !isKm,
+              () => settings.setLocale(AppTranslations.englishLocale),
+            ),
+            seg(
+              'ខ្មែរ',
+              isKm,
+              () => settings.setLocale(AppTranslations.khmerLocale),
+            ),
           ],
         ),
       );

@@ -44,10 +44,7 @@ class ProfileController extends GetxController {
   /// Full name, falling back to first + last when the API `name` is empty.
   String get displayName {
     final u = user;
-    if (u == null) return '—';
-    if (u.name.trim().isNotEmpty) return u.name.trim();
-    final full = '${u.firstName ?? ''} ${u.lastName ?? ''}'.trim();
-    return full.isNotEmpty ? full : '—';
+    return u?.displayName ?? '—';
   }
 
   @override

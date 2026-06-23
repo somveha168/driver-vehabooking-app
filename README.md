@@ -5,7 +5,7 @@ in (phone **or** email), sees the Private/Airport bookings the **vendor assigned
 to them, navigates to the pickup, and advances each trip through the lifecycle:
 
 **Start Now → Arrived → Meet Passenger → Drop Passenger** — with a
-**"Can't find the passenger?"** escape hatch (couldn't-meet-passenger) at the
+**Pickup issue** terminal close path at the
 on-the-way / at-pickup stages. No "accept" step — the vendor pre-assigns.
 
 > **Docs:** the backend **[DRIVER_OVERVIEW.md](../../Herd/vehabooking/modules/Taxi/docs/DRIVER_OVERVIEW.md)**
@@ -93,7 +93,7 @@ flutter test
 - **Bookings** — pill segmented tabs (Assigned/Active/Completed) + live count
   badges + Today/Tomorrow/Later day grouping; stage-aware cards.
 - **Active Trip** (booking detail) — vertical `TripTimeline` + bottom action dock
-  (tap stages, swipe to drop) + **"Can't find the passenger?"** reason sheet.
+  (tap stages, swipe to drop) + **Pickup issue** reason sheet.
 - **Profile** — cover + avatar upload, inline-editable fields, documents view.
 - Polling refresh (no FCM yet); EN + KM throughout.
 
@@ -104,6 +104,7 @@ flutter test
 
 | Date | Change | Files | Status |
 |---|---|---|---|
+| 2026-06-20 | **Start gating + est-drop** — Start button now **hidden** unless this is the active or earliest-due trip (backend omits `start` from `allowed_actions`); detail footer shows a "finish your current trip first" lock hint when `start_locked`. Route card shows **Est. drop** time (`arrival_datetime`). Model gains `arrivalDatetime`/`duration`/`startLocked` | `booking_detail.dart`, `booking_detail_view.dart`, en/km i18n | ✅ analyze + tests |
 | 2026-06-20 | **HTTP: Dio → GetConnect** — `ApiClient` now uses the standard GetConnect structure: **`extends GetConnect`**, configures `httpClient` in `onInit()` (timeout, `addRequestModifier` → bearer + Accept, `addResponseModifier` → 401 clear+login). Guarded `getJson`/`postJson` verbs throw `ApiException.fromResponse` on non-2xx and return the decoded body; repos call those. Multipart avatar via GetConnect `FormData`/`MultipartFile`. Skipped `defaultDecoder` (per-repo decode) + `addAuthenticator` (Sanctum doesn't refresh). Dropped the `dio` dependency | `core/network/api_client.dart`, `api_exception.dart`, `auth_repository.dart`, `booking_repository.dart`, `main.dart`, `test/core/api_exception_test.dart`, `pubspec.yaml` | ✅ analyze + tests |
 | 2026-06-20 | **Trip detail v3** — (1) **Vehicle card on top** showing booked class + real assigned vehicle (model · plate · color · seats); (2) **Trip Progress → sticky footer**, horizontal `TripSteps` with small labels above the action; (3) action is now the animated `StepActionButton` (glow + shimmer + nudge); (4) modern circular-back app bar. Extracted shared `TripSteps` + `StepActionButton` (Home NOW card now reuses them) | `booking_detail_view.dart`, `booking_detail.dart`, `dashboard_view.dart`, `core/widgets/trip_steps.dart`, `core/widgets/step_action_button.dart`, en/km i18n | ✅ analyze + tests |
 | 2026-06-20 | **Trip detail v2 — white cards + return trip** — `_SectionCard` now white (was grey) with hairline border + soft shadow. Added a **Return trip** card for round-trips (return date/time + reversed pickup↔drop-off + note), a `vehicle.name`/`nationality` in Details, and round-trip in the subtitle. Backend `DriverBookingDetailResource` gained `nationality`, `vehicle.name`, `is_return`, `return_trip` | `booking_detail_view.dart`, `booking_detail.dart`, en/km i18n | ✅ analyze + tests |
@@ -129,7 +130,7 @@ flutter test
 | 2026-06-20 | Home: per-section empty templates (NOW status-aware, UPCOMING) | `dashboard_view.dart` (`_EmptyCard`), i18n | ✅ analyze+tests |
 | 2026-06-20 | Home redesign: header status pill (tinted), NOW card, UPCOMING list; dropped online toggle + accept alert | `dashboard_view.dart`, `dashboard_controller.dart`, `dashboard_summary.dart` | ✅ analyze+tests |
 | 2026-06-20 | Status reflects `DriverStatusEnum` (read-only), `is_online` retired in UI | `dashboard_*`, i18n | ✅ |
-| 2026-06-20 | "Couldn't meet passenger" — secondary link + reason bottom sheet + terminal display | `booking_detail_view.dart`, `booking_detail_controller.dart`, `booking_repository.dart`, `booking_detail.dart`, i18n | ✅ analyze+tests |
+| 2026-06-20 | "Pickup issue" — secondary link + reason bottom sheet + terminal display | `booking_detail_view.dart`, `booking_detail_controller.dart`, `booking_repository.dart`, `booking_detail.dart`, i18n | ✅ analyze+tests |
 | 2026-06-20 | Bookings modernized: pill tabs + count badges + day grouping | `bookings_view.dart`, `bookings_controller.dart` | ✅ analyze+tests |
 | 2026-06-20 | Active-Trip screen: `TripTimeline` + action dock; list-card progress + next-action hint; consistent stage wording | `booking_detail_view.dart`, `trip_timeline.dart`, `booking_card.dart`, i18n | ✅ analyze+tests |
 

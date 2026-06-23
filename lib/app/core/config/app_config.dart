@@ -35,6 +35,8 @@ class AppConfig {
   static const Duration bookingsPollInterval = Duration(seconds: 45);
 
   // Driver support channels (shown on the Guide tab).
-  static const String supportPhone = '+85500000000'; // TODO: real dispatch hotline
-  static const String supportTelegramUrl = 'https://t.me/vehabooking'; // TODO: real support handle
+  static const String supportPhone =
+      '+85500000000'; // TODO: real dispatch hotline
+  static const String supportTelegramUrl =
+      'https://t.me/vehabooking'; // TODO: real support handle
 }

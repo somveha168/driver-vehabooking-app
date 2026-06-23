@@ -30,19 +30,30 @@ class AuthUser {
   final String? dateOfBirth;
   final String? currentAddress;
 
+  String get fullName {
+    final full = '${firstName ?? ''} ${lastName ?? ''}'.trim();
+    if (full.isNotEmpty) return full;
+    return name.trim();
+  }
+
+  String get displayName {
+    final full = fullName;
+    return full.isNotEmpty ? full : '—';
+  }
+
   factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
-        id: (json['id'] as num).toInt(),
-        uuid: json['uuid']?.toString() ?? '',
-        name: json['name']?.toString() ?? '',
-        firstName: json['first_name']?.toString(),
-        lastName: json['last_name']?.toString(),
-        phone: json['phone']?.toString(),
-        email: json['email']?.toString(),
-        imageUrl: json['image_url']?.toString(),
-        gender: json['gender']?.toString(),
-        dateOfBirth: json['date_of_birth']?.toString(),
-        currentAddress: json['current_address']?.toString(),
-      );
+    id: (json['id'] as num).toInt(),
+    uuid: json['uuid']?.toString() ?? '',
+    name: json['name']?.toString() ?? '',
+    firstName: json['first_name']?.toString(),
+    lastName: json['last_name']?.toString(),
+    phone: json['phone']?.toString(),
+    email: json['email']?.toString(),
+    imageUrl: json['image_url']?.toString(),
+    gender: json['gender']?.toString(),
+    dateOfBirth: json['date_of_birth']?.toString(),
+    currentAddress: json['current_address']?.toString(),
+  );
 
   AuthUser copyWith({
     String? name,
@@ -54,32 +65,31 @@ class AuthUser {
     String? gender,
     String? dateOfBirth,
     String? currentAddress,
-  }) =>
-      AuthUser(
-        id: id,
-        uuid: uuid,
-        name: name ?? this.name,
-        firstName: firstName ?? this.firstName,
-        lastName: lastName ?? this.lastName,
-        phone: phone ?? this.phone,
-        email: email ?? this.email,
-        imageUrl: imageUrl ?? this.imageUrl,
-        gender: gender ?? this.gender,
-        dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-        currentAddress: currentAddress ?? this.currentAddress,
-      );
+  }) => AuthUser(
+    id: id,
+    uuid: uuid,
+    name: name ?? this.name,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    phone: phone ?? this.phone,
+    email: email ?? this.email,
+    imageUrl: imageUrl ?? this.imageUrl,
+    gender: gender ?? this.gender,
+    dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+    currentAddress: currentAddress ?? this.currentAddress,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'uuid': uuid,
-        'name': name,
-        'first_name': firstName,
-        'last_name': lastName,
-        'phone': phone,
-        'email': email,
-        'image_url': imageUrl,
-        'gender': gender,
-        'date_of_birth': dateOfBirth,
-        'current_address': currentAddress,
-      };
+    'id': id,
+    'uuid': uuid,
+    'name': name,
+    'first_name': firstName,
+    'last_name': lastName,
+    'phone': phone,
+    'email': email,
+    'image_url': imageUrl,
+    'gender': gender,
+    'date_of_birth': dateOfBirth,
+    'current_address': currentAddress,
+  };
 }

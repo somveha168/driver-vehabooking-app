@@ -37,13 +37,18 @@ class EmptyView extends StatelessWidget {
           children: [
             Icon(icon, size: 64, color: theme.colorScheme.outline),
             const SizedBox(height: AppSpacing.lg),
-            Text(title, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
             if (hint != null) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(
                 hint!,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.outline),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -70,9 +75,17 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(IconsaxPlusLinear.cloud_cross, size: 64, color: theme.colorScheme.error),
+            Icon(
+              IconsaxPlusLinear.cloud_cross,
+              size: 64,
+              color: theme.colorScheme.error,
+            ),
             const SizedBox(height: AppSpacing.lg),
-            Text(message, style: theme.textTheme.bodyLarge, textAlign: TextAlign.center),
+            Text(
+              message,
+              style: theme.textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
             if (onRetry != null) ...[
               const SizedBox(height: AppSpacing.lg),
               OutlinedButton.icon(

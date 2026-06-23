@@ -24,7 +24,11 @@ class StatusChip extends StatelessWidget {
       ),
       child: Text(
         'stage_$stage'.tr,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
       ),
     );
   }

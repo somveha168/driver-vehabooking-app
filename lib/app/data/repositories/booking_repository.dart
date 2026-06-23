@@ -5,7 +5,11 @@ import '../models/booking_list_item.dart';
 import '../models/dashboard_summary.dart';
 
 /// Paged list result for the bookings screen.
-typedef BookingPage = ({List<BookingListItem> items, int currentPage, int lastPage});
+typedef BookingPage = ({
+  List<BookingListItem> items,
+  int currentPage,
+  int lastPage,
+});
 
 /// Driver booking API calls (Taxi module). Failures surface as [ApiException].
 class BookingRepository {
@@ -24,12 +28,15 @@ class BookingRepository {
 
   /// List the driver's bookings, optionally filtered by [status]
   /// (assigned | accepted | on_trip | completed).
-  Future<BookingPage> list({String? status, int page = 1, int limit = 20}) async {
-    final res = await _api.getJson('$_base/bookings', query: {
-      'status': ?status,
-      'page': page,
-      'limit': limit,
-    });
+  Future<BookingPage> list({
+    String? status,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await _api.getJson(
+      '$_base/bookings',
+      query: {'status': ?status, 'page': page, 'limit': limit},
+    );
 
     final body = res as Map;
     final items = (body['data'] as List? ?? [])
@@ -44,32 +51,56 @@ class BookingRepository {
     );
   }
 
-  Future<BookingDetail> show(String uuid) =>
-      _detail(_api.getJson('$_base/bookings/$uuid'));
+  Future<BookingDetail> show(String uuid, {int? assignmentId}) => _detail(
+    _api.getJson('$_base/bookings/$uuid', query: {...?_legData(assignmentId)}),
+  );
 
   // Trip lifecycle: Start Now → Arrived → Meet Passenger → Drop Passenger.
-  Future<BookingDetail> start(String uuid) =>
-      _detail(_api.postJson('$_base/bookings/$uuid/start'));
+  Future<BookingDetail> start(String uuid, {int? assignmentId}) => _detail(
+    _api.postJson('$_base/bookings/$uuid/start', data: _legData(assignmentId)),
+  );
 
-  Future<BookingDetail> arrived(String uuid) =>
-      _detail(_api.postJson('$_base/bookings/$uuid/arrived'));
+  Future<BookingDetail> arrived(String uuid, {int? assignmentId}) => _detail(
+    _api.postJson(
+      '$_base/bookings/$uuid/arrived',
+      data: _legData(assignmentId),
+    ),
+  );
 
-  Future<BookingDetail> meetPassenger(String uuid) =>
-      _detail(_api.postJson('$_base/bookings/$uuid/meet-passenger'));
+  Future<BookingDetail> meetPassenger(String uuid, {int? assignmentId}) =>
+      _detail(
+        _api.postJson(
+          '$_base/bookings/$uuid/meet-passenger',
+          data: _legData(assignmentId),
+        ),
+      );
 
-  Future<BookingDetail> complete(String uuid) =>
-      _detail(_api.postJson('$_base/bookings/$uuid/complete'));
+  Future<BookingDetail> complete(String uuid, {int? assignmentId}) => _detail(
+    _api.postJson(
+      '$_base/bookings/$uuid/complete',
+      data: _legData(assignmentId),
+    ),
+  );
 
-  /// Driver couldn't meet the passenger → terminal note (frees the driver).
-  Future<BookingDetail> reportNotMetPassenger(
+  /// Pickup issue → terminal note, completes the booking and frees the driver.
+  Future<BookingDetail> reportPickupIssue(
     String uuid, {
+    int? assignmentId,
     required String reason,
     String? note,
-  }) =>
-      _detail(_api.postJson('$_base/bookings/$uuid/report-not-met-passenger', data: {
+  }) => _detail(
+    _api.postJson(
+      '$_base/bookings/$uuid/report-pickup-issue',
+      data: {
+        ...?_legData(assignmentId),
         'reason': reason,
         if (note != null && note.isNotEmpty) 'note': note,
-      }));
+      },
+    ),
+  );
+
+  Map<String, dynamic>? _legData(int? assignmentId) =>
+      assignmentId == null ? null : {'assignment_id': assignmentId};
 
   Future<BookingDetail> _detail(Future<dynamic> request) async {
     final res = await request;

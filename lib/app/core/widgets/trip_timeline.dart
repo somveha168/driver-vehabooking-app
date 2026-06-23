@@ -37,16 +37,21 @@ class _TripTimelineState extends State<TripTimeline>
     duration: const Duration(milliseconds: 1100),
   )..repeat(reverse: true);
 
-  static const _labels = ['step_start', 'step_arrived', 'step_pickup', 'step_dropoff'];
+  static const _labels = [
+    'step_start',
+    'step_arrived',
+    'step_pickup',
+    'step_dropoff',
+  ];
 
   /// Completed-step count: assigned=0, start=1, arrived=2, meet=3, done=4.
   int get _reached => switch (widget.stage) {
-        'start' => 1,
-        'arrived_location' => 2,
-        'meet_passenger' => 3,
-        'drop_passenger' || 'completed' => 4,
-        _ => 0,
-      };
+    'start' => 1,
+    'arrived_location' => 2,
+    'meet_passenger' => 3,
+    'drop_passenger' || 'completed' => 4,
+    _ => 0,
+  };
 
   @override
   void dispose() {
@@ -113,14 +118,15 @@ class _TripTimelineState extends State<TripTimeline>
                         done && stamps[i] != null
                             ? Formatters.time(stamps[i])
                             : current
-                                ? 'in_progress'.tr
-                                : '—',
+                            ? 'in_progress'.tr
+                            : '—',
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: current
                               ? AppColors.primary
                               : theme.colorScheme.outline,
-                          fontWeight:
-                              current ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: current
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -153,7 +159,9 @@ class _TripTimelineState extends State<TripTimeline>
           width: 26,
           height: 26,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.10 + 0.14 * _pulse.value),
+            color: AppColors.primary.withValues(
+              alpha: 0.10 + 0.14 * _pulse.value,
+            ),
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.primary, width: 2),
           ),

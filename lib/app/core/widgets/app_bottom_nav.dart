@@ -74,7 +74,9 @@ class AppBottomNav extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
             decoration: BoxDecoration(
               gradient: glassGradient,
               borderRadius: radius,
@@ -103,7 +105,11 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavButton extends StatelessWidget {
-  const _NavButton({required this.item, required this.selected, required this.onTap});
+  const _NavButton({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
 
   final AppNavItem item;
   final bool selected;
@@ -122,13 +128,19 @@ class _NavButton extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? scheme.primary.withValues(alpha: 0.12) : Colors.transparent,
+          color: selected
+              ? scheme.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(selected ? item.selectedIcon : item.icon, color: color, size: 21),
+            Icon(
+              selected ? item.selectedIcon : item.icon,
+              color: color,
+              size: 21,
+            ),
             const SizedBox(height: 2),
             Text(
               item.label,

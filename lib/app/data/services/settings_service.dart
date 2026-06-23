@@ -29,8 +29,8 @@ class SettingsService extends GetxService {
   }
 
   void toggleLanguage() => setLocale(
-        isKhmer ? AppTranslations.englishLocale : AppTranslations.khmerLocale,
-      );
+    isKhmer ? AppTranslations.englishLocale : AppTranslations.khmerLocale,
+  );
 
   void setThemeMode(ThemeMode mode) {
     themeMode.value = mode;
@@ -39,7 +39,7 @@ class SettingsService extends GetxService {
   }
 
   ThemeMode _themeFromName(String? name) => ThemeMode.values.firstWhere(
-        (e) => e.name == name,
-        orElse: () => ThemeMode.system,
-      );
+    (e) => e.name == name,
+    orElse: () => ThemeMode.system,
+  );
 }

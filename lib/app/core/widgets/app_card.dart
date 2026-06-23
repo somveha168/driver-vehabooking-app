@@ -12,7 +12,9 @@ BoxDecoration softCardDecoration(BuildContext context) {
     color: isDark ? theme.colorScheme.surfaceContainerHigh : Colors.white,
     borderRadius: BorderRadius.circular(AppSpacing.radiusLg + 2),
     border: isDark
-        ? Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4))
+        ? Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          )
         : null,
     boxShadow: [
       BoxShadow(

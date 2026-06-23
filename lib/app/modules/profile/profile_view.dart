@@ -42,96 +42,113 @@ class ProfileView extends GetView<ProfileController> {
         ),
         child: Form(
           key: controller.formKey,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.navClearance),
-          children: [
-            _CoverHeader(controller: controller),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Collapsible identity / edit block (card-less, centered).
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Obx(() {
-                      final editing = controller.isEditing.value;
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 280),
-                        curve: Curves.easeOutCubic,
-                        alignment: Alignment.topCenter,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 260),
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
-                          transitionBuilder: (child, animation) => FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.04),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.navClearance),
+            children: [
+              _CoverHeader(controller: controller),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.xs,
+                  AppSpacing.lg,
+                  0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Collapsible identity / edit block (card-less, centered).
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Obx(() {
+                          final editing = controller.isEditing.value;
+                          return AnimatedSize(
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOutCubic,
+                            alignment: Alignment.topCenter,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 260),
+                              switchInCurve: Curves.easeOut,
+                              switchOutCurve: Curves.easeIn,
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                    opacity: animation,
+                                    child: SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(0, 0.04),
+                                        end: Offset.zero,
+                                      ).animate(animation),
+                                      child: child,
+                                    ),
+                                  ),
+                              child: editing
+                                  ? _EditForm(
+                                      key: const ValueKey('edit'),
+                                      controller: controller,
+                                    )
+                                  : _Identity(
+                                      key: const ValueKey('identity'),
+                                      controller: controller,
+                                    ),
                             ),
-                          ),
-                          child: editing
-                              ? _EditForm(key: const ValueKey('edit'), controller: controller)
-                              : _Identity(key: const ValueKey('identity'), controller: controller),
+                          );
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    SectionLabel('documents'.tr),
+                    const SizedBox(height: AppSpacing.md),
+                    _NavRow(
+                      icon: IconsaxPlusLinear.personalcard,
+                      title: 'my_documents'.tr,
+                      subtitle: 'documents_subtitle'.tr,
+                      onTap: controller.openDocuments,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    SectionLabel('support'.tr),
+                    const SizedBox(height: AppSpacing.md),
+                    _NavRow(
+                      icon: IconsaxPlusLinear.book_1,
+                      title: 'help_and_guide'.tr,
+                      onTap: controller.openGuide,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _CompactPrefs(controller: controller),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    OutlinedButton.icon(
+                      onPressed: controller.logout,
+                      icon: const Icon(IconsaxPlusLinear.logout, size: 18),
+                      label: Text('sign_out'.tr),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.error,
+                        side: BorderSide(
+                          color: theme.colorScheme.error.withValues(alpha: 0.4),
                         ),
-                      );
-                    }),
+                        minimumSize: const Size.fromHeight(50),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  SectionLabel('documents'.tr),
-                  const SizedBox(height: AppSpacing.md),
-                  _NavRow(
-                    icon: IconsaxPlusLinear.personalcard,
-                    title: 'my_documents'.tr,
-                    subtitle: 'documents_subtitle'.tr,
-                    onTap: controller.openDocuments,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  SectionLabel('support'.tr),
-                  const SizedBox(height: AppSpacing.md),
-                  _NavRow(
-                    icon: IconsaxPlusLinear.book_1,
-                    title: 'help_and_guide'.tr,
-                    onTap: controller.openGuide,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _CompactPrefs(controller: controller),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  OutlinedButton.icon(
-                    onPressed: controller.logout,
-                    icon: const Icon(IconsaxPlusLinear.logout, size: 18),
-                    label: Text('sign_out'.tr),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: theme.colorScheme.error,
-                      side: BorderSide(
-                          color: theme.colorScheme.error.withValues(alpha: 0.4)),
-                      minimumSize: const Size.fromHeight(50),
+                    const SizedBox(height: AppSpacing.md),
+                    Center(
+                      child: Text(
+                        '${AppConfig.appName} · 1.0.0',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Center(
-                    child: Text('${AppConfig.appName} · 1.0.0',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colorScheme.outline)),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -160,16 +177,16 @@ class _CoverHeader extends StatelessWidget {
               // No band — the page's radial brand wash shows through, so the
               // header matches the home page. This just reserves the space
               // the avatar overlaps into.
-              SizedBox(
-                height: coverHeight,
-                width: double.infinity,
-              ),
+              SizedBox(height: coverHeight, width: double.infinity),
               Positioned(
                 top: coverHeight - avatarRadius,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: _AvatarCircle(controller: controller, radius: avatarRadius),
+                  child: _AvatarCircle(
+                    controller: controller,
+                    radius: avatarRadius,
+                  ),
                 ),
               ),
             ],
@@ -188,31 +205,41 @@ class _CoverHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FilledButton.icon(
-                  onPressed:
-                      controller.isUploadingPhoto.value ? null : controller.savePhoto,
+                  onPressed: controller.isUploadingPhoto.value
+                      ? null
+                      : controller.savePhoto,
                   icon: controller.isUploadingPhoto.value
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Icon(IconsaxPlusLinear.tick_circle, size: 18),
                   label: Text('save_photo'.tr),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 TextButton(
-                  onPressed:
-                      controller.isUploadingPhoto.value ? null : controller.discardPhoto,
+                  onPressed: controller.isUploadingPhoto.value
+                      ? null
+                      : controller.discardPhoto,
                   child: Text('cancel'.tr),
                 ),
               ],
             ),
           );
         }),
-        Obx(() => Text(controller.displayName,
+        Obx(
+          () => Text(
+            controller.displayName,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: -0.4,
-            ))),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -250,12 +277,18 @@ class _Identity extends StatelessWidget {
             label: Text('edit_profile'.tr),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: 6),
+                horizontal: AppSpacing.lg,
+                vertical: 6,
+              ),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl)),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              ),
             ),
           ),
         ],
@@ -314,11 +347,11 @@ class _EditForm extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _dateField(context),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _genderField(context),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _field(
           context,
           label: 'phone'.tr,
@@ -326,7 +359,7 @@ class _EditForm extends StatelessWidget {
           icon: IconsaxPlusLinear.call,
           keyboardType: TextInputType.phone,
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _field(
           context,
           label: 'email'.tr,
@@ -339,7 +372,7 @@ class _EditForm extends StatelessWidget {
             return GetUtils.isEmail(v.trim()) ? null : 'email_invalid'.tr;
           },
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _field(
           context,
           label: 'current_address'.tr,
@@ -350,32 +383,33 @@ class _EditForm extends StatelessWidget {
           textInputAction: TextInputAction.newline,
           maxLines: 3,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
 
         // Compact action row.
         Row(
           children: [
             Expanded(
-              child: Obx(() => FilledButton(
-                    onPressed: controller.isSaving.value ? null : controller.save,
-                    style: _btnStyle,
-                    child: controller.isSaving.value
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : Text('save_changes'.tr),
-                  )),
+              child: Obx(
+                () => FilledButton(
+                  onPressed: controller.isSaving.value ? null : controller.save,
+                  style: _btnStyle,
+                  child: controller.isSaving.value
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text('save_changes'.tr),
+                ),
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
             OutlinedButton(
               onPressed: controller.cancelEdit,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(0, 46),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
+              style: _cancelStyle,
               child: Text('cancel'.tr),
             ),
           ],
@@ -385,9 +419,25 @@ class _EditForm extends StatelessWidget {
   }
 
   static final ButtonStyle _btnStyle = FilledButton.styleFrom(
-    minimumSize: const Size(0, 46),
+    backgroundColor: AppColors.primary,
+    foregroundColor: Colors.white,
+    minimumSize: const Size(0, 44),
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+    ),
+  );
+
+  static final ButtonStyle _cancelStyle = OutlinedButton.styleFrom(
+    foregroundColor: AppColors.primary,
+    minimumSize: const Size(0, 44),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.72)),
+    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+    ),
   );
 
   /// Compact labeled field: a small caption label above a dense filled input.
@@ -403,6 +453,11 @@ class _EditForm extends StatelessWidget {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final theme = Theme.of(context);
+    final fieldFill = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42)
+        : Colors.white;
+
     return _labeled(
       context,
       label: label,
@@ -415,15 +470,40 @@ class _EditForm extends StatelessWidget {
         validator: validator,
         decoration: InputDecoration(
           isDense: true,
+          filled: true,
+          fillColor: fieldFill,
           hintText: hint,
           alignLabelWithHint: maxLines > 1,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 11,
+          ),
           prefixIcon: Padding(
             // Top-align the icon when the field grows to multiple lines.
-            padding: EdgeInsets.only(bottom: maxLines > 1 ? (maxLines - 1) * 19.0 : 0),
+            padding: EdgeInsets.only(
+              bottom: maxLines > 1 ? (maxLines - 1) * 19.0 : 0,
+            ),
             child: Icon(icon, size: 19),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 0),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 38,
+            minHeight: 0,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            borderSide: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.72),
+              width: 1.3,
+            ),
+          ),
         ),
       ),
     );
@@ -433,6 +513,10 @@ class _EditForm extends StatelessWidget {
   /// date (or placeholder), and a chevron — opens the native picker.
   Widget _dateField(BuildContext context) {
     final theme = Theme.of(context);
+    final tileColor = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42)
+        : Colors.white;
+
     return _labeled(
       context,
       label: 'date_of_birth'.tr,
@@ -443,24 +527,27 @@ class _EditForm extends StatelessWidget {
             ? DateFormat('dd MMM yyyy').format(dob)
             : 'select_date'.tr;
         return Material(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          color: tileColor,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           child: InkWell(
             onTap: () => controller.pickDateOfBirth(context),
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               child: Row(
                 children: [
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
-                    child: const Icon(IconsaxPlusLinear.calendar_1,
-                        size: 18, color: AppColors.primary),
+                    child: const Icon(
+                      IconsaxPlusLinear.calendar_1,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -470,12 +557,17 @@ class _EditForm extends StatelessWidget {
                         color: hasValue
                             ? theme.colorScheme.onSurface
                             : theme.colorScheme.onSurfaceVariant,
-                        fontWeight: hasValue ? FontWeight.w500 : FontWeight.w400,
+                        fontWeight: hasValue
+                            ? FontWeight.w500
+                            : FontWeight.w400,
                       ),
                     ),
                   ),
-                  Icon(IconsaxPlusLinear.arrow_down_1,
-                      size: 16, color: theme.colorScheme.outline),
+                  Icon(
+                    IconsaxPlusLinear.arrow_down_1,
+                    size: 16,
+                    color: theme.colorScheme.outline,
+                  ),
                 ],
               ),
             ),
@@ -488,6 +580,10 @@ class _EditForm extends StatelessWidget {
   /// A compact Male / Female tab control with icons and a sliding active pill.
   Widget _genderField(BuildContext context) {
     final theme = Theme.of(context);
+    final trackColor = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42)
+        : Colors.white.withValues(alpha: 0.76);
+
     return _labeled(
       context,
       label: 'gender'.tr,
@@ -502,7 +598,7 @@ class _EditForm extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
-                height: 42,
+                height: 36,
                 decoration: BoxDecoration(
                   color: active ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -510,8 +606,8 @@ class _EditForm extends StatelessWidget {
                       ? [
                           BoxShadow(
                             color: AppColors.primary.withValues(alpha: 0.28),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
                           ),
                         ]
                       : null,
@@ -519,11 +615,13 @@ class _EditForm extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon,
-                        size: 17,
-                        color: active
-                            ? Colors.white
-                            : theme.colorScheme.onSurfaceVariant),
+                    Icon(
+                      icon,
+                      size: 15,
+                      color: active
+                          ? Colors.white
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       label,
@@ -531,7 +629,7 @@ class _EditForm extends StatelessWidget {
                         color: active
                             ? Colors.white
                             : theme.colorScheme.onSurfaceVariant,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
                   ],
@@ -544,8 +642,11 @@ class _EditForm extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+            color: trackColor,
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+            ),
           ),
           child: Row(
             children: [
@@ -560,8 +661,11 @@ class _EditForm extends StatelessWidget {
   }
 
   /// Small caption label above an arbitrary input control.
-  Widget _labeled(BuildContext context,
-      {required String label, required Widget child}) {
+  Widget _labeled(
+    BuildContext context, {
+    required String label,
+    required Widget child,
+  }) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +715,9 @@ class _AvatarCircle extends StatelessWidget {
               shape: BoxShape.circle,
               color: Theme.of(context).scaffoldBackgroundColor,
               border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.35), width: 2),
+                color: AppColors.primary.withValues(alpha: 0.35),
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.10),
@@ -624,15 +730,20 @@ class _AvatarCircle extends StatelessWidget {
               radius: radius - 4,
               // Solid soft tint = primary blended into white (clean, opaque,
               // independent of whatever sits behind the avatar).
-              backgroundColor:
-                  Color.alphaBlend(AppColors.primary.withValues(alpha: 0.12), Colors.white),
+              backgroundColor: Color.alphaBlend(
+                AppColors.primary.withValues(alpha: 0.12),
+                Colors.white,
+              ),
               backgroundImage: image,
               child: image == null
-                  ? Text(_initials(user?.name),
+                  ? Text(
+                      _initials(user?.name),
                       style: const TextStyle(
-                          color: AppColors.secondary,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700))
+                        color: AppColors.secondary,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    )
                   : null,
             ),
           ),
@@ -647,9 +758,15 @@ class _AvatarCircle extends StatelessWidget {
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    width: 2,
+                  ),
                 ),
-                child: const Icon(IconsaxPlusLinear.camera, size: 16, color: Colors.white),
+                child: const Icon(
+                  IconsaxPlusLinear.camera,
+                  size: 16,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -721,11 +838,17 @@ class _NavRow extends StatelessWidget {
         title: Text(title, style: theme.textTheme.titleSmall),
         subtitle: subtitle == null
             ? null
-            : Text(subtitle!,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.outline)),
-        trailing: Icon(IconsaxPlusLinear.arrow_right_3,
-            size: 18, color: theme.colorScheme.outline),
+            : Text(
+                subtitle!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+        trailing: Icon(
+          IconsaxPlusLinear.arrow_right_3,
+          size: 18,
+          color: theme.colorScheme.outline,
+        ),
       ),
     );
   }
@@ -747,36 +870,43 @@ class _CompactPrefs extends StatelessWidget {
     );
 
     Widget row(IconData icon, String label, Widget control) => Row(
-          children: [
-            Icon(icon, size: 16, color: theme.colorScheme.outline),
-            const SizedBox(width: AppSpacing.sm),
-            Text(label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.outline)),
-            const Spacer(),
-            control,
-          ],
-        );
+      children: [
+        Icon(icon, size: 16, color: theme.colorScheme.outline),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.outline,
+          ),
+        ),
+        const Spacer(),
+        control,
+      ],
+    );
 
     return Container(
       decoration: softCardDecoration(context),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         children: [
           row(
             IconsaxPlusLinear.global,
             'language'.tr,
-            Obx(() => SegmentedButton<String>(
-                  style: small,
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(value: 'en', label: Text('EN')),
-                    ButtonSegment(value: 'km', label: Text('ខ្មែរ')),
-                  ],
-                  selected: {controller.settings.isKhmer ? 'km' : 'en'},
-                  onSelectionChanged: (_) => controller.settings.toggleLanguage(),
-                )),
+            Obx(
+              () => SegmentedButton<String>(
+                style: small,
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(value: 'en', label: Text('EN')),
+                  ButtonSegment(value: 'km', label: Text('ខ្មែរ')),
+                ],
+                selected: {controller.settings.isKhmer ? 'km' : 'en'},
+                onSelectionChanged: (_) => controller.settings.toggleLanguage(),
+              ),
+            ),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -785,20 +915,29 @@ class _CompactPrefs extends StatelessWidget {
           row(
             IconsaxPlusLinear.moon,
             'theme'.tr,
-            Obx(() => SegmentedButton<ThemeMode>(
-                  style: small,
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(
-                        value: ThemeMode.system, icon: Icon(IconsaxPlusLinear.setting_2, size: 16)),
-                    ButtonSegment(
-                        value: ThemeMode.light, icon: Icon(IconsaxPlusLinear.sun_1, size: 16)),
-                    ButtonSegment(
-                        value: ThemeMode.dark, icon: Icon(IconsaxPlusLinear.moon, size: 16)),
-                  ],
-                  selected: {controller.settings.themeMode.value},
-                  onSelectionChanged: (s) => controller.settings.setThemeMode(s.first),
-                )),
+            Obx(
+              () => SegmentedButton<ThemeMode>(
+                style: small,
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: Icon(IconsaxPlusLinear.setting_2, size: 16),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: Icon(IconsaxPlusLinear.sun_1, size: 16),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: Icon(IconsaxPlusLinear.moon, size: 16),
+                  ),
+                ],
+                selected: {controller.settings.themeMode.value},
+                onSelectionChanged: (s) =>
+                    controller.settings.setThemeMode(s.first),
+              ),
+            ),
           ),
         ],
       ),

@@ -18,10 +18,14 @@ void main() {
         'pickup': {
           'address': 'Hotel Sunrise',
           'location_name': 'BKK1',
+          'nearby_location': 'Near Brown Coffee',
           'latitude': 11.5564,
           'longitude': 104.9282,
         },
-        'dropoff': {'address': 'PNH Airport'},
+        'dropoff': {
+          'address': 'PNH Airport',
+          'nearby_location': 'Opposite Gate 3',
+        },
         'departure_datetime': '2026-06-18T09:00:00+07:00',
         'passenger_count': 2,
         'vehicle': {'type': 'Sedan', 'plate_number': '2AB-1234'},
@@ -39,6 +43,8 @@ void main() {
       expect(b.pickup.hasCoordinates, isTrue);
       expect(b.pickup.latitude, 11.5564);
       expect(b.pickup.label, 'BKK1');
+      expect(b.pickup.nearbyLocation, 'Near Brown Coffee');
+      expect(b.dropoff.nearbyLocation, 'Opposite Gate 3');
       expect(b.flightNumber, 'QR123');
     });
 
@@ -61,26 +67,55 @@ void main() {
       expect(b.allows('meet_passenger'), isTrue);
     });
 
-    test('offers report_not_met_passenger and parses the not-met reason', () {
+    test('offers report_pickup_issue and parses the pickup issue reason', () {
+      final beforeArrival = BookingDetail.fromJson({
+        'uuid': 'u-before',
+        'stage': 'start',
+        'driver_trip_status': 'start',
+        'allowed_actions': ['arrived', 'report_pickup_issue'],
+      });
+
+      expect(beforeArrival.allows('report_pickup_issue'), isTrue);
+      expect(beforeArrival.canReportPickupIssue, isTrue);
+
       final b = BookingDetail.fromJson({
         'uuid': 'u2',
         'stage': 'arrived_location',
         'driver_trip_status': 'arrived_location',
-        'allowed_actions': ['meet_passenger', 'report_not_met_passenger'],
+        'allowed_actions': ['meet_passenger', 'report_pickup_issue'],
       });
 
-      expect(b.allows('report_not_met_passenger'), isTrue);
+      expect(b.allows('report_pickup_issue'), isTrue);
+      expect(b.canReportPickupIssue, isTrue);
+
+      final afterMeet = BookingDetail.fromJson({
+        'uuid': 'u-meet',
+        'stage': 'meet_passenger',
+        'driver_trip_status': 'meet_passenger',
+        'allowed_actions': ['complete', 'report_pickup_issue'],
+      });
+      expect(afterMeet.canReportPickupIssue, isTrue);
 
       final closed = BookingDetail.fromJson({
         'uuid': 'u3',
-        'stage': 'not_met_passenger',
-        'driver_trip_status': 'not_met_passenger',
-        'not_met_passenger_reason': 'didnt_show',
+        'stage': 'pickup_issue',
+        'driver_trip_status': 'pickup_issue',
+        'pickup_issue_reason': "Passenger didn't show up",
+        'pickup_issue_reason_options': [
+          "Passenger didn't show up",
+          "Can't reach passenger",
+        ],
+        'pickup_issue_note_max_length': 280,
         'allowed_actions': [],
       });
 
-      expect(closed.stage, 'not_met_passenger');
-      expect(closed.notMetPassengerReason, 'didnt_show');
+      expect(closed.stage, 'pickup_issue');
+      expect(closed.pickupIssueReason, "Passenger didn't show up");
+      expect(closed.pickupIssueReasonOptions, [
+        "Passenger didn't show up",
+        "Can't reach passenger",
+      ]);
+      expect(closed.pickupIssueNoteMaxLength, 280);
       expect(closed.can, isFalse);
     });
 

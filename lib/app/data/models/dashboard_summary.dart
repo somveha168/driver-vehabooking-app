@@ -27,15 +27,20 @@ class DashboardCounts {
 class DashboardSummary {
   const DashboardSummary({
     required this.status,
-    required this.isOnline,
+    required this.statusLabel,
+    required this.active,
     required this.counts,
     this.nextPickup,
     this.upcoming = const [],
   });
 
-  /// Operational status: available · assign · on_duty · day_off · pending_verification.
+  /// Verification status: pending · approved · rejected.
   final String status;
-  final bool isOnline;
+  final String statusLabel;
+
+  /// Working/in-service toggle, controlled by admin/vendor.
+  final bool active;
+
   final DashboardCounts counts;
 
   /// The one trip to act on now (in progress, or soonest assigned).
@@ -46,9 +51,13 @@ class DashboardSummary {
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
     final next = json['next_pickup'];
+    final status = json['status']?.toString() ?? 'pending';
     return DashboardSummary(
-      status: json['status']?.toString() ?? 'available',
-      isOnline: json['is_online'] == true,
+      status: status,
+      statusLabel: json['status_label']?.toString() ?? _labelForStatus(status),
+      active: json['active'] is bool
+          ? json['active'] as bool
+          : status == 'approved',
       counts: DashboardCounts.fromJson(json['counts'] as Map<String, dynamic>?),
       nextPickup: next is Map<String, dynamic>
           ? BookingListItem.fromJson(next)
@@ -58,5 +67,13 @@ class DashboardSummary {
           .map(BookingListItem.fromJson)
           .toList(),
     );
+  }
+
+  static String _labelForStatus(String status) {
+    return switch (status) {
+      'approved' => 'Approved',
+      'rejected' => 'Rejected',
+      _ => 'Pending',
+    };
   }
 }

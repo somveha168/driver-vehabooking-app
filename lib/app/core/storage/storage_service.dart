@@ -13,8 +13,8 @@ import '../config/app_constants.dart';
 /// can `Get.find<StorageService>()`.
 class StorageService extends GetxService {
   StorageService({FlutterSecureStorage? secure, GetStorage? box})
-      : _secure = secure ?? const FlutterSecureStorage(),
-        _box = box ?? GetStorage();
+    : _secure = secure ?? const FlutterSecureStorage(),
+      _box = box ?? GetStorage();
 
   final FlutterSecureStorage _secure;
   final GetStorage _box;
@@ -49,9 +49,12 @@ class StorageService extends GetxService {
   set themeMode(String? value) => _box.write(AppConstants.themeModeKey, value);
 
   String? get deviceName => _box.read<String>(AppConstants.deviceNameKey);
-  set deviceName(String? value) => _box.write(AppConstants.deviceNameKey, value);
+  set deviceName(String? value) =>
+      _box.write(AppConstants.deviceNameKey, value);
 
   /// Whether the first-run welcome screen has been seen.
-  bool get seenOnboarding => _box.read<bool>(AppConstants.onboardingSeenKey) ?? false;
-  set seenOnboarding(bool value) => _box.write(AppConstants.onboardingSeenKey, value);
+  bool get seenOnboarding =>
+      _box.read<bool>(AppConstants.onboardingSeenKey) ?? false;
+  set seenOnboarding(bool value) =>
+      _box.write(AppConstants.onboardingSeenKey, value);
 }

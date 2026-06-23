@@ -21,10 +21,16 @@ class DocumentsView extends GetView<DocumentsController> {
       body: Obx(() {
         if (controller.isLoading.value) return const LoadingView();
         if (controller.error.value != null) {
-          return ErrorView(message: controller.error.value!, onRetry: controller.load);
+          return ErrorView(
+            message: controller.error.value!,
+            onRetry: controller.load,
+          );
         }
         if (controller.docs.isEmpty) {
-          return EmptyView(title: 'no_documents'.tr, icon: IconsaxPlusLinear.document_text);
+          return EmptyView(
+            title: 'no_documents'.tr,
+            icon: IconsaxPlusLinear.document_text,
+          );
         }
         return RefreshIndicator(
           onRefresh: controller.load,
@@ -33,18 +39,27 @@ class DocumentsView extends GetView<DocumentsController> {
             children: [
               Row(
                 children: [
-                  Icon(IconsaxPlusLinear.lock_1, size: 14, color: theme.colorScheme.outline),
+                  Icon(
+                    IconsaxPlusLinear.lock_1,
+                    size: 14,
+                    color: theme.colorScheme.outline,
+                  ),
                   const SizedBox(width: 6),
-                  Text('documents_note'.tr,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline)),
+                  Text(
+                    'documents_note'.tr,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              ...controller.docs.map((d) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                    child: _DocumentCard(doc: d),
-                  )),
+              ...controller.docs.map(
+                (d) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                  child: _DocumentCard(doc: d),
+                ),
+              ),
             ],
           ),
         );
@@ -78,16 +93,21 @@ class _DocumentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
                 child: Icon(
-                  doc.isLicense ? IconsaxPlusLinear.driving : IconsaxPlusLinear.personalcard,
+                  doc.isLicense
+                      ? IconsaxPlusLinear.driving
+                      : IconsaxPlusLinear.personalcard,
                   color: AppColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(doc.label,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(
+                  doc.label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               _StatusBadge(status: doc.status, label: doc.statusLabel),
             ],
@@ -98,11 +118,15 @@ class _DocumentCard extends StatelessWidget {
           ],
           if (doc.issuedAt != null) _row(theme, 'issued'.tr, doc.issuedAt!),
           if (doc.expiredAt != null) _row(theme, 'expires'.tr, doc.expiredAt!),
-          if (doc.rejectionReason != null && doc.rejectionReason!.isNotEmpty) ...[
+          if (doc.rejectionReason != null &&
+              doc.rejectionReason!.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(doc.rejectionReason!,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.error)),
+            Text(
+              doc.rejectionReason!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
           ],
           if (doc.files.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
@@ -120,20 +144,26 @@ class _DocumentCard extends StatelessWidget {
   }
 
   Widget _row(ThemeData theme, String label, String value) => Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Row(
-          children: [
-            Text('$label: ',
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.outline)),
-            Expanded(
-              child: Text(value,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w500)),
-            ),
-          ],
+    padding: const EdgeInsets.only(top: 4),
+    child: Row(
+      children: [
+        Text(
+          '$label: ',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.outline,
+          ),
         ),
-      );
+        Expanded(
+          child: Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Image files show a tappable thumbnail (opens a full-screen viewer);
@@ -171,15 +201,18 @@ class _FileTile extends StatelessWidget {
   }
 
   Widget _fallback(ThemeData theme, {bool loading = false}) => Container(
-        width: 92,
-        height: 92,
-        color: theme.colorScheme.surfaceContainerHighest,
-        child: Center(
-          child: loading
-              ? const CircularProgressIndicator(strokeWidth: 2)
-              : Icon(IconsaxPlusLinear.gallery_slash, color: theme.colorScheme.outline),
-        ),
-      );
+    width: 92,
+    height: 92,
+    color: theme.colorScheme.surfaceContainerHighest,
+    child: Center(
+      child: loading
+          ? const CircularProgressIndicator(strokeWidth: 2)
+          : Icon(
+              IconsaxPlusLinear.gallery_slash,
+              color: theme.colorScheme.outline,
+            ),
+    ),
+  );
 
   void _openImage(BuildContext context) {
     showDialog<void>(
@@ -189,14 +222,15 @@ class _FileTile extends StatelessWidget {
         insetPadding: const EdgeInsets.all(AppSpacing.md),
         child: Stack(
           children: [
-            InteractiveViewer(
-              child: Center(child: Image.network(file.url)),
-            ),
+            InteractiveViewer(child: Center(child: Image.network(file.url))),
             Positioned(
               top: 4,
               right: 4,
               child: IconButton(
-                icon: const Icon(IconsaxPlusLinear.close_circle, color: Colors.white),
+                icon: const Icon(
+                  IconsaxPlusLinear.close_circle,
+                  color: Colors.white,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -222,13 +256,22 @@ class _StatusBadge extends StatelessWidget {
       _ => Theme.of(context).colorScheme.outline,
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
       ),
-      child: Text(label ?? status ?? '—',
-          style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 11)),
+      child: Text(
+        label ?? status ?? '—',
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
+          fontSize: 11,
+        ),
+      ),
     );
   }
 }

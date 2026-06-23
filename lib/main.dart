@@ -41,10 +41,7 @@ Future<void> main() async {
 }
 
 class VehaDriverApp extends StatelessWidget {
-  const VehaDriverApp({
-    super.key,
-    required this.settings,
-  });
+  const VehaDriverApp({super.key, required this.settings});
 
   final SettingsService settings;
 

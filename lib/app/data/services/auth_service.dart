@@ -27,8 +27,9 @@ class AuthService extends GetxService {
       _api.token = token;
       final userJson = await _storage.readUser();
       if (userJson != null && userJson.isNotEmpty) {
-        currentUser.value =
-            AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+        currentUser.value = AuthUser.fromJson(
+          jsonDecode(userJson) as Map<String, dynamic>,
+        );
       }
     }
     return this;

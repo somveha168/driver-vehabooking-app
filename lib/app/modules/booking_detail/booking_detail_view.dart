@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_row.dart';
+import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_chip.dart';
 import '../../core/widgets/step_action_button.dart';
@@ -29,13 +30,18 @@ class BookingDetailView extends GetView<BookingDetailController> {
         leading: const _CircleBack(),
         title: Text(
           'booking_detail'.tr,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: Obx(() {
         if (controller.isLoading.value) return const LoadingView();
         if (controller.error.value != null) {
-          return ErrorView(message: controller.error.value!, onRetry: controller.load);
+          return ErrorView(
+            message: controller.error.value!,
+            onRetry: controller.load,
+          );
         }
         final b = controller.booking.value;
         if (b == null) return const SizedBox.shrink();
@@ -43,7 +49,10 @@ class BookingDetailView extends GetView<BookingDetailController> {
       }),
       bottomNavigationBar: Obx(() {
         final b = controller.booking.value;
-        if (b == null || !b.can) return const SizedBox.shrink();
+        // Show the footer when there's an action, or to explain why Start is locked.
+        if (b == null || (!b.can && !b.startLocked)) {
+          return const SizedBox.shrink();
+        }
         return _StickyFooter(b: b, controller: controller);
       }),
     );
@@ -72,24 +81,63 @@ class _StickyFooter extends StatelessWidget {
       ),
       child: SafeArea(
         minimum: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.sm,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TripSteps(stage: b.stage),
             const SizedBox(height: AppSpacing.lg),
-            _ActionBar(b: b, controller: controller),
-            if (b.allows('report_not_met_passenger')) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Obx(
-                () => TextButton(
-                  onPressed: controller.isActing.value
-                      ? null
-                      : () => _openNotMetSheet(context, controller),
-                  child: Text('cant_find_passenger'.tr),
+            if (b.can) ...[
+              _ActionBar(b: b, controller: controller),
+              if (b.canReportPickupIssue) ...[
+                const SizedBox(height: 2),
+                Obx(
+                  () => TextButton(
+                    onPressed: controller.isActing.value
+                        ? null
+                        : () => showPickupIssueSheet(
+                            context: context,
+                            onSubmit: controller.reportPickupIssue,
+                            reasonOptions: b.pickupIssueReasonOptions,
+                            noteMaxLength: b.pickupIssueNoteMaxLength,
+                          ),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(0, 30),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: 4,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text('pickup_issue_link'.tr),
+                  ),
                 ),
+              ],
+            ] else if (b.startLocked)
+              // Start is hidden until the driver finishes their current trip.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    IconsaxPlusLinear.lock_1,
+                    size: 16,
+                    color: theme.colorScheme.outline,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Flexible(
+                    child: Text(
+                      'finish_current_trip'.tr,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
           ],
         ),
       ),
@@ -112,8 +160,11 @@ class _CircleBack extends StatelessWidget {
           onTap: () => Get.back<void>(),
           child: const Padding(
             padding: EdgeInsets.all(8),
-            child: Icon(IconsaxPlusLinear.arrow_left_2,
-                size: 20, color: AppColors.secondary),
+            child: Icon(
+              IconsaxPlusLinear.arrow_left_2,
+              size: 20,
+              color: AppColors.secondary,
+            ),
           ),
         ),
       ),
@@ -149,8 +200,9 @@ class _Detail extends StatelessWidget {
                 children: [
                   Text(
                     '#${b.code ?? '—'}',
-                    style: theme.textTheme.labelMedium
-                        ?.copyWith(color: theme.colorScheme.outline),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
                   ),
                   const Spacer(),
                   StatusChip(stage: b.stage),
@@ -165,14 +217,16 @@ class _Detail extends StatelessWidget {
                       children: [
                         Text(
                           b.customerName ?? '—',
-                          style: theme.textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           _subtitle(),
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: theme.colorScheme.outline),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.outline,
+                          ),
                         ),
                       ],
                     ),
@@ -200,83 +254,25 @@ class _Detail extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
         ],
 
-        // ── Couldn't-meet-passenger summary (terminal) ──
-        if (b.stage == 'not_met_passenger') ...[
-          _NotMetSummary(reason: b.notMetPassengerReason),
+        // ── Pickup issue summary (terminal) ──
+        if (b.stage == 'pickup_issue') ...[
+          _PickupIssueSummary(reason: b.pickupIssueReason),
           const SizedBox(height: AppSpacing.md),
         ],
 
-        // ── Route: where + when, with Navigate ──
-        _SectionCard(
-          title: 'route'.tr,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _departureRow(theme),
-              const SizedBox(height: AppSpacing.md),
-              const Divider(height: 1),
-              const SizedBox(height: AppSpacing.md),
-              _routeStop(theme, isOrigin: true, place: b.pickup),
-              _routeStop(theme, isOrigin: false, place: b.dropoff),
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  onPressed: controller.navigateToPickup,
-                  icon: const Icon(IconsaxPlusLinear.routing, size: 18),
-                  label: Text('navigate'.tr),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-
-        // ── Return trip (round-trip bookings) ──
-        if (b.hasReturn) ...[
-          _SectionCard(
-            title: 'return_trip'.tr,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.sync_rounded, size: 18, color: AppColors.onTrip),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'round_trip'.tr,
-                            style: theme.textTheme.labelMedium
-                                ?.copyWith(color: theme.colorScheme.outline),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _returnWhen(),
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const Divider(height: 1),
-                const SizedBox(height: AppSpacing.md),
-                // On the way back the route reverses.
-                _routeStop(theme, isOrigin: true, place: b.dropoff),
-                _routeStop(theme, isOrigin: false, place: b.pickup),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'return_note'.tr,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.outline),
-                ),
-              ],
-            ),
+        // ── Route: one-way shows a single route; 2-way always reads
+        // Outbound first, Return second, regardless of the selected active leg.
+        if (b.hasReturn)
+          ..._roundTripCards(theme)
+        else ...[
+          _tripRouteCard(
+            theme,
+            title: 'route'.tr,
+            legLabel: 'departure'.tr,
+            when: b.displayDepartureDatetime,
+            pickup: b.pickup,
+            dropoff: b.dropoff,
+            isCurrentLeg: true,
           ),
           const SizedBox(height: AppSpacing.md),
         ],
@@ -294,12 +290,55 @@ class _Detail extends StatelessWidget {
 
   String _subtitle() {
     final svc = b.serviceType?.capitalizeFirst ?? '';
-    final trip = b.hasReturn ? 'round_trip'.tr : (b.tripType?.capitalizeFirst ?? '');
+    final leg = b.isReturnLeg ? 'trip_leg_return'.tr : 'trip_leg_outbound'.tr;
+    final trip = b.hasReturn ? '${'round_trip_badge'.tr} · $leg' : leg;
     return [svc, trip].where((e) => e.isNotEmpty).join(' · ');
   }
 
-  /// Return leg date + time, e.g. "24 Jun · 07:35".
+  List<Widget> _roundTripCards(ThemeData theme) {
+    final outboundPickup = b.isReturnLeg ? b.dropoff : b.pickup;
+    final outboundDropoff = b.isReturnLeg ? b.pickup : b.dropoff;
+    final returnPickup = b.isReturnLeg ? b.pickup : b.dropoff;
+    final returnDropoff = b.isReturnLeg ? b.dropoff : b.pickup;
+
+    return [
+      _tripRouteCard(
+        theme,
+        title: 'outbound_trip'.tr,
+        legLabel: 'trip_leg_outbound'.tr,
+        when: _outboundWhen(),
+        pickup: outboundPickup,
+        dropoff: outboundDropoff,
+        isCurrentLeg: b.isOutboundLeg,
+      ),
+      const SizedBox(height: AppSpacing.md),
+      _tripRouteCard(
+        theme,
+        title: 'return_trip'.tr,
+        legLabel: 'trip_leg_return'.tr,
+        when: _returnWhen(),
+        pickup: returnPickup,
+        dropoff: returnDropoff,
+        isCurrentLeg: b.isReturnLeg,
+        footer: 'return_note'.tr,
+      ),
+      const SizedBox(height: AppSpacing.md),
+    ];
+  }
+
+  String _outboundWhen() {
+    final outbound = b.linkedOutboundDatetime;
+    if (outbound != null && outbound.isNotEmpty) return outbound;
+    return b.isOutboundLeg
+        ? b.displayDepartureDatetime
+        : b.departureDatetime ?? '';
+  }
+
   String _returnWhen() {
+    final returnLeg = b.linkedReturnDatetime;
+    if (returnLeg != null && returnLeg.isNotEmpty) return returnLeg;
+    if (b.isReturnLeg) return b.displayDepartureDatetime;
+
     final date = Formatters.shortDate(b.returnDate);
     final time = b.returnTime;
     return [date, if (time != null && time.isNotEmpty) time].join(' · ');
@@ -307,62 +346,156 @@ class _Detail extends StatelessWidget {
 
   /// Round call button — dials the passenger.
   Widget _callButton() => Material(
-        color: AppColors.primary.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: controller.callCustomer,
-          child: const Padding(
-            padding: EdgeInsets.all(11),
-            child: Icon(IconsaxPlusBold.call, size: 20, color: AppColors.primary),
-          ),
-        ),
-      );
+    color: AppColors.primary.withValues(alpha: 0.12),
+    shape: const CircleBorder(),
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: controller.callCustomer,
+      child: const Padding(
+        padding: EdgeInsets.all(11),
+        child: Icon(IconsaxPlusBold.call, size: 20, color: AppColors.primary),
+      ),
+    ),
+  );
 
   Widget _phoneRow(ThemeData theme) => Row(
-        children: [
-          Icon(IconsaxPlusLinear.call, size: 16, color: theme.colorScheme.outline),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            b.customerPhone!,
-            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ],
-      );
+    children: [
+      Icon(IconsaxPlusLinear.call, size: 16, color: theme.colorScheme.outline),
+      const SizedBox(width: AppSpacing.sm),
+      Text(
+        b.customerPhone!,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  );
 
-  Widget _departureRow(ThemeData theme) => Row(
+  Widget _tripRouteCard(
+    ThemeData theme, {
+    required String title,
+    required String legLabel,
+    required String when,
+    required Place pickup,
+    required Place dropoff,
+    required bool isCurrentLeg,
+    String? footer,
+  }) {
+    return _SectionCard(
+      title: title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(IconsaxPlusBold.calendar, size: 18, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'departure'.tr,
-                  style: theme.textTheme.labelMedium
-                      ?.copyWith(color: theme.colorScheme.outline),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  Formatters.dateTime(b.departureDatetime),
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
+          _departureRow(
+            theme,
+            legLabel: legLabel,
+            when: when,
+            showEstDrop: isCurrentLeg,
           ),
+          const SizedBox(height: AppSpacing.md),
+          const Divider(height: 1),
+          const SizedBox(height: AppSpacing.md),
+          _routeStop(theme, isOrigin: true, place: pickup),
+          _routeStop(theme, isOrigin: false, place: dropoff),
+          if (isCurrentLeg) ...[
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: controller.navigateToPickup,
+                icon: const Icon(IconsaxPlusLinear.routing, size: 18),
+                label: Text('navigate'.tr),
+              ),
+            ),
+          ],
+          if (footer != null && footer.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              footer,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          ],
         ],
-      );
+      ),
+    );
+  }
+
+  Widget _departureRow(
+    ThemeData theme, {
+    required String legLabel,
+    required String when,
+    required bool showEstDrop,
+  }) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Icon(IconsaxPlusBold.calendar, size: 18, color: AppColors.primary),
+      const SizedBox(width: AppSpacing.md),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              legLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              Formatters.dateTime(when),
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Estimated drop-off time (departure + route duration).
+      if (showEstDrop &&
+          b.arrivalDatetime != null &&
+          b.arrivalDatetime!.isNotEmpty) ...[
+        const SizedBox(width: AppSpacing.md),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              'est_drop'.tr,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              Formatters.time(b.arrivalDatetime),
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ],
+  );
 
   /// A pickup/drop-off stop in the route mini-timeline: marker + name + address.
-  Widget _routeStop(ThemeData theme,
-      {required bool isOrigin, required Place place}) {
+  Widget _routeStop(
+    ThemeData theme, {
+    required bool isOrigin,
+    required Place place,
+  }) {
     final showConnector = isOrigin;
-    final address = (place.address != null &&
+    final address =
+        (place.address != null &&
             place.address!.isNotEmpty &&
             place.address != place.locationName)
         ? place.address
+        : null;
+    final nearby =
+        (place.nearbyLocation != null && place.nearbyLocation!.isNotEmpty)
+        ? place.nearbyLocation
         : null;
     final marker = Container(
       width: 14,
@@ -399,7 +532,9 @@ class _Detail extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: showConnector ? AppSpacing.lg : 0),
+              padding: EdgeInsets.only(
+                bottom: showConnector ? AppSpacing.lg : 0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -415,15 +550,54 @@ class _Detail extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     place.label,
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   if (address != null) ...[
                     const SizedBox(height: 1),
                     Text(
                       address,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                  if (nearby != null) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            IconsaxPlusLinear.location,
+                            size: 13,
+                            color: AppColors.primary.withValues(alpha: 0.8),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              '${'nearby'.tr}: $nearby',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ],
@@ -440,7 +614,8 @@ class _Detail extends StatelessWidget {
     final assigned = b.assignedVehicleLabel;
     final specsParts = <String>[
       if (b.vehicleColor != null && b.vehicleColor!.isNotEmpty) b.vehicleColor!,
-      if (b.vehicleSeats != null) '${b.vehicleSeats} ${'seats'.tr.toLowerCase()}',
+      if (b.vehicleSeats != null)
+        '${b.vehicleSeats} ${'seats'.tr.toLowerCase()}',
     ];
     final specs = specsParts.isEmpty ? null : specsParts.join(' · ');
     return _SectionCard(
@@ -456,7 +631,11 @@ class _Detail extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             ),
-            child: const Icon(IconsaxPlusBold.car, size: 22, color: AppColors.primary),
+            child: const Icon(
+              IconsaxPlusBold.car,
+              size: 22,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -475,8 +654,9 @@ class _Detail extends StatelessWidget {
                   ),
                   Text(
                     b.vehicleBooked!,
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
                 if (assigned != null) ...[
@@ -493,14 +673,16 @@ class _Detail extends StatelessWidget {
                   ),
                   Text(
                     assigned,
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   if (specs != null)
                     Text(
                       specs,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
                 ],
               ],
@@ -519,7 +701,11 @@ class _Detail extends StatelessWidget {
       rows.add(InfoRow(icon: icon, label: label, value: value));
     }
 
-    add(IconsaxPlusLinear.profile_2user, 'passengers'.tr, '${b.passengerCount ?? 1}');
+    add(
+      IconsaxPlusLinear.profile_2user,
+      'passengers'.tr,
+      '${b.passengerCount ?? 1}',
+    );
     if (b.nationality != null && b.nationality!.isNotEmpty) {
       add(IconsaxPlusLinear.global, 'nationality'.tr, b.nationality!);
     }
@@ -527,9 +713,11 @@ class _Detail extends StatelessWidget {
       add(
         IconsaxPlusLinear.airplane,
         'flight'.tr,
-        [b.flightNumber, b.airline, b.terminal]
-            .where((e) => e != null && e.isNotEmpty)
-            .join(' · '),
+        [
+          b.flightNumber,
+          b.airline,
+          b.terminal,
+        ].where((e) => e != null && e.isNotEmpty).join(' · '),
       );
     }
     if (b.notes != null && b.notes!.isNotEmpty) {
@@ -571,7 +759,9 @@ class _SectionCard extends StatelessWidget {
               ],
       ),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -613,13 +803,18 @@ class _ActionBar extends StatelessWidget {
         );
       }
 
-      final action = b.allowedActions.isNotEmpty ? b.allowedActions.first : null;
+      final action = b.allowedActions.isNotEmpty
+          ? b.allowedActions.first
+          : null;
       if (action == null) return const SizedBox.shrink();
 
       final (String label, IconData icon) = switch (action) {
         'start' => ('start_now'.tr, IconsaxPlusLinear.play),
         'arrived' => ('mark_arrived'.tr, IconsaxPlusLinear.location_tick),
-        'meet_passenger' => ('meet_passenger'.tr, IconsaxPlusLinear.profile_tick),
+        'meet_passenger' => (
+          'meet_passenger'.tr,
+          IconsaxPlusLinear.profile_tick,
+        ),
         _ => ('start_now'.tr, IconsaxPlusLinear.play),
       };
 
@@ -633,27 +828,10 @@ class _ActionBar extends StatelessWidget {
   }
 }
 
-/// Opens the "couldn't meet passenger" report sheet.
-Future<void> _openNotMetSheet(BuildContext context, BookingDetailController controller) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (_) => _NotMetSheet(controller: controller),
-  );
-}
-
-String _notMetReasonLabel(String? key) => switch (key) {
-      'cant_reach' => 'reason_cant_reach'.tr,
-      'customer_cancelled' => 'reason_customer_cancelled'.tr,
-      'didnt_show' => 'reason_didnt_show'.tr,
-      _ => 'report_not_met_title'.tr,
-    };
-
 /// Terminal summary on the detail screen once the driver reported they couldn't
 /// meet the passenger.
-class _NotMetSummary extends StatelessWidget {
-  const _NotMetSummary({this.reason});
+class _PickupIssueSummary extends StatelessWidget {
+  const _PickupIssueSummary({this.reason});
 
   final String? reason;
 
@@ -663,156 +841,39 @@ class _NotMetSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.notMet.withValues(alpha: 0.10),
+        color: AppColors.pickupIssue.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
       child: Row(
         children: [
-          const Icon(IconsaxPlusLinear.info_circle, color: AppColors.notMet),
+          const Icon(
+            IconsaxPlusLinear.info_circle,
+            color: AppColors.pickupIssue,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'report_not_met_title'.tr,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  'report_pickup_issue_title'.tr,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 if (reason != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    _notMetReasonLabel(reason),
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
+                    pickupIssueReasonLabel(reason),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
                   ),
                 ],
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Bottom sheet: pick a reason (+ optional note) for not meeting the passenger.
-class _NotMetSheet extends StatefulWidget {
-  const _NotMetSheet({required this.controller});
-
-  final BookingDetailController controller;
-
-  @override
-  State<_NotMetSheet> createState() => _NotMetSheetState();
-}
-
-class _NotMetSheetState extends State<_NotMetSheet> {
-  static const _reasons = ['didnt_show', 'cant_reach', 'customer_cancelled'];
-  String? _reason;
-  final _noteController = TextEditingController();
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final reason = _reason;
-    if (reason == null) return;
-    Navigator.of(context).pop();
-    await widget.controller.reportNotMetPassenger(reason, _noteController.text.trim());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg + bottomInset),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'report_not_met_title'.tr,
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'report_not_met_hint'.tr,
-            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          for (final r in _reasons)
-            _ReasonTile(
-              label: _notMetReasonLabel(r),
-              selected: _reason == r,
-              onTap: () => setState(() => _reason = r),
-            ),
-          const SizedBox(height: AppSpacing.md),
-          TextField(
-            controller: _noteController,
-            maxLines: 2,
-            maxLength: 500,
-            decoration: InputDecoration(
-              hintText: 'add_note_optional'.tr,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _reason == null ? null : _submit,
-              child: Text('submit_report'.tr),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Tappable reason row with a custom radio indicator.
-class _ReasonTile extends StatelessWidget {
-  const _ReasonTile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        child: Row(
-          children: [
-            Icon(
-              selected ? IconsaxPlusBold.tick_circle : IconsaxPlusLinear.record,
-              color: selected ? AppColors.primary : theme.colorScheme.outlineVariant,
-              size: 24,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

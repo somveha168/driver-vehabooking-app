@@ -7,10 +7,7 @@ import 'translations/km.dart';
 /// GetX translation registry. Use anywhere via `'key'.tr`.
 class AppTranslations extends Translations {
   @override
-  Map<String, Map<String, String>> get keys => {
-        'en_US': enUS,
-        'km_KH': kmKH,
-      };
+  Map<String, Map<String, String>> get keys => {'en_US': enUS, 'km_KH': kmKH};
 
   static const Locale englishLocale = Locale('en', 'US');
   static const Locale khmerLocale = Locale('km', 'KH');

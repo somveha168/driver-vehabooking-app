@@ -50,9 +50,9 @@ class WelcomeView extends GetView<WelcomeController> {
               left: 0,
               right: 0,
               height: size.height * 0.52,
-              child: CustomPaint(painter: _LandscapePainter(isDark: isDark))
-                  .animate()
-                  .fadeIn(delay: 350.ms, duration: 900.ms),
+              child: CustomPaint(
+                painter: _LandscapePainter(isDark: isDark),
+              ).animate().fadeIn(delay: 350.ms, duration: 900.ms),
             ),
 
             // Foreground content.
@@ -64,40 +64,54 @@ class WelcomeView extends GetView<WelcomeController> {
                   children: [
                     Align(
                       alignment: Alignment.centerRight,
-                      child: _langToggle(context).animate().fadeIn(duration: 400.ms),
+                      child: _langToggle(
+                        context,
+                      ).animate().fadeIn(duration: 400.ms),
                     ),
                     SizedBox(height: size.height * 0.04),
 
                     // Logo lockup (cloud + road over VEHA BOOKING).
-                    Image.asset('assets/branding/welcome_lockup.png', height: 132)
+                    Image.asset(
+                          'assets/branding/welcome_lockup.png',
+                          height: 132,
+                        )
                         .animate()
                         .fadeIn(duration: 550.ms)
-                        .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack),
+                        .scale(
+                          begin: const Offset(0.9, 0.9),
+                          curve: Curves.easeOutBack,
+                        ),
                     const SizedBox(height: AppSpacing.xl),
 
                     // Serif headline.
                     Text(
-                      'welcome_headline'.tr,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.fraunces(
-                        fontSize: 54,
-                        height: 1.0,
-                        letterSpacing: -0.5,
-                        fontWeight: FontWeight.w600,
-                        color: ink,
-                      ),
-                    ).animate().fadeIn(delay: 280.ms, duration: 550.ms).slideY(begin: 0.14),
+                          'welcome_headline'.tr,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.fraunces(
+                            fontSize: 54,
+                            height: 1.0,
+                            letterSpacing: -0.5,
+                            fontWeight: FontWeight.w600,
+                            color: ink,
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(delay: 280.ms, duration: 550.ms)
+                        .slideY(begin: 0.14),
                     const SizedBox(height: AppSpacing.md),
 
                     // Teal divider.
                     Container(
-                      width: 54,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ).animate().fadeIn(delay: 420.ms).scaleX(begin: 0.2, curve: Curves.easeOut),
+                          width: 54,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(delay: 420.ms)
+                        .scaleX(begin: 0.2, curve: Curves.easeOut),
                     const SizedBox(height: AppSpacing.lg),
 
                     // Two-line tagline (muted ink + brand teal).
@@ -105,7 +119,9 @@ class WelcomeView extends GetView<WelcomeController> {
                       'welcome_tagline_1'.tr,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: isDark ? scheme.onSurfaceVariant : AppColors.secondary,
+                        color: isDark
+                            ? scheme.onSurfaceVariant
+                            : AppColors.secondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ).animate().fadeIn(delay: 520.ms, duration: 500.ms),
@@ -144,22 +160,32 @@ class WelcomeView extends GetView<WelcomeController> {
 
                     // CTA → Login. Forward arrow nudges + a periodic shimmer.
                     SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: controller.start,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('welcome_cta'.tr),
-                            const SizedBox(width: AppSpacing.sm),
-                            const Icon(IconsaxPlusLinear.arrow_right_3, size: 20)
-                                .animate(onPlay: (c) => c.repeat(reverse: true))
-                                .moveX(begin: -2, end: 5, duration: 650.ms, curve: Curves.easeInOut),
-                          ],
-                        ),
-                      ),
-                    )
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: controller.start,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('welcome_cta'.tr),
+                                const SizedBox(width: AppSpacing.sm),
+                                const Icon(
+                                      IconsaxPlusLinear.arrow_right_3,
+                                      size: 20,
+                                    )
+                                    .animate(
+                                      onPlay: (c) => c.repeat(reverse: true),
+                                    )
+                                    .moveX(
+                                      begin: -2,
+                                      end: 5,
+                                      duration: 650.ms,
+                                      curve: Curves.easeInOut,
+                                    ),
+                              ],
+                            ),
+                          ),
+                        )
                         .animate(onPlay: (c) => c.repeat(period: 3600.ms))
                         .shimmer(
                           delay: 1800.ms,
@@ -184,7 +210,8 @@ class WelcomeView extends GetView<WelcomeController> {
     final theme = Theme.of(context);
     return Obx(() {
       final isKm = controller.settings.isKhmer;
-      Widget seg(String label, bool active, VoidCallback onTap) => GestureDetector(
+      Widget seg(String label, bool active, VoidCallback onTap) =>
+          GestureDetector(
             onTap: onTap,
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
@@ -197,7 +224,9 @@ class WelcomeView extends GetView<WelcomeController> {
               child: Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: active ? Colors.white : theme.colorScheme.onSurfaceVariant,
+                  color: active
+                      ? Colors.white
+                      : theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -213,8 +242,16 @@ class WelcomeView extends GetView<WelcomeController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            seg('EN', !isKm, () => controller.setLanguage(AppTranslations.englishLocale)),
-            seg('ខ្មែរ', isKm, () => controller.setLanguage(AppTranslations.khmerLocale)),
+            seg(
+              'EN',
+              !isKm,
+              () => controller.setLanguage(AppTranslations.englishLocale),
+            ),
+            seg(
+              'ខ្មែរ',
+              isKm,
+              () => controller.setLanguage(AppTranslations.khmerLocale),
+            ),
           ],
         ),
       );
@@ -241,7 +278,9 @@ class _TopWavesPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.4
         ..strokeCap = StrokeCap.round
-        ..color = base.withValues(alpha: (isDark ? 0.10 : 0.16) * (1 - t * 0.7));
+        ..color = base.withValues(
+          alpha: (isDark ? 0.10 : 0.16) * (1 - t * 0.7),
+        );
 
       final dy = -h * 0.12 + i * h * 0.085;
       final path = Path()
@@ -317,9 +356,12 @@ class _LandscapePainter extends CustomPainter {
       final paint = Paint()..color = teal.withValues(alpha: l.alpha);
       final path = Path()..moveTo(0, l.y);
       path.cubicTo(
-        w * 0.25, l.y - l.amp,
-        w * 0.55, l.y + l.amp,
-        w * 0.78, l.y - l.amp * 0.4,
+        w * 0.25,
+        l.y - l.amp,
+        w * 0.55,
+        l.y + l.amp,
+        w * 0.78,
+        l.y - l.amp * 0.4,
       );
       path.quadraticBezierTo(w * 0.92, l.y - l.amp, w, l.y - l.amp * 0.2);
       path.lineTo(w, h);
@@ -336,7 +378,8 @@ class _LandscapePainter extends CustomPainter {
     final paint = Paint()..color = teal.withValues(alpha: isDark ? 0.16 : 0.20);
 
     // Flat city blocks behind, for depth.
-    final blocks = Paint()..color = teal.withValues(alpha: isDark ? 0.10 : 0.13);
+    final blocks = Paint()
+      ..color = teal.withValues(alpha: isDark ? 0.10 : 0.13);
     void block(double cx, double bw, double bh) {
       canvas.drawRRect(
         RRect.fromRectAndCorners(
@@ -376,13 +419,25 @@ class _LandscapePainter extends CustomPainter {
   }
 
   /// One lotus-bud temple tower at [cx], rising [th] above [baseY].
-  void _tower(Canvas canvas, Paint paint, double cx, double baseY, double tw, double th) {
+  void _tower(
+    Canvas canvas,
+    Paint paint,
+    double cx,
+    double baseY,
+    double tw,
+    double th,
+  ) {
     final path = Path()
       ..moveTo(cx - tw / 2, baseY)
       ..lineTo(cx - tw / 2, baseY - th * 0.42)
       ..lineTo(cx - tw * 0.32, baseY - th * 0.55)
       ..quadraticBezierTo(cx - tw * 0.30, baseY - th * 0.82, cx, baseY - th)
-      ..quadraticBezierTo(cx + tw * 0.30, baseY - th * 0.82, cx + tw * 0.32, baseY - th * 0.55)
+      ..quadraticBezierTo(
+        cx + tw * 0.30,
+        baseY - th * 0.82,
+        cx + tw * 0.32,
+        baseY - th * 0.55,
+      )
       ..lineTo(cx + tw / 2, baseY - th * 0.42)
       ..lineTo(cx + tw / 2, baseY)
       ..close();
@@ -423,16 +478,8 @@ class _LandscapePainter extends CustomPainter {
 
     final route = Path()
       ..moveTo(start.dx, start.dy)
-      ..cubicTo(
-        w * 0.30, h * 0.58,
-        w * 0.40, h * 0.18,
-        w * 0.60, h * 0.26,
-      )
-      ..cubicTo(
-        w * 0.72, h * 0.31,
-        w * 0.74, h * 0.16,
-        end.dx, end.dy,
-      );
+      ..cubicTo(w * 0.30, h * 0.58, w * 0.40, h * 0.18, w * 0.60, h * 0.26)
+      ..cubicTo(w * 0.72, h * 0.31, w * 0.74, h * 0.16, end.dx, end.dy);
 
     final dashed = dashPath(
       route,
@@ -460,8 +507,12 @@ class _LandscapePainter extends CustomPainter {
     final path = Path()
       ..moveTo(p.dx, p.dy)
       ..lineTo(cx - r * 0.78, cy + r * 0.5)
-      ..arcToPoint(Offset(cx + r * 0.78, cy + r * 0.5),
-          radius: Radius.circular(r), clockwise: true, largeArc: true)
+      ..arcToPoint(
+        Offset(cx + r * 0.78, cy + r * 0.5),
+        radius: Radius.circular(r),
+        clockwise: true,
+        largeArc: true,
+      )
       ..close();
     canvas.drawShadow(path, Colors.black.withValues(alpha: 0.3), 2, true);
     canvas.drawPath(path, fill);
@@ -505,7 +556,10 @@ class _LandscapePainter extends CustomPainter {
     final center = Path()
       ..moveTo(w * 0.52, h)
       ..quadraticBezierTo(w * 0.53, h * 0.8, vanish.dx, vanish.dy);
-    final dashed = dashPath(center, dashArray: CircularIntervalList<double>(<double>[10, 9]));
+    final dashed = dashPath(
+      center,
+      dashArray: CircularIntervalList<double>(<double>[10, 9]),
+    );
     canvas.drawPath(
       dashed,
       Paint()

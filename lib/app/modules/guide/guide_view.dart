@@ -17,7 +17,11 @@ class GuideView extends GetView<GuideController> {
       appBar: AppBar(title: Text('guide_title'.tr)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.navClearance),
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.navClearance,
+        ),
         children: [
           Text('guide_how_it_works'.tr, style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
@@ -67,8 +71,9 @@ class GuideView extends GetView<GuideController> {
           Center(
             child: Text(
               '${'guide_app_version'.tr} ${AppConfig.appName} 1.0.0',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.outline),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
             ),
           ),
         ],
@@ -104,9 +109,13 @@ class _Step extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: color,
-                child: Text('$number',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700)),
+                child: Text(
+                  '$number',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               if (!isLast)
                 Expanded(
@@ -124,13 +133,19 @@ class _Step extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(desc,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.outline)),
+                  Text(
+                    desc,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ],
               ),
             ),

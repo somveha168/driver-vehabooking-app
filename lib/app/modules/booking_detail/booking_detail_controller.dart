@@ -9,8 +9,8 @@ import '../../data/repositories/booking_repository.dart';
 class BookingDetailController extends GetxController {
   final BookingRepository _repo = Get.find<BookingRepository>();
 
-  /// Booking uuid passed as the route argument.
-  final String uuid = Get.arguments as String;
+  late final String uuid;
+  late final int? assignmentId;
 
   final isLoading = false.obs;
   final isActing = false.obs;
@@ -20,6 +20,14 @@ class BookingDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final args = Get.arguments;
+    if (args is Map) {
+      uuid = args['uuid']?.toString() ?? '';
+      assignmentId = (args['assignment_id'] as num?)?.toInt();
+    } else {
+      uuid = args?.toString() ?? '';
+      assignmentId = null;
+    }
     load();
   }
 
@@ -27,7 +35,7 @@ class BookingDetailController extends GetxController {
     isLoading.value = true;
     error.value = null;
     try {
-      booking.value = await _repo.show(uuid);
+      booking.value = await _repo.show(uuid, assignmentId: assignmentId);
     } on ApiException catch (e) {
       error.value = e.message;
     } catch (_) {
@@ -38,19 +46,36 @@ class BookingDetailController extends GetxController {
   }
 
   // Trip lifecycle.
-  Future<void> start() => _act(() => _repo.start(uuid), 'started_done'.tr);
+  Future<void> start() => _act(
+    () => _repo.start(uuid, assignmentId: assignmentId),
+    'started_done'.tr,
+  );
 
-  Future<void> arrived() => _act(() => _repo.arrived(uuid), 'arrived_done'.tr);
+  Future<void> arrived() => _act(
+    () => _repo.arrived(uuid, assignmentId: assignmentId),
+    'arrived_done'.tr,
+  );
 
-  Future<void> meetPassenger() => _act(() => _repo.meetPassenger(uuid), 'met_done'.tr);
+  Future<void> meetPassenger() => _act(
+    () => _repo.meetPassenger(uuid, assignmentId: assignmentId),
+    'met_done'.tr,
+  );
 
-  Future<void> complete() => _act(() => _repo.complete(uuid), 'completed_done'.tr);
+  Future<void> complete() => _act(
+    () => _repo.complete(uuid, assignmentId: assignmentId),
+    'completed_done'.tr,
+  );
 
-  /// Driver couldn't meet the passenger → terminal note, frees the driver.
-  Future<void> reportNotMetPassenger(String reason, String? note) => _act(
-        () => _repo.reportNotMetPassenger(uuid, reason: reason, note: note),
-        'not_met_reported'.tr,
-      );
+  /// Pickup issue → terminal note, completes the booking and frees the driver.
+  Future<void> reportPickupIssue(String reason, String? note) => _act(
+    () => _repo.reportPickupIssue(
+      uuid,
+      assignmentId: assignmentId,
+      reason: reason,
+      note: note,
+    ),
+    'pickup_issue_reported'.tr,
+  );
 
   /// Run the action key from `allowed_actions`.
   Future<void> runAction(String action) {
@@ -68,7 +93,10 @@ class BookingDetailController extends GetxController {
     }
   }
 
-  Future<void> _act(Future<BookingDetail> Function() action, String successMsg) async {
+  Future<void> _act(
+    Future<BookingDetail> Function() action,
+    String successMsg,
+  ) async {
     if (isActing.value) return;
     isActing.value = true;
     try {

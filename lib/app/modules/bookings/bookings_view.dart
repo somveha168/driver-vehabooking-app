@@ -16,14 +16,29 @@ class BookingsView extends GetView<BookingsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('bookings_title'.tr)),
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.md,
+              ),
+              child: _BookingsHeader(controller: controller),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
               child: _SegmentedTabs(controller: controller),
             ),
             Expanded(
@@ -42,7 +57,9 @@ class BookingsView extends GetView<BookingsController> {
                     onRefresh: controller.fetch,
                     child: ListView(
                       children: [
-                        SizedBox(height: MediaQuery.sizeOf(context).height * 0.14),
+                        SizedBox(
+                          height: MediaQuery.sizeOf(context).height * 0.14,
+                        ),
                         EmptyView(
                           title: 'no_bookings'.tr,
                           hint: 'no_bookings_hint'.tr,
@@ -56,8 +73,12 @@ class BookingsView extends GetView<BookingsController> {
                 return RefreshIndicator(
                   onRefresh: controller.fetch,
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
-                        AppSpacing.md, AppSpacing.lg, AppSpacing.navClearance),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                      AppSpacing.lg,
+                      AppSpacing.navClearance,
+                    ),
                     children: _buildRows(context),
                   ),
                 );
@@ -71,20 +92,93 @@ class BookingsView extends GetView<BookingsController> {
 
   /// Flatten grouped sections into header + card rows.
   List<Widget> _buildRows(BuildContext context) {
-    final sections =
-        _groupByDay(controller.items.toList(), controller.groupByDay);
+    final sections = _groupByDay(
+      controller.items.toList(),
+      controller.groupByDay,
+    );
     final rows = <Widget>[];
     for (final s in sections) {
       if (s.label != null) rows.add(_SectionHeader(label: s.label!));
       for (final b in s.items) {
-        rows.add(BookingCard(
-          booking: b,
-          onTap: () => Get.toNamed(Routes.bookingDetail, arguments: b.uuid)
-              ?.then((_) => controller.fetch(silent: true)),
-        ));
+        rows.add(
+          BookingCard(
+            booking: b,
+            onTap: () => Get.toNamed(
+              Routes.bookingDetail,
+              arguments: {
+                'uuid': b.uuid,
+                if (b.assignmentId != null) 'assignment_id': b.assignmentId,
+              },
+            )?.then((_) => controller.fetch(silent: true)),
+          ),
+        );
       }
     }
     return rows;
+  }
+}
+
+class _BookingsHeader extends StatelessWidget {
+  const _BookingsHeader({required this.controller});
+
+  final BookingsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'bookings_title'.tr,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Obx(() {
+                final active = controller.activeIndex.value;
+                final copy = switch (active) {
+                  0 => 'bookings_subtitle_assigned'.tr,
+                  1 => 'bookings_subtitle_active'.tr,
+                  _ => 'bookings_subtitle_completed'.tr,
+                };
+                return Text(
+                  copy,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: IconButton(
+            tooltip: 'refresh'.tr,
+            onPressed: () => controller.fetch(),
+            icon: const Icon(IconsaxPlusLinear.refresh, size: 20),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -126,12 +220,13 @@ List<_Section> _groupByDay(List<BookingListItem> items, bool group) {
 
   return [
     if (todayItems.isNotEmpty) _Section('section_today'.tr, todayItems),
-    if (tomorrowItems.isNotEmpty) _Section('section_tomorrow'.tr, tomorrowItems),
+    if (tomorrowItems.isNotEmpty)
+      _Section('section_tomorrow'.tr, tomorrowItems),
     if (laterItems.isNotEmpty) _Section('section_later'.tr, laterItems),
   ];
 }
 
-/// Modern pill segmented control with live count badges.
+/// Compact segmented control with individual chips and live count badges.
 class _SegmentedTabs extends StatelessWidget {
   const _SegmentedTabs({required this.controller});
 
@@ -148,25 +243,44 @@ class _SegmentedTabs extends StatelessWidget {
       final countFor = [c.assigned, c.active, c.completed];
 
       return Container(
+        height: 42,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.62,
+          ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
+          ),
         ),
         child: Row(
           children: List.generate(3, (i) {
             final selected = i == active;
+
             return Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => controller.tabController.animateTo(i),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  curve: Curves.easeOutCubic,
+                  height: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
                     color: selected ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.radiusXl - 4,
+                    ),
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.24),
+                              blurRadius: 14,
+                              offset: const Offset(0, 7),
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -179,13 +293,14 @@ class _SegmentedTabs extends StatelessWidget {
                             color: selected
                                 ? Colors.white
                                 : theme.colorScheme.onSurfaceVariant,
-                            fontWeight:
-                                selected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
                           ),
                         ),
                       ),
                       if (countFor[i] > 0) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 5),
                         _Badge(count: countFor[i], selected: selected),
                       ],
                     ],
@@ -213,8 +328,8 @@ class _Badge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: selected
-            ? Colors.white.withValues(alpha: 0.28)
-            : AppColors.primary.withValues(alpha: 0.14),
+            ? Colors.white.withValues(alpha: 0.22)
+            : AppColors.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
       ),
       child: Text(
@@ -223,7 +338,7 @@ class _Badge extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           height: 1.2,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           color: selected ? Colors.white : AppColors.primary,
         ),
       ),

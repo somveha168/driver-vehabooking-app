@@ -3,26 +3,30 @@ class Place {
   const Place({
     this.address,
     this.locationName,
+    this.nearbyLocation,
     this.latitude,
     this.longitude,
   });
 
   final String? address;
   final String? locationName;
+  final String? nearbyLocation;
   final double? latitude;
   final double? longitude;
 
   bool get hasCoordinates => latitude != null && longitude != null;
 
   /// Best available human label for the place.
-  String get label =>
-      (locationName != null && locationName!.isNotEmpty) ? locationName! : (address ?? '—');
+  String get label => (locationName != null && locationName!.isNotEmpty)
+      ? locationName!
+      : (address ?? '—');
 
   factory Place.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const Place();
     return Place(
       address: json['address']?.toString(),
       locationName: json['location_name']?.toString(),
+      nearbyLocation: json['nearby_location']?.toString(),
       latitude: _toDouble(json['latitude']),
       longitude: _toDouble(json['longitude']),
     );

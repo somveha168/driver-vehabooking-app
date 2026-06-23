@@ -22,8 +22,10 @@ class VehaLogoDraw extends StatefulWidget {
 
 class _VehaLogoDrawState extends State<VehaLogoDraw>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: widget.duration)..forward();
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+  )..forward();
 
   late final Path _cloud = parseSvgPathData(VehaLogoPaths.cloud);
   late final Path _road = parseSvgPathData(VehaLogoPaths.road);

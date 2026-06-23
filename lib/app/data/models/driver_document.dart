@@ -9,10 +9,10 @@ class DocFile {
   bool get isImage => (mimeType ?? '').startsWith('image/');
 
   factory DocFile.fromJson(Map<String, dynamic> json) => DocFile(
-        url: json['url']?.toString() ?? '',
-        filename: json['filename']?.toString(),
-        mimeType: json['mime_type']?.toString(),
-      );
+    url: json['url']?.toString() ?? '',
+    filename: json['filename']?.toString(),
+    mimeType: json['mime_type']?.toString(),
+  );
 }
 
 /// Read-only driver document (Personal ID / Driving License).
@@ -42,16 +42,16 @@ class DriverDocument {
   bool get isLicense => type == 'driver_license_file';
 
   factory DriverDocument.fromJson(Map<String, dynamic> json) => DriverDocument(
-        type: json['type']?.toString() ?? '',
-        label: json['label']?.toString() ?? '',
-        status: json['status']?.toString(),
-        statusLabel: json['status_label']?.toString(),
-        cardNumber: json['card_number']?.toString(),
-        issuedAt: json['issued_at']?.toString(),
-        expiredAt: json['expired_at']?.toString(),
-        rejectionReason: json['rejection_reason']?.toString(),
-        files: (json['files'] as List? ?? [])
-            .map((e) => DocFile.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    type: json['type']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    status: json['status']?.toString(),
+    statusLabel: json['status_label']?.toString(),
+    cardNumber: json['card_number']?.toString(),
+    issuedAt: json['issued_at']?.toString(),
+    expiredAt: json['expired_at']?.toString(),
+    rejectionReason: json['rejection_reason']?.toString(),
+    files: (json['files'] as List? ?? [])
+        .map((e) => DocFile.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

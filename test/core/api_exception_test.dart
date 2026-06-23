@@ -38,11 +38,16 @@ void main() {
       expect(e.fieldErrors?['login']?.first, contains('required'));
     });
 
-    test('gives a friendly message when the request never reached the server', () {
-      final e = ApiException.fromResponse(const Response<dynamic>(statusCode: null));
+    test(
+      'gives a friendly message when the request never reached the server',
+      () {
+        final e = ApiException.fromResponse(
+          const Response<dynamic>(statusCode: null),
+        );
 
-      expect(e.statusCode, isNull);
-      expect(e.message, contains('connection'));
-    });
+        expect(e.statusCode, isNull);
+        expect(e.message, contains('connection'));
+      },
+    );
   });
 }

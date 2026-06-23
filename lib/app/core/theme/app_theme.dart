@@ -22,7 +22,10 @@ class AppTheme {
     // Pin exact brand colors. Navy as `secondary` only in light mode — it is
     // too dark to serve the M3 secondary role on a dark surface.
     colorScheme = brightness == Brightness.light
-        ? colorScheme.copyWith(primary: AppColors.primary, secondary: AppColors.secondary)
+        ? colorScheme.copyWith(
+            primary: AppColors.primary,
+            secondary: AppColors.secondary,
+          )
         : colorScheme.copyWith(primary: AppColors.primary);
 
     final base = ThemeData(
