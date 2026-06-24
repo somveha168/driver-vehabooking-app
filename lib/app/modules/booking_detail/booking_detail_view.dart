@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:get/get.dart';
+import 'dart:math' as math;
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -381,11 +382,26 @@ class _Detail extends StatelessWidget {
     required bool isCurrentLeg,
     String? footer,
   }) {
+    final navigateToDropoff = _navigatesToDropoff;
+    final activeTarget = navigateToDropoff ? dropoff : pickup;
+    final canNavigate = isCurrentLeg && !_isTerminalStage;
+
     return _SectionCard(
       title: title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _routeMapPreview(
+            theme,
+            pickup: pickup,
+            dropoff: dropoff,
+            activeTarget: activeTarget,
+            activeLabel: navigateToDropoff
+                ? 'route_to_dropoff'.tr
+                : 'route_to_pickup'.tr,
+            distanceLabel: _routeDistanceLabel(pickup, dropoff),
+          ),
+          const SizedBox(height: AppSpacing.md),
           _departureRow(
             theme,
             legLabel: legLabel,
@@ -397,14 +413,18 @@ class _Detail extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _routeStop(theme, isOrigin: true, place: pickup),
           _routeStop(theme, isOrigin: false, place: dropoff),
-          if (isCurrentLeg) ...[
+          if (canNavigate) ...[
             const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,
               child: FilledButton.tonalIcon(
-                onPressed: controller.navigateToPickup,
+                onPressed: controller.navigateToActiveDestination,
                 icon: const Icon(IconsaxPlusLinear.routing, size: 18),
-                label: Text('navigate'.tr),
+                label: Text(
+                  navigateToDropoff
+                      ? 'navigate_to_dropoff'.tr
+                      : 'navigate_to_pickup'.tr,
+                ),
               ),
             ),
           ],
@@ -417,6 +437,251 @@ class _Detail extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  bool get _navigatesToDropoff =>
+      b.stage == 'meet_passenger' || b.stage == 'drop_passenger';
+
+  bool get _isTerminalStage =>
+      b.stage == 'completed' ||
+      b.stage == 'pickup_issue' ||
+      b.stage == 'cancelled';
+
+  String? _routeDistanceLabel(Place pickup, Place dropoff) {
+    if (!pickup.hasCoordinates || !dropoff.hasCoordinates) return null;
+
+    final km = _distanceKm(
+      pickup.latitude!,
+      pickup.longitude!,
+      dropoff.latitude!,
+      dropoff.longitude!,
+    );
+
+    if (km < 1) return '${(km * 1000).round()} m';
+    return '${km.toStringAsFixed(km >= 10 ? 0 : 1)} km';
+  }
+
+  double _distanceKm(
+    double startLat,
+    double startLng,
+    double endLat,
+    double endLng,
+  ) {
+    const earthRadiusKm = 6371.0;
+    final dLat = _degreesToRadians(endLat - startLat);
+    final dLng = _degreesToRadians(endLng - startLng);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_degreesToRadians(startLat)) *
+            math.cos(_degreesToRadians(endLat)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return earthRadiusKm * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
+  double _degreesToRadians(double degrees) => degrees * math.pi / 180;
+
+  String _shortPlaceLabel(Place place) {
+    final label = place.locationName ?? place.address ?? place.label;
+    return label.length <= 24 ? label : '${label.substring(0, 24)}...';
+  }
+
+  Widget _locationSummaryPill(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required Place place,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  _shortPlaceLabel(place),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _routeMapPreview(
+    ThemeData theme, {
+    required Place pickup,
+    required Place dropoff,
+    required Place activeTarget,
+    required String activeLabel,
+    String? distanceLabel,
+  }) {
+    return Container(
+      height: 210,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withValues(alpha: 0.10),
+            const Color(0xFFEAF7F3),
+            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+          ],
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _RoutePreviewPainter(
+                color: AppColors.primary,
+                secondaryColor: AppColors.secondary,
+              ),
+            ),
+          ),
+          Positioned(
+            top: AppSpacing.md,
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 14,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            IconsaxPlusBold.routing,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeLabel,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.outline,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                activeTarget.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (distanceLabel != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      distanceLabel,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Positioned(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            bottom: AppSpacing.md,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _locationSummaryPill(
+                    theme,
+                    icon: IconsaxPlusLinear.location,
+                    label: 'pickup'.tr.toUpperCase(),
+                    place: pickup,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _locationSummaryPill(
+                    theme,
+                    icon: IconsaxPlusLinear.flag,
+                    label: 'dropoff'.tr.toUpperCase(),
+                    place: dropoff,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -728,6 +993,114 @@ class _Detail extends StatelessWidget {
 }
 
 /// Soft card wrapper with an optional section title.
+class _RoutePreviewPainter extends CustomPainter {
+  const _RoutePreviewPainter({
+    required this.color,
+    required this.secondaryColor,
+  });
+
+  final Color color;
+  final Color secondaryColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.34)
+      ..strokeWidth = 1;
+
+    for (var x = -size.width; x < size.width * 2; x += 34) {
+      canvas.drawLine(
+        Offset(x.toDouble(), 0),
+        Offset(x + size.height * 0.55, size.height),
+        gridPaint,
+      );
+    }
+
+    for (var y = 18.0; y < size.height; y += 34) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    final route = Path()
+      ..moveTo(size.width * 0.20, size.height * 0.70)
+      ..cubicTo(
+        size.width * 0.30,
+        size.height * 0.36,
+        size.width * 0.55,
+        size.height * 0.84,
+        size.width * 0.70,
+        size.height * 0.47,
+      )
+      ..cubicTo(
+        size.width * 0.78,
+        size.height * 0.28,
+        size.width * 0.90,
+        size.height * 0.32,
+        size.width * 0.86,
+        size.height * 0.18,
+      );
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 11;
+    canvas.drawPath(route.shift(const Offset(0, 5)), shadowPaint);
+
+    final basePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.95)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 10;
+    canvas.drawPath(route, basePaint);
+
+    final routePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [color, secondaryColor, color],
+      ).createShader(Offset.zero & size)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5;
+    canvas.drawPath(route, routePaint);
+
+    _drawPin(canvas, Offset(size.width * 0.20, size.height * 0.70), color, 'A');
+    _drawPin(
+      canvas,
+      Offset(size.width * 0.86, size.height * 0.18),
+      secondaryColor,
+      'B',
+    );
+  }
+
+  void _drawPin(Canvas canvas, Offset center, Color color, String label) {
+    final outerPaint = Paint()..color = Colors.white;
+    final innerPaint = Paint()..color = color;
+    canvas.drawCircle(center, 16, outerPaint);
+    canvas.drawCircle(center, 11, innerPaint);
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(
+      canvas,
+      center - Offset(textPainter.width / 2, textPainter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) {
+    return color != oldDelegate.color ||
+        secondaryColor != oldDelegate.secondaryColor;
+  }
+}
+
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.child, this.title});
 

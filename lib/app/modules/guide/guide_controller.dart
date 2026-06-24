@@ -1,11 +1,71 @@
 import 'package:get/get.dart';
 
-import '../../core/config/app_config.dart';
 import '../../core/utils/external_launcher.dart';
+import '../../data/models/guide_video.dart';
+import '../../data/models/platform_info.dart';
+import '../../data/repositories/guide_repository.dart';
 
 class GuideController extends GetxController {
-  Future<void> callDispatch() => ExternalLauncher.call(AppConfig.supportPhone);
+  GuideController(this._guideRepository);
 
-  Future<void> openTelegram() =>
-      ExternalLauncher.openUrl(AppConfig.supportTelegramUrl);
+  final GuideRepository _guideRepository;
+
+  final RxBool loadingVideos = false.obs;
+  final RxnString videoError = RxnString();
+  final RxList<GuideVideo> videos = <GuideVideo>[].obs;
+  final RxBool loadingPlatformInfo = false.obs;
+  final RxnString platformInfoError = RxnString();
+  final Rxn<PlatformInfo> platformInfo = Rxn<PlatformInfo>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadVideos();
+    loadPlatformInfo();
+  }
+
+  Future<void> loadVideos() async {
+    loadingVideos.value = true;
+    videoError.value = null;
+    try {
+      videos.assignAll(await _guideRepository.videos());
+    } catch (e) {
+      videoError.value = e.toString();
+    } finally {
+      loadingVideos.value = false;
+    }
+  }
+
+  Future<void> openVideo(GuideVideo video) {
+    final url = video.url?.isNotEmpty == true ? video.url : video.embedUrl;
+    if (url == null || url.isEmpty) return Future.value();
+    return ExternalLauncher.openUrl(url);
+  }
+
+  Future<void> loadPlatformInfo() async {
+    loadingPlatformInfo.value = true;
+    platformInfoError.value = null;
+    try {
+      platformInfo.value = await _guideRepository.platformInfo();
+    } catch (e) {
+      platformInfoError.value = e.toString();
+    } finally {
+      loadingPlatformInfo.value = false;
+    }
+  }
+
+  Future<void> callPhone(String? phone) {
+    if (phone == null || phone.isEmpty) return Future.value();
+    return ExternalLauncher.call(phone);
+  }
+
+  Future<void> email(String? email) {
+    if (email == null || email.isEmpty) return Future.value();
+    return ExternalLauncher.email(email);
+  }
+
+  Future<void> openUrl(String? url) {
+    if (url == null || url.isEmpty) return Future.value();
+    return ExternalLauncher.openUrl(url);
+  }
 }

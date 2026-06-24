@@ -32,6 +32,12 @@ class ExternalLauncher {
     return launchUrl(uri);
   }
 
+  /// Open the default mail app.
+  static Future<bool> email(String email) {
+    final uri = Uri(scheme: 'mailto', path: email);
+    return launchUrl(uri);
+  }
+
   /// Open an arbitrary URL (e.g. a Telegram support link) externally.
   static Future<bool> openUrl(String url) {
     return launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);

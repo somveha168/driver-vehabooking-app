@@ -122,6 +122,23 @@ class BookingDetailController extends GetxController {
     if (!ok) AppSnackbar.error('error_generic'.tr);
   }
 
+  Future<void> navigateToActiveDestination() async {
+    final b = booking.value;
+    if (b == null) return;
+
+    final destination = switch (b.stage) {
+      'meet_passenger' || 'drop_passenger' => b.dropoff,
+      _ => b.pickup,
+    };
+
+    final ok = await ExternalLauncher.navigateTo(
+      latitude: destination.latitude,
+      longitude: destination.longitude,
+      address: destination.address,
+    );
+    if (!ok) AppSnackbar.error('error_generic'.tr);
+  }
+
   Future<void> callCustomer() async {
     final phone = booking.value?.customerPhone;
     if (phone == null || phone.isEmpty || phone == 'N/A') return;

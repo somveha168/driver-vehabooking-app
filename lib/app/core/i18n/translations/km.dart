@@ -35,19 +35,24 @@ const Map<String, String> kmKH = {
 
   // Guide
   'guide_title': 'ការណែនាំ និងជំនួយ',
-  'guide_how_it_works': 'របៀបប្រើប្រាស់',
-  'guide_step_accept_title': 'ទទួលការកក់',
-  'guide_step_accept_desc':
-      'ពេលអ្នកគ្រប់គ្រង ឬអ្នកផ្គត់ផ្គង់កំណត់ការធ្វើដំណើរ សូមបើកវា ហើយចុច «ទទួល» ដើម្បីបញ្ជាក់ថាអ្នកនឹងធ្វើដំណើរនេះ។',
-  'guide_step_pickup_title': 'បញ្ជាក់ការទទួល',
-  'guide_step_pickup_desc':
-      'ពេលអ្នកដំណើរនៅលើរថយន្ត សូមចុច «បញ្ជាក់ការទទួល»។ អ្នកអាចនាំផ្លូវទៅទីតាំងទទួលបានគ្រប់ពេលពីព័ត៌មានលម្អិត។',
-  'guide_step_complete_title': 'បញ្ចប់ដំណើរ',
-  'guide_step_complete_desc':
-      'បន្ទាប់ពីដាក់អ្នកដំណើរចុះ សូមអូសដើម្បីបញ្ចប់ដំណើរ។ វានឹងផ្លាស់ទៅបញ្ជី «បានបញ្ចប់»។',
+  'guide_videos': 'វីដេអូបណ្តុះបណ្តាល',
+  'guide_videos_loading': 'កំពុងផ្ទុកវីដេអូ...',
+  'guide_videos_empty': 'មិនទាន់មានវីដេអូបណ្តុះបណ្តាលទេ។',
+  'guide_videos_error': 'មិនអាចផ្ទុកវីដេអូបណ្តុះបណ្តាលបានទេ។',
+  'guide_open_video': 'បើកវីដេអូ',
+  'guide_text_only': 'អត្ថបទណែនាំ',
+  'guide_read_more': 'អានបន្ថែម',
+  'guide_show_less': 'បង្ហាញតិច',
   'guide_support': 'ជំនួយ',
+  'guide_support_loading': 'កំពុងផ្ទុកព័ត៌មានជំនួយ...',
+  'guide_platform_help': 'ព័ត៌មានទំនាក់ទំនងវេទិកា VehaBooking',
   'guide_call_dispatch': 'ហៅទៅផ្នែកគ្រប់គ្រង',
   'guide_telegram_support': 'ជំនួយតាម Telegram',
+  'guide_email_support': 'ជំនួយតាមអ៊ីមែល',
+  'guide_office_address': 'អាសយដ្ឋានការិយាល័យ',
+  'guide_facebook': 'Facebook',
+  'guide_youtube': 'YouTube',
+  'guide_tiktok': 'TikTok',
   'guide_app_version': 'កំណែកម្មវិធី',
 
   // Home dashboard
@@ -196,6 +201,10 @@ const Map<String, String> kmKH = {
   'notes': 'កំណត់ចំណាំ',
   'departure': 'ពេលចេញដំណើរ',
   'navigate': 'នាំផ្លូវ',
+  'route_to_pickup': 'ផ្លូវទៅទីតាំងទទួល',
+  'route_to_dropoff': 'ផ្លូវទៅទីតាំងចុះ',
+  'navigate_to_pickup': 'នាំផ្លូវទៅទីតាំងទទួល',
+  'navigate_to_dropoff': 'នាំផ្លូវទៅទីតាំងចុះ',
   'call_customer': 'ហៅទូរស័ព្ទ',
   'pickup_soon': 'ពេលទទួលជិតមកដល់ — សូមបញ្ជាក់ពេលអ្នកដំណើរនៅលើរថយន្ត។',
 

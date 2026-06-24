@@ -36,19 +36,24 @@ const Map<String, String> enUS = {
 
   // Guide
   'guide_title': 'Guide & Support',
-  'guide_how_it_works': 'How it works',
-  'guide_step_accept_title': 'Accept your booking',
-  'guide_step_accept_desc':
-      'When admin or your vendor assigns a trip, open it and tap Accept to confirm you will take it.',
-  'guide_step_pickup_title': 'Confirm pickup',
-  'guide_step_pickup_desc':
-      'When the passenger is on board, tap Confirm pickup. Navigate to the pickup point any time from the trip detail.',
-  'guide_step_complete_title': 'Complete the trip',
-  'guide_step_complete_desc':
-      'After drop-off, swipe to complete the trip. It then moves to your Completed list.',
+  'guide_videos': 'Training videos',
+  'guide_videos_loading': 'Loading videos...',
+  'guide_videos_empty': 'No training videos yet.',
+  'guide_videos_error': 'Could not load training videos.',
+  'guide_open_video': 'Open video',
+  'guide_text_only': 'Text guide',
+  'guide_read_more': 'Read more',
+  'guide_show_less': 'Show less',
   'guide_support': 'Support',
+  'guide_support_loading': 'Loading support info...',
+  'guide_platform_help': 'VehaBooking platform contact',
   'guide_call_dispatch': 'Call dispatch',
   'guide_telegram_support': 'Telegram support',
+  'guide_email_support': 'Email support',
+  'guide_office_address': 'Office address',
+  'guide_facebook': 'Facebook',
+  'guide_youtube': 'YouTube',
+  'guide_tiktok': 'TikTok',
   'guide_app_version': 'App version',
 
   // Home dashboard
@@ -197,6 +202,10 @@ const Map<String, String> enUS = {
   'notes': 'Notes',
   'departure': 'Departure',
   'navigate': 'Navigate',
+  'route_to_pickup': 'Route to pickup',
+  'route_to_dropoff': 'Route to drop-off',
+  'navigate_to_pickup': 'Navigate to pickup',
+  'navigate_to_dropoff': 'Navigate to drop-off',
   'call_customer': 'Call',
   'pickup_soon':
       'Pickup time is near — confirm when the passenger is on board.',

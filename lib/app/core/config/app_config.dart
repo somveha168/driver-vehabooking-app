@@ -28,15 +28,15 @@ class AppConfig {
   /// Driver-facing bookings API root (Taxi module).
   static String get bookingsApiUrl => '$baseUrl/api/taxi/v1/driver';
 
+  /// Driver guide/help content API root (Blog module).
+  static String get guideApiUrl => '$baseUrl/api/driver/v1/guideline';
+
+  /// Public platform information API root (Core).
+  static String get platformInfoApiUrl => '$baseUrl/api/v1/platform/info';
+
   static const Duration connectTimeout = Duration(seconds: 20);
   static const Duration receiveTimeout = Duration(seconds: 20);
 
   /// How often the bookings list silently refreshes while on screen.
   static const Duration bookingsPollInterval = Duration(seconds: 45);
-
-  // Driver support channels (shown on the Guide tab).
-  static const String supportPhone =
-      '+85500000000'; // TODO: real dispatch hotline
-  static const String supportTelegramUrl =
-      'https://t.me/vehabooking'; // TODO: real support handle
 }
