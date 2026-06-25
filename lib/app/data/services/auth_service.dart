@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 
+import '../../core/location/driver_tracking_service.dart';
 import '../../core/network/api_client.dart';
 import '../../core/storage/storage_service.dart';
 import '../models/auth_user.dart';
@@ -91,6 +92,10 @@ class AuthService extends GetxService {
   }
 
   Future<void> logout() async {
+    if (Get.isRegistered<DriverTrackingService>()) {
+      Get.find<DriverTrackingService>().stop();
+    }
+
     try {
       await _repo.logout(deviceName());
     } catch (_) {

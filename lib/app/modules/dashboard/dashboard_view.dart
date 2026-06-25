@@ -602,6 +602,10 @@ class _NextPickupCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _departure(theme),
+              if (next.isStartOverdue) ...[
+                const SizedBox(height: AppSpacing.sm),
+                _startOverdueNotice(theme),
+              ],
               const SizedBox(height: AppSpacing.sm + 2),
 
               // Origin → destination timeline.
@@ -618,6 +622,10 @@ class _NextPickupCard extends StatelessWidget {
                   caption: 'dropoff'.tr,
                   value: next.dropoffLabel,
                 ),
+              if (next.hasDropoff) ...[
+                const SizedBox(height: AppSpacing.sm),
+                _mapButton(theme),
+              ],
 
               if (showProgress) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -642,6 +650,10 @@ class _NextPickupCard extends StatelessWidget {
   /// and a deliberate swipe for the irreversible final drop. Lives on the card
   /// so the driver advances the trip without leaving Home.
   Widget _action(ThemeData theme, String action) {
+    if (action == 'start' && next.isStartTooOld) {
+      return _staleStartAction(theme);
+    }
+
     if (action == 'complete') {
       return Obx(
         () => SwipeToConfirm(
@@ -653,7 +665,10 @@ class _NextPickupCard extends StatelessWidget {
     }
 
     final (String label, IconData icon) = switch (action) {
-      'start' => ('start_now'.tr, IconsaxPlusLinear.play),
+      'start' => (
+        next.isStartOverdue ? 'start_trip_now'.tr : 'start_now'.tr,
+        IconsaxPlusLinear.play,
+      ),
       'arrived' => ('mark_arrived'.tr, IconsaxPlusLinear.location_tick),
       'meet_passenger' => ('meet_passenger'.tr, IconsaxPlusLinear.profile_tick),
       _ => ('start_now'.tr, IconsaxPlusLinear.play),
@@ -671,6 +686,73 @@ class _NextPickupCard extends StatelessWidget {
 
   bool get _canReportPickupIssue =>
       next.allowedActions.contains('report_pickup_issue');
+
+  Widget _startOverdueNotice(ThemeData theme) {
+    final isTooOld = next.isStartTooOld;
+    final isVeryOverdue = next.isStartVeryOverdue;
+    final color = isTooOld
+        ? AppColors.cancelled
+        : isVeryOverdue
+        ? AppColors.assigned
+        : AppColors.assigned;
+    final key = isTooOld
+        ? 'start_too_old_home'
+        : isVeryOverdue
+        ? 'start_very_overdue_home'
+        : 'start_overdue_home';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 9,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isTooOld
+                ? IconsaxPlusLinear.info_circle
+                : IconsaxPlusLinear.timer_1,
+            size: 17,
+            color: color,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              key.tr,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: AppColors.secondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _staleStartAction(ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: null,
+        icon: const Icon(IconsaxPlusLinear.headphone, size: 18),
+        label: Text('contact_dispatch_to_start'.tr),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          disabledForegroundColor: AppColors.cancelled.withValues(alpha: 0.78),
+          side: BorderSide(color: AppColors.cancelled.withValues(alpha: 0.22)),
+          textStyle: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _pickupIssueButton(BuildContext context, ThemeData theme) {
     return Obx(
@@ -696,6 +778,43 @@ class _NextPickupCard extends StatelessWidget {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           textStyle: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _mapButton(ThemeData theme) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: controller.openNextPickupMap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  IconsaxPlusLinear.map,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'view_pickup_route'.tr,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

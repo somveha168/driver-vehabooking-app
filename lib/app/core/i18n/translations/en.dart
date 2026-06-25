@@ -1,6 +1,6 @@
 /// English strings.
 const Map<String, String> enUS = {
-  'app_name': 'Veha Driver',
+  'app_name': 'Veha Booking Driver',
 
   // Welcome / onboarding (first run)
   'welcome_eyebrow': 'Welcome to',
@@ -118,6 +118,19 @@ const Map<String, String> enUS = {
 
   // Trip lifecycle
   'start_now': 'Start Now',
+  'start_trip_now': 'Start trip now',
+  'start_overdue_home': 'Departure time has passed. Start when you are ready.',
+  'start_very_overdue_home':
+      'This trip is very overdue. Confirm before starting.',
+  'start_too_old_home':
+      'This trip is too old to start from the app. Contact dispatch.',
+  'start_overdue_detail':
+      'This trip should already be started. You can still start it now.',
+  'start_very_overdue_detail':
+      'This trip is very overdue. Start only after confirming with dispatch or the passenger.',
+  'start_too_old_detail':
+      'This trip is too old to start from the app. Contact dispatch so they can review it.',
+  'contact_dispatch_to_start': 'Contact dispatch to start',
   'mark_arrived': "I've Arrived",
   'meet_passenger': 'Met Passenger',
   'drop_passenger': 'Drop Passenger',
@@ -190,6 +203,7 @@ const Map<String, String> enUS = {
   'vehicle_booked': 'Booked',
   'vehicle_assigned': 'Assigned vehicle',
   'return_note': 'You drive the passenger back on this date.',
+  'passenger_info': 'Passenger info',
   'nationality': 'Nationality',
   'customer': 'Customer',
   'pax_label': 'Pax',
@@ -202,13 +216,40 @@ const Map<String, String> enUS = {
   'notes': 'Notes',
   'departure': 'Departure',
   'navigate': 'Navigate',
+  'view_map': 'View map',
+  'view_pickup_route': 'View pickup route',
+  'view_dropoff_route': 'View drop-off route',
+  'open_google_maps': 'Open in Google Maps',
+  'trip_map': 'Trip map',
+  'route_preview': 'Route preview',
+  'passenger_route': 'Passenger route',
+  'pickup_route': 'Pickup route',
+  'dropoff_route': 'Drop-off route',
+  'trip_route_ab': 'Trip route A to B',
+  'preview_passenger_route': 'Preview passenger trip route',
+  'you_are_heading_to_pickup': 'You are heading to pickup passenger',
+  'you_are_heading_to_dropoff': 'You are heading to drop-off',
   'route_to_pickup': 'Route to pickup',
   'route_to_dropoff': 'Route to drop-off',
   'navigate_to_pickup': 'Navigate to pickup',
   'navigate_to_dropoff': 'Navigate to drop-off',
+  'driver_location': 'Your location',
+  'pickup_point_a': 'Pickup point A',
+  'dropoff_point_b': 'Drop-off point B',
+  'road_route_unavailable': 'Road route unavailable',
+  'to_pickup': 'to pickup',
+  'to_dropoff': 'to drop-off',
+  'location_service_disabled': 'Turn on location services to show your route.',
+  'location_permission_denied':
+      'Location permission is needed to show your route.',
+  'location_permission_denied_forever':
+      'Location permission is blocked. Enable it in app settings.',
+  'location_unavailable': 'Could not get your current location.',
   'call_customer': 'Call',
   'pickup_soon':
       'Pickup time is near — confirm when the passenger is on board.',
+  'tracking_action_required':
+      'Trip tracking stopped. If you already dropped the passenger, please complete the trip.',
 
   // Actions
   'accept_booking': 'Accept booking',

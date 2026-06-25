@@ -1,8 +1,10 @@
 import '../../core/config/app_config.dart';
+import '../../core/location/location_service.dart';
 import '../../core/network/api_client.dart';
 import '../models/booking_detail.dart';
 import '../models/booking_list_item.dart';
 import '../models/dashboard_summary.dart';
+import '../models/trip_route.dart';
 
 /// Paged list result for the bookings screen.
 typedef BookingPage = ({
@@ -98,6 +100,48 @@ class BookingRepository {
       },
     ),
   );
+
+  Future<void> storeLocation(
+    String uuid, {
+    required int assignmentId,
+    required DriverLocation location,
+  }) async {
+    await _api.postJson(
+      '$_base/bookings/$uuid/location',
+      data: {
+        'assignment_id': assignmentId,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+        if (location.accuracyMeters != null)
+          'accuracy': location.accuracyMeters,
+        if (location.speedKmh != null) 'speed': location.speedKmh,
+        if (location.heading != null) 'heading': location.heading,
+        'is_moving': location.isMoving,
+        'provider': 'driver_app',
+      },
+    );
+  }
+
+  Future<TripRoute> route(
+    String uuid, {
+    required int assignmentId,
+    required String mode,
+    double? originLatitude,
+    double? originLongitude,
+  }) async {
+    final res = await _api.getJson(
+      '$_base/bookings/$uuid/route',
+      query: {
+        'assignment_id': assignmentId,
+        'mode': mode,
+        'origin_latitude': ?originLatitude,
+        'origin_longitude': ?originLongitude,
+      },
+    );
+
+    final data = (res as Map)['data'] as Map<String, dynamic>;
+    return TripRoute.fromJson(data);
+  }
 
   Map<String, dynamic>? _legData(int? assignmentId) =>
       assignmentId == null ? null : {'assignment_id': assignmentId};

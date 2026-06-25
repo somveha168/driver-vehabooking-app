@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 
 import 'app/core/config/app_config.dart';
 import 'app/core/i18n/app_translations.dart';
+import 'app/core/location/driver_tracking_service.dart';
+import 'app/core/location/location_service.dart';
 import 'app/core/network/api_client.dart';
 import 'app/core/routes/app_pages.dart';
 import 'app/core/routes/app_routes.dart';
@@ -25,6 +27,11 @@ Future<void> main() async {
   Get.put(AuthRepository(api), permanent: true);
   Get.put(BookingRepository(api), permanent: true);
   Get.put(GuideRepository(api), permanent: true);
+  final locationService = Get.put(LocationService(), permanent: true);
+  Get.put(
+    DriverTrackingService(Get.find<BookingRepository>(), locationService),
+    permanent: true,
+  );
 
   final auth = Get.put(
     AuthService(Get.find<AuthRepository>(), api, storage),

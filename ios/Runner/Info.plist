@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Veha Driver App</string>
+		<string>$(APP_DISPLAY_NAME)</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>veha_driver_app</string>
+		<string>$(APP_DISPLAY_NAME)</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -24,6 +24,8 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>GoogleMapsApiKey</key>
+		<string>$(GOOGLE_MAPS_API_KEY)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>
@@ -74,6 +76,8 @@
 			<string>comgooglemaps</string>
 		</array>
 		<!-- Profile photo upload -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Veha Booking Driver uses your location to show the pickup route and active trip destination.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Allow access to your photos to set your profile picture.</string>
 		<key>NSCameraUsageDescription</key>

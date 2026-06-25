@@ -7,5 +7,6 @@ abstract class Routes {
   static const login = '/login';
   static const home = '/home';
   static const bookingDetail = '/booking-detail';
+  static const tripMap = '/trip-map';
   static const documents = '/documents';
 }

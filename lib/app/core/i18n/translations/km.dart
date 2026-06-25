@@ -1,6 +1,6 @@
 /// Khmer strings.
 const Map<String, String> kmKH = {
-  'app_name': 'Veha Driver',
+  'app_name': 'Veha Booking Driver',
 
   // Welcome / onboarding (first run)
   'welcome_eyebrow': 'សូមស្វាគមន៍មកកាន់',
@@ -117,6 +117,18 @@ const Map<String, String> kmKH = {
 
   // Trip lifecycle
   'start_now': 'ចាប់ផ្តើមឥឡូវ',
+  'start_trip_now': 'ចាប់ផ្តើមដំណើរឥឡូវ',
+  'start_overdue_home': 'ម៉ោងចេញដំណើរបានផុតហើយ។ ចាប់ផ្តើមពេលអ្នករួចរាល់។',
+  'start_very_overdue_home': 'ដំណើរនេះយឺតយូរហើយ។ សូមបញ្ជាក់មុនពេលចាប់ផ្តើម។',
+  'start_too_old_home':
+      'ដំណើរនេះចាស់ពេក មិនអាចចាប់ផ្តើមពីកម្មវិធីបានទេ។ សូមទាក់ទងផ្នែកគ្រប់គ្រង។',
+  'start_overdue_detail':
+      'ដំណើរនេះគួរតែបានចាប់ផ្តើមរួចហើយ។ អ្នកនៅតែអាចចាប់ផ្តើមឥឡូវបាន។',
+  'start_very_overdue_detail':
+      'ដំណើរនេះយឺតយូរហើយ។ សូមចាប់ផ្តើមតែបន្ទាប់ពីបានបញ្ជាក់ជាមួយផ្នែកគ្រប់គ្រង ឬ អ្នកដំណើរ។',
+  'start_too_old_detail':
+      'ដំណើរនេះចាស់ពេក មិនអាចចាប់ផ្តើមពីកម្មវិធីបានទេ។ សូមទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីពិនិត្យ។',
+  'contact_dispatch_to_start': 'ទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីចាប់ផ្តើម',
   'mark_arrived': 'ខ្ញុំបានមកដល់',
   'meet_passenger': 'បានជួបអ្នកដំណើរ',
   'drop_passenger': 'ដាក់អ្នកដំណើរ',
@@ -189,6 +201,7 @@ const Map<String, String> kmKH = {
   'vehicle_booked': 'បានកក់',
   'vehicle_assigned': 'យានយន្តកំណត់ឲ្យ',
   'return_note': 'អ្នកនឹងជូនអ្នកដំណើរត្រឡប់នៅថ្ងៃនេះ។',
+  'passenger_info': 'ព័ត៌មានអ្នកដំណើរ',
   'nationality': 'សញ្ជាតិ',
   'customer': 'អតិថិជន',
   'pax_label': 'អ្នកដំណើរ',
@@ -201,12 +214,39 @@ const Map<String, String> kmKH = {
   'notes': 'កំណត់ចំណាំ',
   'departure': 'ពេលចេញដំណើរ',
   'navigate': 'នាំផ្លូវ',
+  'view_map': 'មើលផែនទី',
+  'view_pickup_route': 'មើលផ្លូវទៅទទួល',
+  'view_dropoff_route': 'មើលផ្លូវទៅចុះ',
+  'open_google_maps': 'បើកក្នុង Google Maps',
+  'trip_map': 'ផែនទីដំណើរ',
+  'route_preview': 'មើលផ្លូវ',
+  'passenger_route': 'ផ្លូវអ្នកដំណើរ',
+  'pickup_route': 'ផ្លូវទៅទទួល',
+  'dropoff_route': 'ផ្លូវទៅចុះ',
+  'trip_route_ab': 'ផ្លូវ A ទៅ B',
+  'preview_passenger_route': 'មើលផ្លូវដំណើរអ្នកដំណើរ',
+  'you_are_heading_to_pickup': 'អ្នកកំពុងទៅទទួលអ្នកដំណើរ',
+  'you_are_heading_to_dropoff': 'អ្នកកំពុងទៅទីតាំងចុះ',
   'route_to_pickup': 'ផ្លូវទៅទីតាំងទទួល',
   'route_to_dropoff': 'ផ្លូវទៅទីតាំងចុះ',
   'navigate_to_pickup': 'នាំផ្លូវទៅទីតាំងទទួល',
   'navigate_to_dropoff': 'នាំផ្លូវទៅទីតាំងចុះ',
+  'driver_location': 'ទីតាំងរបស់អ្នក',
+  'pickup_point_a': 'ទីតាំងទទួល A',
+  'dropoff_point_b': 'ទីតាំងចុះ B',
+  'road_route_unavailable': 'មិនអាចបង្ហាញផ្លូវតាមផ្លូវបានទេ',
+  'to_pickup': 'ទៅទីតាំងទទួល',
+  'to_dropoff': 'ទៅទីតាំងចុះ',
+  'location_service_disabled': 'សូមបើកសេវាទីតាំង ដើម្បីបង្ហាញផ្លូវរបស់អ្នក។',
+  'location_permission_denied':
+      'ត្រូវការអនុញ្ញាតទីតាំង ដើម្បីបង្ហាញផ្លូវរបស់អ្នក។',
+  'location_permission_denied_forever':
+      'ការអនុញ្ញាតទីតាំងត្រូវបានបិទ។ សូមបើកវាក្នុងការកំណត់កម្មវិធី។',
+  'location_unavailable': 'មិនអាចយកទីតាំងបច្ចុប្បន្នរបស់អ្នកបានទេ។',
   'call_customer': 'ហៅទូរស័ព្ទ',
   'pickup_soon': 'ពេលទទួលជិតមកដល់ — សូមបញ្ជាក់ពេលអ្នកដំណើរនៅលើរថយន្ត។',
+  'tracking_action_required':
+      'ការតាមដានដំណើរបានបញ្ឈប់។ ប្រសិនបើអ្នកបានជូនអ្នកដំណើរដល់គោលដៅហើយ សូមបញ្ចប់ដំណើរ។',
 
   // Actions
   'accept_booking': 'ទទួលការកក់',

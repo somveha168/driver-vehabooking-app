@@ -1,2 +1,7 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include? "MapsKeys.xcconfig"
 #include "Generated.xcconfig"
+
+APP_BUNDLE_ID = com.vehabooking.driver.dev
+APP_DISPLAY_NAME = Veha Booking Driver Dev
+GOOGLE_MAPS_API_KEY = $(GOOGLE_MAPS_API_KEY_DEV)

@@ -1,3 +1,5 @@
+import 'place.dart';
+
 /// Compact booking card (from `DriverBookingListResource`).
 class BookingListItem {
   const BookingListItem({
@@ -12,8 +14,14 @@ class BookingListItem {
     this.customerPhone,
     this.pickupPoint,
     this.pickupLocationName,
+    this.pickupNearbyLocation,
+    this.pickupLatitude,
+    this.pickupLongitude,
     this.dropoffPoint,
     this.dropoffLocationName,
+    this.dropoffNearbyLocation,
+    this.dropoffLatitude,
+    this.dropoffLongitude,
     this.departureDatetime,
     this.legDepartureDatetime,
     this.linkedOutboundDatetime,
@@ -41,8 +49,14 @@ class BookingListItem {
   final String? customerPhone;
   final String? pickupPoint;
   final String? pickupLocationName;
+  final String? pickupNearbyLocation;
+  final double? pickupLatitude;
+  final double? pickupLongitude;
   final String? dropoffPoint;
   final String? dropoffLocationName;
+  final String? dropoffNearbyLocation;
+  final double? dropoffLatitude;
+  final double? dropoffLongitude;
   final String? departureDatetime;
   final String? legDepartureDatetime;
   final String? linkedOutboundDatetime;
@@ -74,6 +88,22 @@ class BookingListItem {
 
   /// Whether a usable destination is present.
   bool get hasDropoff => dropoffLabel != '—';
+
+  Place get pickupPlace => Place(
+    address: pickupPoint,
+    locationName: pickupLocationName,
+    nearbyLocation: pickupNearbyLocation,
+    latitude: pickupLatitude,
+    longitude: pickupLongitude,
+  );
+
+  Place get dropoffPlace => Place(
+    address: dropoffPoint,
+    locationName: dropoffLocationName,
+    nearbyLocation: dropoffNearbyLocation,
+    latitude: dropoffLatitude,
+    longitude: dropoffLongitude,
+  );
 
   /// Whether a dialable customer phone is present.
   bool get hasPhone =>
@@ -112,6 +142,34 @@ class BookingListItem {
     return null;
   }
 
+  DateTime? get departureAt {
+    final value = displayDepartureDatetime;
+    if (value.isEmpty) return null;
+    return DateTime.tryParse(value)?.toLocal();
+  }
+
+  Duration? get startOverdueBy {
+    final dt = departureAt;
+    if (nextAction != 'start' || dt == null) return null;
+    final diff = DateTime.now().difference(dt);
+    return diff.isNegative ? null : diff;
+  }
+
+  bool get isStartOverdue {
+    final diff = startOverdueBy;
+    return diff != null && diff.inMinutes >= 0;
+  }
+
+  bool get isStartVeryOverdue {
+    final diff = startOverdueBy;
+    return diff != null && diff >= const Duration(hours: 2);
+  }
+
+  bool get isStartTooOld {
+    final diff = startOverdueBy;
+    return diff != null && diff >= const Duration(hours: 6);
+  }
+
   factory BookingListItem.fromJson(
     Map<String, dynamic> json,
   ) => BookingListItem(
@@ -126,8 +184,14 @@ class BookingListItem {
     customerPhone: json['customer_phone']?.toString(),
     pickupPoint: json['pickup_point']?.toString(),
     pickupLocationName: json['pickup_location_name']?.toString(),
+    pickupNearbyLocation: json['pickup_nearby_location']?.toString(),
+    pickupLatitude: _toDouble(json['pickup_latitude']),
+    pickupLongitude: _toDouble(json['pickup_longitude']),
     dropoffPoint: json['dropoff_point']?.toString(),
     dropoffLocationName: json['dropoff_location_name']?.toString(),
+    dropoffNearbyLocation: json['dropoff_nearby_location']?.toString(),
+    dropoffLatitude: _toDouble(json['dropoff_latitude']),
+    dropoffLongitude: _toDouble(json['dropoff_longitude']),
     departureDatetime: json['departure_datetime']?.toString(),
     legDepartureDatetime: json['leg_departure_datetime']?.toString(),
     linkedOutboundDatetime: json['linked_outbound_datetime']?.toString(),
@@ -155,4 +219,10 @@ class BookingListItem {
         (json['allowed_actions'] as List?)?.map((e) => e.toString()).toList() ??
         const [],
   );
+
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString());
+  }
 }

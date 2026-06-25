@@ -1,4 +1,4 @@
-package com.example.veha_driver_app
+package com.vehabooking.driver
 
 import io.flutter.embedding.android.FlutterActivity
 

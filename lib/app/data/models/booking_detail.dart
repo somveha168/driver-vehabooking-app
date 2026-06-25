@@ -115,6 +115,34 @@ class BookingDetail {
   bool allows(String action) => allowedActions.contains(action);
   bool get canReportPickupIssue => allows('report_pickup_issue');
 
+  DateTime? get departureAt {
+    final value = displayDepartureDatetime;
+    if (value.isEmpty) return null;
+    return DateTime.tryParse(value)?.toLocal();
+  }
+
+  Duration? get startOverdueBy {
+    final dt = departureAt;
+    if (!allows('start') || dt == null) return null;
+    final diff = DateTime.now().difference(dt);
+    return diff.isNegative ? null : diff;
+  }
+
+  bool get isStartOverdue {
+    final diff = startOverdueBy;
+    return diff != null && diff.inMinutes >= 0;
+  }
+
+  bool get isStartVeryOverdue {
+    final diff = startOverdueBy;
+    return diff != null && diff >= const Duration(hours: 2);
+  }
+
+  bool get isStartTooOld {
+    final diff = startOverdueBy;
+    return diff != null && diff >= const Duration(hours: 6);
+  }
+
   /// A round-trip booking with a usable return date.
   bool get hasReturn =>
       isReturn && returnDate != null && returnDate!.isNotEmpty;

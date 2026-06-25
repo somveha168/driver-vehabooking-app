@@ -10,6 +10,7 @@ import '../../modules/home/home_binding.dart';
 import '../../modules/home/home_view.dart';
 import '../../modules/splash/splash_binding.dart';
 import '../../modules/splash/splash_view.dart';
+import '../../modules/trip_map/trip_map_view.dart';
 import '../../modules/welcome/welcome_binding.dart';
 import '../../modules/welcome/welcome_view.dart';
 import 'app_routes.dart';
@@ -43,6 +44,11 @@ class AppPages {
       name: Routes.bookingDetail,
       page: () => const BookingDetailView(),
       binding: BookingDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.tripMap,
+      page: () => const TripMapView(),
+      transition: Transition.noTransition,
     ),
     GetPage(
       name: Routes.documents,

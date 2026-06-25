@@ -1,0 +1,9 @@
+// Copy this file to MapsKeys.xcconfig and fill in local values.
+// MapsKeys.xcconfig is ignored by Git.
+
+GOOGLE_MAPS_API_KEY_DEV = YOUR_IOS_DEV_MAPS_KEY
+GOOGLE_MAPS_API_KEY_PROD = YOUR_IOS_PROD_MAPS_KEY
+
+// Debug builds use the dev key; Release builds can override this value in Xcode
+// or CI before production signing.
+GOOGLE_MAPS_API_KEY = $(GOOGLE_MAPS_API_KEY_DEV)
