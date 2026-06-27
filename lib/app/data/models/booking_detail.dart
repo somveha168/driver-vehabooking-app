@@ -41,6 +41,7 @@ class BookingDetail {
     this.vehiclePlate,
     this.vehicleColor,
     this.vehicleSeats,
+    this.operator,
     this.isReturn = false,
     this.returnDate,
     this.returnTime,
@@ -94,6 +95,7 @@ class BookingDetail {
   final String? vehiclePlate;
   final String? vehicleColor;
   final int? vehicleSeats;
+  final OperatorContact? operator;
 
   final bool isReturn;
   final String? returnDate; // ISO date (yyyy-MM-dd)
@@ -162,9 +164,12 @@ class BookingDetail {
     return parts.isEmpty ? null : parts.join(' · ');
   }
 
+  bool get hasOperatorContact => operator?.hasContact == true;
+
   factory BookingDetail.fromJson(Map<String, dynamic> json) {
     final customer = json['customer'] as Map<String, dynamic>?;
     final vehicle = json['vehicle'] as Map<String, dynamic>?;
+    final operator = json['operator'] as Map<String, dynamic>?;
     final flight = json['flight'] as Map<String, dynamic>?;
     final returnTrip = json['return_trip'] as Map<String, dynamic>?;
 
@@ -216,6 +221,7 @@ class BookingDetail {
       vehiclePlate: vehicle?['plate_number']?.toString(),
       vehicleColor: vehicle?['color']?.toString(),
       vehicleSeats: (vehicle?['seats'] as num?)?.toInt(),
+      operator: OperatorContact.fromJson(operator),
       isReturn: json['is_return'] == true,
       returnDate: returnTrip?['date']?.toString(),
       returnTime: returnTrip?['time']?.toString(),
@@ -223,6 +229,39 @@ class BookingDetail {
       airline: flight?['airline']?.toString(),
       terminal: flight?['terminal']?.toString(),
       flightDatetime: flight?['datetime']?.toString(),
+    );
+  }
+}
+
+class OperatorContact {
+  const OperatorContact({
+    this.name,
+    this.phone,
+    this.email,
+    this.telegramChatId,
+  });
+
+  final String? name;
+  final String? phone;
+  final String? email;
+  final String? telegramChatId;
+
+  bool get hasContact =>
+      (name != null && name!.isNotEmpty) ||
+      (phone != null && phone!.isNotEmpty) ||
+      (email != null && email!.isNotEmpty) ||
+      (telegramChatId != null && telegramChatId!.isNotEmpty);
+
+  bool get hasPhone => phone != null && phone!.isNotEmpty && phone != 'N/A';
+
+  factory OperatorContact.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const OperatorContact();
+
+    return OperatorContact(
+      name: json['name']?.toString(),
+      phone: json['phone']?.toString(),
+      email: json['email']?.toString(),
+      telegramChatId: json['telegram_chat_id']?.toString(),
     );
   }
 }

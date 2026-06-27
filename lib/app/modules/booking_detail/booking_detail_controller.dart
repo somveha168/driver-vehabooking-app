@@ -266,6 +266,12 @@ class BookingDetailController extends GetxController {
     await ExternalLauncher.call(phone);
   }
 
+  Future<void> callOperator() async {
+    final phone = booking.value?.operator?.phone;
+    if (phone == null || phone.isEmpty || phone == 'N/A') return;
+    await ExternalLauncher.call(phone);
+  }
+
   @override
   void onClose() {
     _trackingService.stop();

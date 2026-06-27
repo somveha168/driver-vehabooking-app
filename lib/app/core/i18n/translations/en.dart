@@ -131,6 +131,8 @@ const Map<String, String> enUS = {
   'start_too_old_detail':
       'This trip is too old to start from the app. Contact dispatch so they can review it.',
   'contact_dispatch_to_start': 'Contact dispatch to start',
+  'finish_trip_first_title': 'Finish @code first',
+  'open_trip': 'Open trip',
   'mark_arrived': "I've Arrived",
   'meet_passenger': 'Met Passenger',
   'drop_passenger': 'Drop Passenger',
@@ -212,6 +214,8 @@ const Map<String, String> enUS = {
   'nearby': 'Nearby',
   'passengers': 'Passengers',
   'vehicle': 'Vehicle',
+  'operator_info': 'Operator / Vendor',
+  'operator': 'Operator',
   'flight': 'Flight',
   'notes': 'Notes',
   'departure': 'Departure',

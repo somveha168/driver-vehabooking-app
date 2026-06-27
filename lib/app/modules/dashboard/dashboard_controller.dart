@@ -61,6 +61,13 @@ class DashboardController extends GetxController {
     openBooking(next.uuid, assignmentId: next.assignmentId);
   }
 
+  /// Open the trip that currently blocks the NOW card from starting.
+  void openBlockingTrip() {
+    final blockedBy = summary.value?.nextPickup?.startBlockedBy;
+    if (blockedBy == null || blockedBy.uuid.isEmpty) return;
+    openBooking(blockedBy.uuid, assignmentId: blockedBy.assignmentId);
+  }
+
   /// Open the full-screen route map from the Home NOW card.
   Future<void> openNextPickupMap() async {
     final next = summary.value?.nextPickup;

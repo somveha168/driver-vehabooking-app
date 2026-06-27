@@ -263,6 +263,11 @@ class _Detail extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
         ],
 
+        if (b.hasOperatorContact) ...[
+          _operatorCard(theme),
+          const SizedBox(height: AppSpacing.md),
+        ],
+
         // ── Pickup issue summary (terminal) ──
         if (b.stage == 'pickup_issue') ...[
           _PickupIssueSummary(reason: b.pickupIssueReason),
@@ -794,6 +799,141 @@ class _Detail extends StatelessWidget {
     );
   }
 
+  Widget _operatorCard(ThemeData theme) {
+    final operator = b.operator!;
+
+    return _SectionCard(
+      title: 'operator_info'.tr,
+      titleGap: AppSpacing.sm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                child: const Icon(
+                  IconsaxPlusLinear.building,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm + 2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      operator.name ?? '—',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'operator'.tr,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (operator.hasPhone) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Material(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: controller.callOperator,
+                    child: const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(
+                        IconsaxPlusBold.call,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          if (operator.phone != null || operator.email != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              children: [
+                if (operator.phone != null)
+                  _contactPill(
+                    theme,
+                    icon: IconsaxPlusLinear.call,
+                    value: operator.phone!,
+                    onTap: operator.hasPhone ? controller.callOperator : null,
+                  ),
+                if (operator.email != null)
+                  _contactPill(
+                    theme,
+                    icon: IconsaxPlusLinear.sms,
+                    value: operator.email!,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _contactPill(
+    ThemeData theme, {
+    required IconData icon,
+    required String value,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: AppColors.primary.withValues(alpha: 0.07),
+      borderRadius: BorderRadius.circular(999),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: AppColors.primary),
+              const SizedBox(width: 6),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 190),
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Extra trip rows (flight / notes), divider-separated.
   List<Widget> _detailRows(ThemeData theme) {
     final rows = <Widget>[];
@@ -822,10 +962,15 @@ class _Detail extends StatelessWidget {
 
 /// Soft card wrapper with an optional section title.
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child, this.title});
+  const _SectionCard({
+    required this.child,
+    this.title,
+    this.titleGap = AppSpacing.md,
+  });
 
   final Widget child;
   final String? title;
+  final double titleGap;
 
   @override
   Widget build(BuildContext context) {
@@ -867,7 +1012,7 @@ class _SectionCard extends StatelessWidget {
                 letterSpacing: 0.6,
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: titleGap),
           ],
           child,
         ],

@@ -129,6 +129,8 @@ const Map<String, String> kmKH = {
   'start_too_old_detail':
       'ដំណើរនេះចាស់ពេក មិនអាចចាប់ផ្តើមពីកម្មវិធីបានទេ។ សូមទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីពិនិត្យ។',
   'contact_dispatch_to_start': 'ទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីចាប់ផ្តើម',
+  'finish_trip_first_title': 'សូមបញ្ចប់ @code ជាមុន',
+  'open_trip': 'បើកដំណើរ',
   'mark_arrived': 'ខ្ញុំបានមកដល់',
   'meet_passenger': 'បានជួបអ្នកដំណើរ',
   'drop_passenger': 'ដាក់អ្នកដំណើរ',
@@ -210,6 +212,8 @@ const Map<String, String> kmKH = {
   'nearby': 'នៅជិត',
   'passengers': 'អ្នកដំណើរ',
   'vehicle': 'យានយន្ត',
+  'operator_info': 'ប្រតិបត្តិករ / អ្នកផ្គត់ផ្គង់',
+  'operator': 'ប្រតិបត្តិករ',
   'flight': 'ជើងហោះហើរ',
   'notes': 'កំណត់ចំណាំ',
   'departure': 'ពេលចេញដំណើរ',

@@ -631,6 +631,10 @@ class _NextPickupCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 TripSteps(stage: next.stage),
               ],
+              if (next.isStartBlocked) ...[
+                const SizedBox(height: AppSpacing.md),
+                _blockingTripNotice(theme),
+              ],
               if (next.nextAction != null) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _action(theme, next.nextAction!),
@@ -642,6 +646,88 @@ class _NextPickupCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _blockingTripNotice(ThemeData theme) {
+    final blockedBy = next.startBlockedBy!;
+    final title = 'finish_trip_first_title'.trParams({
+      'code': blockedBy.code ?? 'this trip',
+    });
+    final subtitleParts = <String>[
+      if (blockedBy.customerName != null && blockedBy.customerName!.isNotEmpty)
+        blockedBy.customerName!,
+      if (blockedBy.legDepartureDatetime != null &&
+          blockedBy.legDepartureDatetime!.isNotEmpty)
+        Formatters.dateTime(blockedBy.legDepartureDatetime!),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm + 2),
+      decoration: BoxDecoration(
+        color: AppColors.assigned.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.assigned.withValues(alpha: 0.20)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              IconsaxPlusLinear.lock_1,
+              size: 17,
+              color: AppColors.assigned,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (subtitleParts.isNotEmpty)
+                  Text(
+                    subtitleParts.join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          TextButton(
+            onPressed: controller.openBlockingTrip,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.assigned,
+              minimumSize: const Size(0, 34),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            child: Text('open_trip'.tr),
+          ),
+        ],
       ),
     );
   }

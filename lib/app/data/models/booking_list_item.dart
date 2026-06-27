@@ -33,6 +33,7 @@ class BookingListItem {
     this.vehicleColor,
     this.vehicleSeats,
     this.acceptedAt,
+    this.startBlockedBy,
     this.allowedActions = const [],
     this.pickupIssueReasonOptions = const [],
     this.pickupIssueNoteMaxLength = 500,
@@ -68,6 +69,7 @@ class BookingListItem {
   final String? vehicleColor;
   final int? vehicleSeats;
   final String? acceptedAt;
+  final BlockingTrip? startBlockedBy;
   final List<String> allowedActions;
   final List<String> pickupIssueReasonOptions;
   final int pickupIssueNoteMaxLength;
@@ -170,6 +172,8 @@ class BookingListItem {
     return diff != null && diff >= const Duration(hours: 6);
   }
 
+  bool get isStartBlocked => startBlockedBy != null && nextAction == null;
+
   factory BookingListItem.fromJson(
     Map<String, dynamic> json,
   ) => BookingListItem(
@@ -208,6 +212,11 @@ class BookingListItem {
     vehicleSeats: ((json['vehicle'] as Map<String, dynamic>?)?['seats'] as num?)
         ?.toInt(),
     acceptedAt: json['accepted_at']?.toString(),
+    startBlockedBy: json['start_blocked_by'] is Map<String, dynamic>
+        ? BlockingTrip.fromJson(
+            json['start_blocked_by'] as Map<String, dynamic>,
+          )
+        : null,
     pickupIssueReasonOptions:
         (json['pickup_issue_reason_options'] as List?)
             ?.map((e) => e.toString())
@@ -225,4 +234,34 @@ class BookingListItem {
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString());
   }
+}
+
+class BlockingTrip {
+  const BlockingTrip({
+    required this.uuid,
+    this.assignmentId,
+    this.code,
+    this.customerName,
+    this.tripType,
+    this.stage,
+    this.legDepartureDatetime,
+  });
+
+  final String uuid;
+  final int? assignmentId;
+  final String? code;
+  final String? customerName;
+  final String? tripType;
+  final String? stage;
+  final String? legDepartureDatetime;
+
+  factory BlockingTrip.fromJson(Map<String, dynamic> json) => BlockingTrip(
+    uuid: json['uuid']?.toString() ?? '',
+    assignmentId: (json['assignment_id'] as num?)?.toInt(),
+    code: json['code']?.toString(),
+    customerName: json['customer_name']?.toString(),
+    tripType: json['trip_type']?.toString(),
+    stage: json['stage']?.toString(),
+    legDepartureDatetime: json['leg_departure_datetime']?.toString(),
+  );
 }
