@@ -7,6 +7,7 @@ import '../../core/network/api_client.dart';
 import '../../core/storage/storage_service.dart';
 import '../models/auth_user.dart';
 import '../repositories/auth_repository.dart';
+import 'push_notification_service.dart';
 
 /// Owns the authenticated session: the current user, the token (mirrored to
 /// [ApiClient] and [StorageService]), and login/logout.
@@ -53,6 +54,9 @@ class AuthService extends GetxService {
       deviceName: deviceName(),
     );
     await _persist(result.token, result.user);
+    if (Get.isRegistered<PushNotificationService>()) {
+      await Get.find<PushNotificationService>().registerCurrentDevice();
+    }
   }
 
   /// Update editable profile fields and persist the refreshed user.

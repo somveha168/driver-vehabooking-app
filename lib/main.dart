@@ -13,7 +13,9 @@ import 'app/core/theme/app_theme.dart';
 import 'app/data/repositories/auth_repository.dart';
 import 'app/data/repositories/booking_repository.dart';
 import 'app/data/repositories/guide_repository.dart';
+import 'app/data/repositories/notification_repository.dart';
 import 'app/data/services/auth_service.dart';
+import 'app/data/services/push_notification_service.dart';
 import 'app/data/services/settings_service.dart';
 
 Future<void> main() async {
@@ -27,6 +29,7 @@ Future<void> main() async {
   Get.put(AuthRepository(api), permanent: true);
   Get.put(BookingRepository(api), permanent: true);
   Get.put(GuideRepository(api), permanent: true);
+  Get.put(NotificationRepository(api), permanent: true);
   final locationService = Get.put(LocationService(), permanent: true);
   Get.put(
     DriverTrackingService(Get.find<BookingRepository>(), locationService),
@@ -38,6 +41,11 @@ Future<void> main() async {
     permanent: true,
   );
   await auth.bootstrap();
+
+  await Get.put(
+    PushNotificationService(Get.find<NotificationRepository>(), api, storage),
+    permanent: true,
+  ).init();
 
   final settings = Get.put(SettingsService(storage).init(), permanent: true);
 

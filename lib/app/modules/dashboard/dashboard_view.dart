@@ -295,20 +295,55 @@ class _Hero extends StatelessWidget {
             _StatusPill(controller: controller),
             const SizedBox(width: AppSpacing.sm),
             // Notification bell.
-            InkWell(
-              onTap: controller.openNotifications,
-              borderRadius: BorderRadius.circular(40),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  IconsaxPlusLinear.notification,
-                  size: 20,
-                  color: AppColors.primary,
+            Obx(
+              () => InkWell(
+                onTap: controller.openNotifications,
+                borderRadius: BorderRadius.circular(40),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        IconsaxPlusLinear.notification,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    if (controller.unreadNotifications.value > 0)
+                      Positioned(
+                        top: -1,
+                        right: -1,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 17,
+                            minHeight: 17,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.cancelled,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            controller.unreadNotifications.value > 9
+                                ? '9+'
+                                : controller.unreadNotifications.value
+                                      .toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

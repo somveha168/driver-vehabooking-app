@@ -10,6 +10,7 @@ import '../../data/models/auth_user.dart';
 import '../../data/models/dashboard_summary.dart';
 import '../../data/repositories/booking_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/push_notification_service.dart';
 import '../bookings/bookings_controller.dart';
 import '../home/home_controller.dart';
 
@@ -23,6 +24,7 @@ class DashboardController extends GetxController {
   final isActing = false.obs;
   final error = RxnString();
   final Rxn<DashboardSummary> summary = Rxn<DashboardSummary>();
+  final unreadNotifications = 0.obs;
 
   /// Verification status (pending / approved / rejected).
   final status = 'pending'.obs;
@@ -44,6 +46,7 @@ class DashboardController extends GetxController {
       summary.value = data;
       status.value = data.status;
       active.value = data.active;
+      await _loadUnreadNotifications();
       _watchNextPickupTracking();
     } on ApiException catch (e) {
       error.value = e.message;
@@ -206,9 +209,28 @@ class DashboardController extends GetxController {
     if (index >= 0) bookings.tabController.animateTo(index);
   }
 
-  /// Header notification bell. Real notifications arrive in v2 (FCM); for now
-  /// this acknowledges there's nothing new.
-  void openNotifications() => AppSnackbar.info('no_notifications'.tr);
+  void openNotifications() {
+    if (unreadNotifications.value == 0) {
+      AppSnackbar.info('no_notifications'.tr);
+      return;
+    }
+
+    AppSnackbar.info(
+      'notification_unread_count'.trParams({
+        'count': unreadNotifications.value.toString(),
+      }),
+    );
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    if (!Get.isRegistered<PushNotificationService>()) {
+      unreadNotifications.value = 0;
+      return;
+    }
+
+    unreadNotifications.value = await Get.find<PushNotificationService>()
+        .unreadCount();
+  }
 
   Future<void> _syncNextPickupLocation() async {
     final next = summary.value?.nextPickup;

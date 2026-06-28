@@ -46,3 +46,7 @@ app.*.map.json
 
 # Local Google Maps keys. Keep real key values out of Git.
 /ios/Flutter/MapsKeys.xcconfig
+
+# Firebase app config files. Keep environment-specific mobile config out of Git.
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist

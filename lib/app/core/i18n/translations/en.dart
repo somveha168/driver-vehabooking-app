@@ -103,6 +103,7 @@ const Map<String, String> enUS = {
   'awaiting_acceptance': 'awaiting your acceptance',
   'home_subtitle': 'Pick up your assigned trips on time.',
   'no_notifications': 'No new notifications',
+  'notification_unread_count': '@count unread notifications',
 
   // Bookings list
   'bookings_title': 'My bookings',

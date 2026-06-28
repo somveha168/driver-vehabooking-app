@@ -7,6 +7,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {

@@ -102,6 +102,7 @@ const Map<String, String> kmKH = {
   'awaiting_acceptance': 'កំពុងរង់ចាំការទទួលរបស់អ្នក',
   'home_subtitle': 'ទទួលអ្នកដំណើរតាមការកំណត់ឲ្យទាន់ពេល។',
   'no_notifications': 'គ្មានការជូនដំណឹងថ្មីទេ',
+  'notification_unread_count': 'មានការជូនដំណឹងមិនទាន់អាន @count',
 
   // Bookings list
   'bookings_title': 'ការកក់របស់ខ្ញុំ',
