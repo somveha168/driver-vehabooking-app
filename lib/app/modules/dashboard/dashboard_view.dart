@@ -89,8 +89,10 @@ class DashboardView extends GetView<DashboardController> {
           child: SafeArea(
             bottom: false,
             child: RefreshIndicator(
+              color: AppColors.primary,
               onRefresh: controller.load,
               child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
                   AppSpacing.lg,
@@ -549,6 +551,11 @@ class _NextPickupCard extends StatelessWidget {
   final BookingListItem next;
   final DashboardController controller;
 
+  bool get _showsDropoffRoute =>
+      next.stage == 'meet_passenger' ||
+      next.stage == 'drop_passenger' ||
+      next.nextAction == 'complete';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -893,7 +900,10 @@ class _NextPickupCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'view_pickup_route'.tr,
+                  (_showsDropoffRoute
+                          ? 'view_dropoff_route'
+                          : 'view_pickup_route')
+                      .tr,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w800,

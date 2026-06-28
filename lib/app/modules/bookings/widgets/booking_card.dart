@@ -16,8 +16,9 @@ class BookingCard extends StatelessWidget {
   final BookingListItem booking;
   final VoidCallback onTap;
 
-  /// Completed-step count: assigned=0, start=1, arrived=2, meet=3, done=4.
-  int get _reached => switch (booking.stage) {
+  /// Completed-step count from the real driver-trip status:
+  /// assigned=0, start=1, arrived=2, meet=3, dropped=4.
+  int get _reached => switch (booking.driverTripStatus ?? booking.stage) {
     'start' => 1,
     'arrived_location' => 2,
     'meet_passenger' => 3,
@@ -27,6 +28,8 @@ class BookingCard extends StatelessWidget {
 
   bool get _showSteps =>
       booking.stage != 'cancelled' && booking.stage != 'pickup_issue';
+
+  bool get _auditClosedSteps => booking.stage == 'completed';
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +152,7 @@ class BookingCard extends StatelessWidget {
 
   Widget _stepRail(ThemeData theme) {
     final reached = _reached;
+    final audit = _auditClosedSteps;
     final labels = [
       'step_short_start'.tr,
       'step_short_arrived'.tr,
@@ -170,6 +174,9 @@ class BookingCard extends StatelessWidget {
                 final lineStart = dotCenters.first;
                 final lineEnd = dotCenters.last;
                 final progressEnd = dotCenters[reached.clamp(0, 3)];
+                final baseLineColor = audit
+                    ? AppColors.cancelled.withValues(alpha: 0.36)
+                    : theme.colorScheme.outlineVariant;
 
                 return Stack(
                   alignment: Alignment.center,
@@ -177,20 +184,27 @@ class BookingCard extends StatelessWidget {
                     Positioned(
                       left: lineStart,
                       right: width - lineEnd,
-                      child: _stepLine(theme.colorScheme.outlineVariant),
+                      child: _stepLine(baseLineColor),
                     ),
-                    Positioned(
-                      left: lineStart,
-                      width: progressEnd - lineStart,
-                      child: _stepLine(AppColors.primary),
-                    ),
+                    if (reached > 0)
+                      Positioned(
+                        left: lineStart,
+                        width: progressEnd - lineStart,
+                        child: _stepLine(AppColors.primary),
+                      ),
                     ...List.generate(4, (i) {
                       final done = i < reached;
-                      final current = i == reached && reached < 4;
+                      final current = !audit && i == reached && reached < 4;
+                      final missed = audit && !done;
 
                       return Positioned(
                         left: dotCenters[i] - 8,
-                        child: _stepDot(theme, done: done, current: current),
+                        child: _stepDot(
+                          theme,
+                          done: done,
+                          current: current,
+                          missed: missed,
+                        ),
                       );
                     }),
                   ],
@@ -476,8 +490,19 @@ class BookingCard extends StatelessWidget {
     ThemeData theme, {
     required bool done,
     required bool current,
+    bool missed = false,
   }) {
     final active = done || current;
+    final color = missed
+        ? AppColors.cancelled
+        : active
+        ? AppColors.primary
+        : theme.colorScheme.surface;
+    final borderColor = missed
+        ? AppColors.cancelled
+        : active
+        ? AppColors.primary
+        : theme.colorScheme.outlineVariant;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
@@ -485,11 +510,8 @@ class BookingCard extends StatelessWidget {
       height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: active ? AppColors.primary : theme.colorScheme.surface,
-        border: Border.all(
-          color: active ? AppColors.primary : theme.colorScheme.outlineVariant,
-          width: 1.6,
-        ),
+        color: color,
+        border: Border.all(color: borderColor, width: 1.6),
       ),
       child: done
           ? const Icon(
@@ -497,6 +519,8 @@ class BookingCard extends StatelessWidget {
               size: 11,
               color: Colors.white,
             )
+          : missed
+          ? const Icon(Icons.close_rounded, size: 12, color: Colors.white)
           : current
           ? Center(
               child: Container(

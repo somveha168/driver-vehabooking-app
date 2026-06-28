@@ -26,6 +26,32 @@ class ExternalLauncher {
     return launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  /// Open turn-by-turn directions for a specific route. Use explicit origin and
+  /// destination when both are known so Google Maps does not infer the wrong
+  /// point from the device or stale app state.
+  static Future<bool> navigateRoute({
+    double? originLatitude,
+    double? originLongitude,
+    String? originAddress,
+    required double destinationLatitude,
+    required double destinationLongitude,
+  }) async {
+    final params = <String, String>{
+      'api': '1',
+      'travelmode': 'driving',
+      'destination': '$destinationLatitude,$destinationLongitude',
+    };
+
+    if (originLatitude != null && originLongitude != null) {
+      params['origin'] = '$originLatitude,$originLongitude';
+    } else if (originAddress != null && originAddress.trim().isNotEmpty) {
+      params['origin'] = originAddress.trim();
+    }
+
+    final uri = Uri.https('www.google.com', '/maps/dir/', params);
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   /// Start a phone call to [phone].
   static Future<bool> call(String phone) {
     final uri = Uri(scheme: 'tel', path: phone.replaceAll(' ', ''));

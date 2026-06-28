@@ -131,6 +131,10 @@ const Map<String, String> enUS = {
   'start_too_old_detail':
       'This trip is too old to start from the app. Contact dispatch so they can review it.',
   'contact_dispatch_to_start': 'Contact dispatch to start',
+  'dispatch_must_review_detail':
+      'This trip was not started in time. Dispatch must review and close it before you can continue.',
+  'contact_dispatch_to_review': 'Contact dispatch to review',
+  'dispatch_review_needed': 'Dispatch review needed',
   'finish_trip_first_title': 'Finish @code first',
   'open_trip': 'Open trip',
   'mark_arrived': "I've Arrived",

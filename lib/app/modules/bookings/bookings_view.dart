@@ -54,8 +54,10 @@ class BookingsView extends GetView<BookingsController> {
 
                 if (controller.items.isEmpty) {
                   return RefreshIndicator(
+                    color: AppColors.primary,
                     onRefresh: controller.fetch,
                     child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         SizedBox(
                           height: MediaQuery.sizeOf(context).height * 0.14,
@@ -71,8 +73,10 @@ class BookingsView extends GetView<BookingsController> {
                 }
 
                 return RefreshIndicator(
+                  color: AppColors.primary,
                   onRefresh: controller.fetch,
                   child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.lg,
                       AppSpacing.sm,

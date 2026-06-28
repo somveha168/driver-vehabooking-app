@@ -10,6 +10,7 @@ class BookingListItem {
     this.serviceType,
     this.tripType,
     this.isRoundTrip = false,
+    this.driverTripStatus,
     this.customerName,
     this.customerPhone,
     this.pickupPoint,
@@ -46,6 +47,7 @@ class BookingListItem {
   final String? serviceType;
   final String? tripType;
   final bool isRoundTrip;
+  final String? driverTripStatus;
   final String? customerName;
   final String? customerPhone;
   final String? pickupPoint;
@@ -184,6 +186,7 @@ class BookingListItem {
     serviceType: json['service_type']?.toString(),
     tripType: json['trip_type']?.toString(),
     isRoundTrip: json['is_round_trip'] == true,
+    driverTripStatus: json['driver_trip_status']?.toString(),
     customerName: json['customer_name']?.toString(),
     customerPhone: json['customer_phone']?.toString(),
     pickupPoint: json['pickup_point']?.toString(),

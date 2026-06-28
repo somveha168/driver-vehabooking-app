@@ -728,11 +728,33 @@ class _TripMapViewState extends State<TripMapView> {
   }
 
   Future<void> _navigate() async {
-    final target = args.activeTarget;
-    await ExternalLauncher.navigateTo(
-      latitude: target.latitude,
-      longitude: target.longitude,
-      address: target.label,
+    if (!args.pickup.hasCoordinates || !args.dropoff.hasCoordinates) {
+      final target = args.activeTarget;
+      await ExternalLauncher.navigateTo(
+        latitude: target.latitude,
+        longitude: target.longitude,
+        address: target.label,
+      );
+
+      return;
+    }
+
+    final mode = _routeMode;
+    final destination = mode == 'to_pickup' ? args.pickup : args.dropoff;
+    final origin = mode == 'passenger'
+        ? args.pickup
+        : (_hasUsableDriverLocation ? null : args.pickup);
+
+    await ExternalLauncher.navigateRoute(
+      originLatitude: _hasUsableDriverLocation
+          ? _driverLocation!.latitude
+          : origin?.latitude,
+      originLongitude: _hasUsableDriverLocation
+          ? _driverLocation!.longitude
+          : origin?.longitude,
+      originAddress: origin?.label,
+      destinationLatitude: destination.latitude!,
+      destinationLongitude: destination.longitude!,
     );
   }
 }

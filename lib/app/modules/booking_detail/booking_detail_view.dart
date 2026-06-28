@@ -192,113 +192,118 @@ class _Detail extends StatelessWidget {
     final theme = Theme.of(context);
     final details = _detailRows(theme);
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      children: [
-        // ── Who + contact ──
-        _SectionCard(
-          title: 'passenger_info'.tr,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    '#${b.code ?? '—'}',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.outline,
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: controller.load,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          // ── Who + contact ──
+          _SectionCard(
+            title: 'passenger_info'.tr,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '#${b.code ?? '—'}',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  StatusChip(stage: b.stage),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          b.customerName ?? '—',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          _subtitle(),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.outline,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_hasPhone) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    _callButton(),
+                    const Spacer(),
+                    StatusChip(stage: b.stage),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.customerName ?? '—',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _subtitle(),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_hasPhone) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      _callButton(),
+                    ],
+                  ],
+                ),
+                if (_hasPhone) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  const Divider(height: 1),
+                  const SizedBox(height: AppSpacing.md),
+                  _phoneRow(theme),
                 ],
-              ),
-              if (_hasPhone) ...[
                 const SizedBox(height: AppSpacing.md),
                 const Divider(height: 1),
                 const SizedBox(height: AppSpacing.md),
-                _phoneRow(theme),
+                ..._passengerRows(theme),
               ],
-              const SizedBox(height: AppSpacing.md),
-              const Divider(height: 1),
-              const SizedBox(height: AppSpacing.md),
-              ..._passengerRows(theme),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-
-        // ── Vehicle: booked class + the real assigned vehicle ──
-        if (b.hasVehicle) ...[
-          _vehicleCard(theme),
-          const SizedBox(height: AppSpacing.md),
-        ],
-
-        if (b.hasOperatorContact) ...[
-          _operatorCard(theme),
-          const SizedBox(height: AppSpacing.md),
-        ],
-
-        // ── Pickup issue summary (terminal) ──
-        if (b.stage == 'pickup_issue') ...[
-          _PickupIssueSummary(reason: b.pickupIssueReason),
-          const SizedBox(height: AppSpacing.md),
-        ],
-
-        // ── Route: one-way shows a single route; 2-way always reads
-        // Outbound first, Return second, regardless of the selected active leg.
-        if (b.hasReturn)
-          ..._roundTripCards(theme)
-        else ...[
-          _tripRouteCard(
-            theme,
-            title: 'route'.tr,
-            legLabel: 'departure'.tr,
-            when: b.displayDepartureDatetime,
-            pickup: b.pickup,
-            dropoff: b.dropoff,
-            isCurrentLeg: true,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-        ],
 
-        // ── Extra details (only when present) ──
-        if (details.isNotEmpty)
-          _SectionCard(
-            title: 'trip_details'.tr,
-            child: Column(children: details),
-          ),
-        const SizedBox(height: AppSpacing.xxxl),
-      ],
+          // ── Vehicle: booked class + the real assigned vehicle ──
+          if (b.hasVehicle) ...[
+            _vehicleCard(theme),
+            const SizedBox(height: AppSpacing.md),
+          ],
+
+          if (b.hasOperatorContact) ...[
+            _operatorCard(theme),
+            const SizedBox(height: AppSpacing.md),
+          ],
+
+          // ── Pickup issue summary (terminal) ──
+          if (b.stage == 'pickup_issue') ...[
+            _PickupIssueSummary(reason: b.pickupIssueReason),
+            const SizedBox(height: AppSpacing.md),
+          ],
+
+          // ── Route: one-way shows a single route; 2-way always reads
+          // Outbound first, Return second, regardless of the selected active leg.
+          if (b.hasReturn)
+            ..._roundTripCards(theme)
+          else ...[
+            _tripRouteCard(
+              theme,
+              title: 'route'.tr,
+              legLabel: 'departure'.tr,
+              when: b.displayDepartureDatetime,
+              pickup: b.pickup,
+              dropoff: b.dropoff,
+              isCurrentLeg: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+
+          // ── Extra details (only when present) ──
+          if (details.isNotEmpty)
+            _SectionCard(
+              title: 'trip_details'.tr,
+              child: Column(children: details),
+            ),
+          const SizedBox(height: AppSpacing.xxxl),
+        ],
+      ),
     );
   }
 
@@ -1076,17 +1081,38 @@ class _ActionBar extends StatelessWidget {
     final theme = Theme.of(context);
     return SizedBox(
       width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: null,
-        icon: const Icon(IconsaxPlusLinear.headphone, size: 18),
-        label: Text('contact_dispatch_to_start'.tr),
+      child: OutlinedButton(
+        onPressed: b.operator?.hasPhone == true
+            ? controller.callOperator
+            : null,
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(48),
-          disabledForegroundColor: AppColors.cancelled.withValues(alpha: 0.78),
+          foregroundColor: AppColors.cancelled,
+          disabledForegroundColor: AppColors.cancelled.withValues(alpha: 0.70),
           side: BorderSide(color: AppColors.cancelled.withValues(alpha: 0.22)),
           textStyle: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w800,
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(IconsaxPlusLinear.headphone, size: 18),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                b.operator?.hasPhone == true
+                    ? 'contact_dispatch_to_review'.tr
+                    : 'dispatch_review_needed'.tr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1109,7 +1135,7 @@ class _StartOverdueNotice extends StatelessWidget {
         ? AppColors.assigned
         : AppColors.assigned;
     final key = isTooOld
-        ? 'start_too_old_detail'
+        ? 'dispatch_must_review_detail'
         : isVeryOverdue
         ? 'start_very_overdue_detail'
         : 'start_overdue_detail';
