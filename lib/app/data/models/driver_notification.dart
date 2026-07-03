@@ -24,6 +24,10 @@ class DriverNotification {
     this.bookingCode,
     this.assignmentId,
     this.tripType,
+    this.serviceType,
+    this.routeOrigin,
+    this.routeDestination,
+    this.departureAt,
     this.route,
     this.readAt,
     this.createdAt,
@@ -40,12 +44,30 @@ class DriverNotification {
   final String? bookingCode;
   final int? assignmentId;
   final String? tripType;
+  final String? serviceType;
+  final String? routeOrigin;
+  final String? routeDestination;
+  final String? departureAt;
   final String? route;
   final DateTime? readAt;
   final DateTime? createdAt;
   final String? createdAtHuman;
 
   bool get canOpenTrip => bookingUuid != null && bookingUuid!.isNotEmpty;
+
+  String? get routeLine {
+    final origin = tripType == 'return' ? routeDestination : routeOrigin;
+    final destination = tripType == 'return' ? routeOrigin : routeDestination;
+
+    if (origin != null &&
+        origin.isNotEmpty &&
+        destination != null &&
+        destination.isNotEmpty) {
+      return '$origin to $destination';
+    }
+
+    return null;
+  }
 
   factory DriverNotification.fromJson(Map<String, dynamic> json) {
     final rawData = json['data'];
@@ -67,6 +89,12 @@ class DriverNotification {
       bookingCode: _string(json['booking_code'] ?? data['booking_code']),
       assignmentId: _int(json['assignment_id'] ?? data['assignment_id']),
       tripType: _string(json['trip_type'] ?? data['trip_type']),
+      serviceType: _string(json['service_type'] ?? data['service_type']),
+      routeOrigin: _string(json['route_origin'] ?? data['route_origin']),
+      routeDestination: _string(
+        json['route_destination'] ?? data['route_destination'],
+      ),
+      departureAt: _string(json['departure_at'] ?? data['departure_at']),
       route: _string(json['route'] ?? data['route']),
       readAt: _date(json['read_at']),
       createdAt: _date(json['created_at']),

@@ -4,6 +4,7 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/state_views.dart';
 import '../../data/models/driver_notification.dart';
@@ -393,6 +394,10 @@ class _NotificationTile extends GetView<NotificationsController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isUnread = !item.isRead;
+    final routeLine = item.routeLine;
+    final departure = item.departureAt == null
+        ? null
+        : Formatters.dateTime24(item.departureAt);
 
     return InkWell(
       onTap: () => controller.open(item),
@@ -406,147 +411,108 @@ class _NotificationTile extends GetView<NotificationsController> {
           ),
         ),
         padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: isUnread
-                    ? AppColors.primary.withValues(alpha: 0.12)
-                    : theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Icon(
-                _iconForType(item.type),
-                color: isUnread ? AppColors.primary : theme.colorScheme.outline,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: isUnread
-                                ? FontWeight.w800
-                                : FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      if (isUnread) ...[
-                        const SizedBox(width: AppSpacing.sm),
-                        Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.only(top: 5),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ],
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                      height: 1.16,
+                    ),
                   ),
-                  if (item.message.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      item.message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.outline,
-                        height: 1.32,
+                ),
+                if (isUnread) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.only(top: 5),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (item.bookingCode != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '#${item.bookingCode}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+            if (routeLine != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                routeLine,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                  height: 1.28,
+                ),
+              ),
+            ] else if (!item.canOpenTrip && item.message.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                item.message,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                  height: 1.28,
+                ),
+              ),
+            ],
+            if (departure != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: '${'departure'.tr}: '),
+                    TextSpan(
+                      text: departure,
+                      style: const TextStyle(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
-                  const SizedBox(height: AppSpacing.md),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.xs,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      if (item.bookingCode != null)
-                        _MetaPill(
-                          icon: IconsaxPlusLinear.ticket,
-                          label: item.bookingCode!,
-                        ),
-                      if (item.createdAtHuman != null)
-                        _MetaPill(
-                          icon: IconsaxPlusLinear.clock,
-                          label: item.createdAtHuman!,
-                        ),
-                      if (item.canOpenTrip)
-                        _MetaPill(
-                          icon: IconsaxPlusLinear.arrow_right_3,
-                          label: 'open_trip'.tr,
-                          highlighted: true,
-                        ),
-                    ],
-                  ),
-                ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                  fontWeight: FontWeight.w500,
+                  height: 1.2,
+                ),
               ),
-            ),
+            ] else if (item.createdAtHuman != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                item.createdAtHuman!,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
-      ),
-    );
-  }
-
-  IconData _iconForType(String type) {
-    if (type.contains('assigned')) return IconsaxPlusLinear.routing_2;
-    if (type.contains('removed')) return IconsaxPlusLinear.close_circle;
-    if (type.contains('updated')) return IconsaxPlusLinear.refresh;
-    return IconsaxPlusLinear.notification;
-  }
-}
-
-class _MetaPill extends StatelessWidget {
-  const _MetaPill({
-    required this.icon,
-    required this.label,
-    this.highlighted = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool highlighted;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = highlighted ? AppColors.primary : theme.colorScheme.outline;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: 5,
-      ),
-      decoration: BoxDecoration(
-        color: highlighted
-            ? AppColors.primary.withValues(alpha: 0.12)
-            : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: highlighted ? FontWeight.w700 : FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

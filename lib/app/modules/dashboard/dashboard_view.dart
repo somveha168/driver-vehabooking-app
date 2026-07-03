@@ -481,7 +481,7 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
-/// Compact upcoming pickup row: time · name · pickup → detail.
+/// Compact upcoming pickup row: departure · booking code · route.
 class _UpcomingItem extends StatelessWidget {
   const _UpcomingItem({required this.booking, required this.controller});
 
@@ -498,9 +498,14 @@ class _UpcomingItem extends StatelessWidget {
     };
   }
 
-  String _legLabel() => booking.isReturnLeg
-      ? '${'round_trip_badge'.tr} · ${'trip_leg_return'.tr}'
-      : '${'round_trip_badge'.tr} · ${'trip_leg_outbound'.tr}';
+  String _legLabel() {
+    final trip = booking.isRoundTrip ? 'round_trip_badge'.tr : 'one_way'.tr;
+    final leg = booking.isReturnLeg
+        ? 'trip_leg_return'.tr
+        : 'trip_leg_outbound'.tr;
+
+    return '$trip · $leg';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -555,29 +560,27 @@ class _UpcomingItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      booking.customerName ?? '—',
+                      booking.code == null ? '—' : '#${booking.code}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0,
                       ),
                     ),
-                    if (booking.isRoundTrip) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        _legLabel(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
+                    const SizedBox(height: 2),
                     Text(
-                      booking.hasDropoff
-                          ? '${booking.pickupLabel}  →  ${booking.dropoffLabel}'
-                          : booking.pickupLabel,
+                      _legLabel(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${booking.driverRouteOriginLabel} to ${booking.driverRouteDestinationLabel}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -1064,7 +1067,7 @@ class _NextPickupCard extends StatelessWidget {
                       child: _routePointText(
                         theme,
                         label: 'origin'.tr,
-                        value: next.routeOriginLabel,
+                        value: next.driverRouteOriginLabel,
                         alignEnd: false,
                       ),
                     ),
@@ -1080,7 +1083,7 @@ class _NextPickupCard extends StatelessWidget {
                       child: _routePointText(
                         theme,
                         label: 'destination'.tr,
-                        value: next.routeDestinationLabel,
+                        value: next.driverRouteDestinationLabel,
                         alignEnd: true,
                       ),
                     ),

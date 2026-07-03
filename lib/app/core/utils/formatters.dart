@@ -11,6 +11,13 @@ class Formatters {
     return DateFormat('EEE, d MMM · h:mm a').format(dt.toLocal());
   }
 
+  /// e.g. "12 Jun 2026 11:00 PM". Returns '—' for null/invalid input.
+  static String dateTime24(String? iso) {
+    final dt = _parse(iso);
+    if (dt == null) return '—';
+    return DateFormat('d MMM yyyy h:mm a').format(dt.toLocal());
+  }
+
   /// e.g. "9:00 AM".
   static String time(String? iso) {
     final dt = _parse(iso);

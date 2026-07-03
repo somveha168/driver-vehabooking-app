@@ -106,6 +106,12 @@ class BookingListItem {
     return dropoffLabel;
   }
 
+  String get driverRouteOriginLabel =>
+      isReturnLeg ? routeDestinationLabel : routeOriginLabel;
+
+  String get driverRouteDestinationLabel =>
+      isReturnLeg ? routeOriginLabel : routeDestinationLabel;
+
   /// Whether a usable destination is present.
   bool get hasDropoff => dropoffLabel != '—';
 

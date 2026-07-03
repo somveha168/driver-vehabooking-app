@@ -152,20 +152,6 @@ class BookingCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
       child: Row(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              IconsaxPlusLinear.routing_2,
-              size: 13,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Row(
               children: [
@@ -173,7 +159,7 @@ class BookingCard extends StatelessWidget {
                   child: _routePointText(
                     theme,
                     label: 'origin'.tr,
-                    value: booking.routeOriginLabel,
+                    value: booking.driverRouteOriginLabel,
                     alignEnd: false,
                   ),
                 ),
@@ -189,7 +175,7 @@ class BookingCard extends StatelessWidget {
                   child: _routePointText(
                     theme,
                     label: 'destination'.tr,
-                    value: booking.routeDestinationLabel,
+                    value: booking.driverRouteDestinationLabel,
                     alignEnd: true,
                   ),
                 ),
@@ -333,12 +319,10 @@ class BookingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.42,
-        ),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(99),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.72),
         ),
       ),
       child: Row(

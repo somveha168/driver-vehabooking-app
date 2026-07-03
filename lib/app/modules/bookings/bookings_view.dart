@@ -250,9 +250,7 @@ class _SegmentedTabs extends StatelessWidget {
         height: 42,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.62,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
           border: Border.all(
             color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
