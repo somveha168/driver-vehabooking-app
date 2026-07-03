@@ -11,6 +11,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.errorCode,
     this.fieldErrors,
+    this.payload,
   });
 
   /// Human-readable message (already localized by the backend, or a fallback).
@@ -24,6 +25,9 @@ class ApiException implements Exception {
 
   /// Validation errors keyed by field name (422 responses).
   final Map<String, List<String>>? fieldErrors;
+
+  /// Extra top-level response fields, useful for recoverable errors.
+  final Map<String, dynamic>? payload;
 
   bool get isUnauthorized => statusCode == 401;
   bool get isValidation => statusCode == 422;
@@ -67,6 +71,7 @@ class ApiException implements Exception {
       statusCode: res.statusCode,
       errorCode: errorCode,
       fieldErrors: fieldErrors,
+      payload: data is Map ? Map<String, dynamic>.from(data) : null,
     );
   }
 

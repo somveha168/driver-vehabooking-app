@@ -13,6 +13,8 @@ class BookingListItem {
     this.driverTripStatus,
     this.customerName,
     this.customerPhone,
+    this.routeOrigin,
+    this.routeDestination,
     this.pickupPoint,
     this.pickupLocationName,
     this.pickupNearbyLocation,
@@ -50,6 +52,8 @@ class BookingListItem {
   final String? driverTripStatus;
   final String? customerName;
   final String? customerPhone;
+  final String? routeOrigin;
+  final String? routeDestination;
   final String? pickupPoint;
   final String? pickupLocationName;
   final String? pickupNearbyLocation;
@@ -88,6 +92,18 @@ class BookingListItem {
       return dropoffLocationName!;
     }
     return dropoffPoint ?? '—';
+  }
+
+  String get routeOriginLabel {
+    if (routeOrigin != null && routeOrigin!.isNotEmpty) return routeOrigin!;
+    return pickupLabel;
+  }
+
+  String get routeDestinationLabel {
+    if (routeDestination != null && routeDestination!.isNotEmpty) {
+      return routeDestination!;
+    }
+    return dropoffLabel;
   }
 
   /// Whether a usable destination is present.
@@ -189,6 +205,11 @@ class BookingListItem {
     driverTripStatus: json['driver_trip_status']?.toString(),
     customerName: json['customer_name']?.toString(),
     customerPhone: json['customer_phone']?.toString(),
+    routeOrigin: (json['route_summary'] as Map<String, dynamic>?)?['origin']
+        ?.toString(),
+    routeDestination:
+        (json['route_summary'] as Map<String, dynamic>?)?['destination']
+            ?.toString(),
     pickupPoint: json['pickup_point']?.toString(),
     pickupLocationName: json['pickup_location_name']?.toString(),
     pickupNearbyLocation: json['pickup_nearby_location']?.toString(),

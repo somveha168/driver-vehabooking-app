@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../modules/auth/forgot_password_binding.dart';
+import '../../modules/auth/forgot_password_view.dart';
 import '../../modules/auth/login_binding.dart';
 import '../../modules/auth/login_view.dart';
 import '../../modules/booking_detail/booking_detail_binding.dart';
@@ -8,6 +10,8 @@ import '../../modules/documents/documents_binding.dart';
 import '../../modules/documents/documents_view.dart';
 import '../../modules/home/home_binding.dart';
 import '../../modules/home/home_view.dart';
+import '../../modules/notifications/notifications_binding.dart';
+import '../../modules/notifications/notifications_view.dart';
 import '../../modules/splash/splash_binding.dart';
 import '../../modules/splash/splash_view.dart';
 import '../../modules/trip_map/trip_map_view.dart';
@@ -36,6 +40,12 @@ class AppPages {
       binding: LoginBinding(),
     ),
     GetPage(
+      name: Routes.forgotPassword,
+      page: () => const ForgotPasswordView(),
+      binding: ForgotPasswordBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: Routes.home,
       page: () => const HomeView(),
       binding: HomeBinding(),
@@ -54,6 +64,12 @@ class AppPages {
       name: Routes.documents,
       page: () => const DocumentsView(),
       binding: DocumentsBinding(),
+    ),
+    GetPage(
+      name: Routes.notifications,
+      page: () => const NotificationsView(),
+      binding: NotificationsBinding(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

@@ -16,6 +16,12 @@ class AppConstants {
   // First-run welcome/onboarding seen flag.
   static const String onboardingSeenKey = 'onboarding_seen';
 
+  // Pending forgot-password flow.
+  static const String passwordResetIdentifierKey = 'password_reset_identifier';
+  static const String passwordResetOtpTokenKey = 'password_reset_otp_token';
+  static const String passwordResetOtpExpiresAtKey =
+      'password_reset_otp_expires_at';
+
   // Default list page size (backend honours `limit`).
   static const int pageSize = 20;
 }

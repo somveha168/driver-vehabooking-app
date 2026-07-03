@@ -52,6 +52,62 @@ class StorageService extends GetxService {
   set deviceName(String? value) =>
       _box.write(AppConstants.deviceNameKey, value);
 
+  String? get passwordResetIdentifier =>
+      _box.read<String>(AppConstants.passwordResetIdentifierKey);
+  set passwordResetIdentifier(String? value) => value == null
+      ? _box.remove(AppConstants.passwordResetIdentifierKey)
+      : _box.write(AppConstants.passwordResetIdentifierKey, value);
+
+  String? get passwordResetOtpToken =>
+      _box.read<String>(AppConstants.passwordResetOtpTokenKey);
+  set passwordResetOtpToken(String? value) => value == null
+      ? _box.remove(AppConstants.passwordResetOtpTokenKey)
+      : _box.write(AppConstants.passwordResetOtpTokenKey, value);
+
+  DateTime? get passwordResetOtpExpiresAt {
+    final value = _box.read<String>(AppConstants.passwordResetOtpExpiresAtKey);
+    return value == null ? null : DateTime.tryParse(value);
+  }
+
+  set passwordResetOtpExpiresAt(DateTime? value) => value == null
+      ? _box.remove(AppConstants.passwordResetOtpExpiresAtKey)
+      : _box.write(
+          AppConstants.passwordResetOtpExpiresAtKey,
+          value.toIso8601String(),
+        );
+
+  bool get hasValidPendingPasswordReset {
+    final identifier = passwordResetIdentifier;
+    final token = passwordResetOtpToken;
+    final expiresAt = passwordResetOtpExpiresAt;
+
+    return identifier != null &&
+        identifier.isNotEmpty &&
+        token != null &&
+        token.isNotEmpty &&
+        expiresAt != null &&
+        expiresAt.isAfter(DateTime.now());
+  }
+
+  Future<void> savePendingPasswordReset({
+    required String identifier,
+    required String otpToken,
+    required DateTime expiresAt,
+  }) async {
+    await _box.write(AppConstants.passwordResetIdentifierKey, identifier);
+    await _box.write(AppConstants.passwordResetOtpTokenKey, otpToken);
+    await _box.write(
+      AppConstants.passwordResetOtpExpiresAtKey,
+      expiresAt.toIso8601String(),
+    );
+  }
+
+  Future<void> clearPendingPasswordReset() async {
+    await _box.remove(AppConstants.passwordResetIdentifierKey);
+    await _box.remove(AppConstants.passwordResetOtpTokenKey);
+    await _box.remove(AppConstants.passwordResetOtpExpiresAtKey);
+  }
+
   /// Whether the first-run welcome screen has been seen.
   bool get seenOnboarding =>
       _box.read<bool>(AppConstants.onboardingSeenKey) ?? false;

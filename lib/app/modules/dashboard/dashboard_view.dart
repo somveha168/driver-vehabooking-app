@@ -238,7 +238,6 @@ class _Hero extends StatelessWidget {
     final greeting = hour < 12
         ? 'good_morning'
         : (hour < 17 ? 'good_afternoon' : 'good_evening');
-    final name = controller.user?.displayName ?? '';
     final dateLabel = DateFormat(
       'EEEE, MMMM d',
     ).format(DateTime.now()).toUpperCase();
@@ -306,8 +305,18 @@ class _Hero extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
+                        color: scheme.surface.withValues(alpha: 0.76),
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: scheme.outlineVariant.withValues(alpha: 0.32),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.08),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         IconsaxPlusLinear.notification,
@@ -361,35 +370,39 @@ class _Hero extends StatelessWidget {
         const SizedBox(height: 2),
         // Name in a teal→navy brand gradient (like the web "Veha."), with a
         // teal accent period.
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? const [Color(0xFF4FC3A1), AppColors.primary]
-                    : const [AppColors.primary, AppColors.secondary],
-              ).createShader(bounds),
-              child: Text(
-                name,
-                style: serif.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+        Obx(() {
+          final name = controller.user?.displayName ?? '';
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? const [Color(0xFF4FC3A1), AppColors.primary]
+                      : const [AppColors.primary, AppColors.secondary],
+                ).createShader(bounds),
+                child: Text(
+                  name,
+                  style: serif.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              '.',
-              style: serif.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+              Text(
+                '.',
+                style: serif.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
         const SizedBox(height: AppSpacing.lg),
         Container(
           height: 1,
@@ -434,8 +447,16 @@ class _StatusPill extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
+          color: theme.colorScheme.surface.withValues(alpha: 0.76),
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(color: color.withValues(alpha: 0.20)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondary.withValues(alpha: 0.07),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -625,10 +646,6 @@ class _NextPickupCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         _meta(theme),
-                        if (next.isRoundTrip) ...[
-                          const SizedBox(height: 3),
-                          _legLine(theme),
-                        ],
                         if (next.hasPhone) ...[
                           const SizedBox(height: 4),
                           _phone(theme),
@@ -649,21 +666,7 @@ class _NextPickupCard extends StatelessWidget {
                 _startOverdueNotice(theme),
               ],
               const SizedBox(height: AppSpacing.sm + 2),
-
-              // Origin → destination timeline.
-              _stop(
-                theme,
-                isOrigin: true,
-                caption: 'pickup'.tr,
-                value: next.pickupLabel,
-              ),
-              if (next.hasDropoff)
-                _stop(
-                  theme,
-                  isOrigin: false,
-                  caption: 'dropoff'.tr,
-                  value: next.dropoffLabel,
-                ),
+              _bookedRouteSummary(theme),
               if (next.hasDropoff) ...[
                 const SizedBox(height: AppSpacing.sm),
                 _mapButton(theme),
@@ -952,29 +955,6 @@ class _NextPickupCard extends StatelessWidget {
     );
   }
 
-  Widget _legLine(ThemeData theme) {
-    final linked = next.linkedLegDatetime;
-    final linkedLabel = linked == null || linked.isEmpty
-        ? null
-        : (next.isReturnLeg
-              ? '${'outbound_scheduled'.tr} ${Formatters.shortDate(linked)}'
-              : '${'return_scheduled'.tr} ${Formatters.shortDate(linked)}');
-
-    return Text(
-      [
-        'round_trip_badge'.tr,
-        next.isReturnLeg ? 'trip_leg_return'.tr : 'trip_leg_outbound'.tr,
-        ...?(linkedLabel == null ? null : [linkedLabel]),
-      ].join(' · '),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: AppColors.primary,
-        fontWeight: FontWeight.w800,
-      ),
-    );
-  }
-
   /// Passenger phone, with a call glyph.
   Widget _phone(ThemeData theme) => Row(
     children: [
@@ -1009,38 +989,21 @@ class _NextPickupCard extends StatelessWidget {
   );
 
   Widget _meta(ThemeData theme) {
-    final outline = theme.colorScheme.outline;
+    final code = next.code;
+    if (code == null || code.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Row(
       children: [
-        if (next.serviceType != null)
-          Text(
-            next.serviceType!.toUpperCase(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-            ),
+        Text(
+          code,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0,
           ),
-        if (next.serviceType != null && next.passengerCount != null) ...[
-          const SizedBox(width: 8),
-          Container(
-            width: 3,
-            height: 3,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: outline),
-          ),
-          const SizedBox(width: 8),
-        ],
-        if (next.passengerCount != null) ...[
-          Icon(IconsaxPlusLinear.profile, size: 13, color: outline),
-          const SizedBox(width: 4),
-          Text(
-            '${next.passengerCount}',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: outline,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+        ),
       ],
     );
   }
@@ -1063,75 +1026,165 @@ class _NextPickupCard extends StatelessWidget {
     ],
   );
 
-  /// One stop in the route timeline. Origin is a filled dot, destination a ring;
-  /// a connector drops from the origin when there's a destination below.
-  Widget _stop(
-    ThemeData theme, {
-    required bool isOrigin,
-    required String caption,
-    required String value,
-  }) {
-    final showConnector = isOrigin && next.hasDropoff;
-    final marker = Container(
-      width: 13,
-      height: 13,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isOrigin ? AppColors.primary : Colors.white,
-        border: Border.all(
-          color: isOrigin
-              ? AppColors.primary.withValues(alpha: 0.25)
-              : AppColors.secondary,
-          width: 3,
-        ),
-      ),
-    );
+  Widget _bookedRouteSummary(ThemeData theme) {
+    final service = next.serviceType?.capitalizeFirst ?? next.serviceType;
+    final bookedVehicle = next.vehicleBooked;
 
-    return IntrinsicHeight(
-      child: Row(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.sm + 2),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
+          Row(
             children: [
-              Padding(padding: const EdgeInsets.only(top: 3), child: marker),
-              if (showConnector)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 3),
-                    color: AppColors.primary.withValues(alpha: 0.22),
-                  ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  IconsaxPlusLinear.routing_2,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _routePointText(
+                        theme,
+                        label: 'origin'.tr,
+                        value: next.routeOriginLabel,
+                        alignEnd: false,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Icon(
+                        IconsaxPlusLinear.arrow_right_3,
+                        size: 15,
+                        color: AppColors.secondary.withValues(alpha: 0.44),
+                      ),
+                    ),
+                    Expanded(
+                      child: _routePointText(
+                        theme,
+                        label: 'destination'.tr,
+                        value: next.routeDestinationLabel,
+                        alignEnd: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            children: [
+              if (service != null && service.isNotEmpty)
+                _routeFactPill(
+                  theme,
+                  icon: IconsaxPlusLinear.car,
+                  value: service,
+                ),
+              _routeFactPill(
+                theme,
+                icon: IconsaxPlusLinear.refresh,
+                value: next.isRoundTrip ? 'round_trip_badge'.tr : 'one_way'.tr,
+              ),
+              if (next.passengerCount != null)
+                _routeFactPill(
+                  theme,
+                  icon: IconsaxPlusLinear.profile_2user,
+                  value: '${next.passengerCount} ${'pax_label'.tr}',
+                ),
+              if (bookedVehicle != null && bookedVehicle.isNotEmpty)
+                _routeFactPill(
+                  theme,
+                  icon: IconsaxPlusLinear.bus,
+                  value: bookedVehicle,
                 ),
             ],
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: showConnector ? AppSpacing.sm : 0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    caption.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.outline,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _routePointText(
+    ThemeData theme, {
+    required String label,
+    required String value,
+    required bool alignEnd,
+  }) => Column(
+    crossAxisAlignment: alignEnd
+        ? CrossAxisAlignment.end
+        : CrossAxisAlignment.start,
+    children: [
+      Text(
+        label.toUpperCase(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.outline,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        value,
+        textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: AppColors.secondary,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w700,
+          height: 1.1,
+        ),
+      ),
+    ],
+  );
+
+  Widget _routeFactPill(
+    ThemeData theme, {
+    required IconData icon,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.primary),
+          const SizedBox(width: 5),
+          Text(
+            value,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.secondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              height: 1,
             ),
           ),
         ],

@@ -13,8 +13,8 @@ import '../../data/services/settings_service.dart';
 import 'login_controller.dart';
 
 /// Driver sign-in. Brand-consistent with the Welcome screen: soft teal/navy
-/// aurora glows on the canvas, the logo + wordmark, and the form lifted into a
-/// glass card for a focused, professional feel.
+/// aurora glows on the canvas, logo + wordmark, and an open form layout that
+/// keeps the screen light and spacious.
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
@@ -25,6 +25,10 @@ class LoginView extends GetView<LoginController> {
     final isDark = theme.brightness == Brightness.dark;
     final canvas = isDark ? scheme.surface : AppColors.canvas;
     final settings = Get.find<SettingsService>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.applyRouteArguments();
+    });
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -52,7 +56,7 @@ class LoginView extends GetView<LoginController> {
                     AppSpacing.xxl,
                     AppSpacing.md,
                     AppSpacing.xxl,
-                    AppSpacing.xl,
+                    AppSpacing.lg,
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -72,13 +76,13 @@ class LoginView extends GetView<LoginController> {
                           const Spacer(flex: 2),
 
                           _brand(theme),
-                          const Spacer(flex: 2),
+                          const SizedBox(height: AppSpacing.xl),
 
                           _headline(theme, scheme),
-                          const SizedBox(height: AppSpacing.xl),
+                          const SizedBox(height: AppSpacing.lg),
 
-                          _card(context, theme, scheme, isDark),
-                          const SizedBox(height: AppSpacing.xl),
+                          _form(context, theme, scheme),
+                          const SizedBox(height: AppSpacing.md),
 
                           // Dispatcher help footer — drivers don't self-register.
                           Center(
@@ -112,7 +116,7 @@ class LoginView extends GetView<LoginController> {
   /// Logo mark + "VEHA BOOKING" wordmark.
   Widget _brand(ThemeData theme) => Column(
     children: [
-      Image.asset('assets/branding/app_icon.png', height: 88)
+      Image.asset('assets/branding/app_icon.png', height: 84)
           .animate()
           .fadeIn(duration: 550.ms)
           .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
@@ -120,7 +124,7 @@ class LoginView extends GetView<LoginController> {
       Text(
         'VEHA BOOKING',
         style: GoogleFonts.kantumruyPro(
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: FontWeight.w700,
           letterSpacing: 3.0,
           color: AppColors.secondary,
@@ -137,9 +141,9 @@ class LoginView extends GetView<LoginController> {
         'login_title'.tr,
         textAlign: TextAlign.center,
         style: GoogleFonts.fraunces(
-          fontSize: 34,
-          height: 1.05,
-          letterSpacing: -0.5,
+          fontSize: 32,
+          height: 1.04,
+          letterSpacing: -0.2,
           fontWeight: FontWeight.w700,
           color: scheme.onSurface,
         ),
@@ -148,39 +152,21 @@ class LoginView extends GetView<LoginController> {
       Text(
         'login_subtitle'.tr,
         textAlign: TextAlign.center,
-        style: theme.textTheme.bodyMedium?.copyWith(
+        style: theme.textTheme.bodySmall?.copyWith(
           color: scheme.onSurfaceVariant,
+          height: 1.35,
         ),
       ).animate().fadeIn(delay: 420.ms, duration: 500.ms),
     ],
   );
 
-  /// The form, lifted into a soft glass card.
-  Widget _card(
+  /// The open sign-in form. Inputs carry the structure, no enclosing card.
+  Widget _form(
     BuildContext context,
     ThemeData theme,
     ColorScheme scheme,
-    bool isDark,
-  ) => Container(
-    padding: const EdgeInsets.all(AppSpacing.xl),
-    decoration: BoxDecoration(
-      color: isDark
-          ? scheme.surfaceContainerHigh.withValues(alpha: 0.6)
-          : Colors.white.withValues(alpha: 0.72),
-      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-      border: Border.all(
-        color: isDark
-            ? scheme.outlineVariant.withValues(alpha: 0.3)
-            : Colors.white.withValues(alpha: 0.9),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.06),
-          blurRadius: 30,
-          offset: const Offset(0, 12),
-        ),
-      ],
-    ),
+  ) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
     child: Form(
       key: controller.formKey,
       child: Column(
@@ -201,13 +187,14 @@ class LoginView extends GetView<LoginController> {
               validator: Validators.loginField,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
           _field(
             theme,
             label: 'password'.tr,
             child: Obx(
               () => TextFormField(
                 controller: controller.passwordCtrl,
+                focusNode: controller.passwordFocusNode,
                 obscureText: controller.obscure.value,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => controller.submit(),
@@ -228,11 +215,11 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: controller.showHelp,
+              onPressed: controller.forgotPassword,
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,
@@ -250,10 +237,27 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          Obx(
-            () => FilledButton(
-              onPressed: controller.isLoading.value ? null : controller.submit,
+          const SizedBox(height: AppSpacing.sm),
+          Obx(() {
+            final enabled =
+                !controller.isLoading.value && controller.canSignIn.value;
+
+            return FilledButton(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                disabledBackgroundColor: AppColors.primary.withValues(
+                  alpha: 0.34,
+                ),
+                disabledForegroundColor: Colors.white.withValues(alpha: 0.82),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                textStyle: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
+                ),
+              ),
+              onPressed: enabled ? controller.submit : null,
               child: controller.isLoading.value
                   ? const SizedBox(
                       width: 22,
@@ -272,14 +276,14 @@ class LoginView extends GetView<LoginController> {
                         const Icon(IconsaxPlusLinear.arrow_right_3, size: 20),
                       ],
                     ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     ),
   ).animate().fadeIn(delay: 480.ms, duration: 550.ms).slideY(begin: 0.08);
 
-  /// A labeled form field — small bold label above its input.
+  /// A labeled form field — compact label above a bright, quiet input.
   Widget _field(
     ThemeData theme, {
     required String label,
@@ -294,13 +298,62 @@ class LoginView extends GetView<LoginController> {
         ),
         child: Text(
           label,
-          style: theme.textTheme.labelLarge?.copyWith(
+          style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.82),
           ),
         ),
       ),
-      child,
+      Theme(
+        data: theme.copyWith(
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.94),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: 15,
+            ),
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
+              letterSpacing: 0,
+            ),
+            prefixIconColor: theme.colorScheme.onSurfaceVariant.withValues(
+              alpha: 0.82,
+            ),
+            suffixIconColor: theme.colorScheme.onSurfaceVariant.withValues(
+              alpha: 0.82,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: BorderSide(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: BorderSide(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.55),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.3,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: BorderSide(color: theme.colorScheme.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: BorderSide(color: theme.colorScheme.error),
+            ),
+          ),
+        ),
+        child: child,
+      ),
     ],
   );
 

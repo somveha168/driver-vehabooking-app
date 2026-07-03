@@ -407,7 +407,7 @@ class _EditForm extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            OutlinedButton(
+            FilledButton.tonal(
               onPressed: controller.cancelEdit,
               style: _cancelStyle,
               child: Text('cancel'.tr),
@@ -421,7 +421,7 @@ class _EditForm extends StatelessWidget {
   static final ButtonStyle _btnStyle = FilledButton.styleFrom(
     backgroundColor: AppColors.primary,
     foregroundColor: Colors.white,
-    minimumSize: const Size(0, 44),
+    minimumSize: const Size(0, 46),
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
     textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
     shape: RoundedRectangleBorder(
@@ -429,14 +429,14 @@ class _EditForm extends StatelessWidget {
     ),
   );
 
-  static final ButtonStyle _cancelStyle = OutlinedButton.styleFrom(
+  static final ButtonStyle _cancelStyle = FilledButton.styleFrom(
+    backgroundColor: AppColors.primary.withValues(alpha: 0.10),
     foregroundColor: AppColors.primary,
-    minimumSize: const Size(0, 44),
+    minimumSize: const Size(0, 46),
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.72)),
     textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
     ),
   );
 
@@ -600,14 +600,21 @@ class _EditForm extends StatelessWidget {
                 curve: Curves.easeOut,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: active ? AppColors.primary : Colors.transparent,
+                  color: active
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(
+                    color: active
+                        ? AppColors.primary.withValues(alpha: 0.26)
+                        : Colors.transparent,
+                  ),
                   boxShadow: active
                       ? [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.28),
-                            blurRadius: 12,
-                            offset: const Offset(0, 5),
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                         ]
                       : null,
@@ -619,7 +626,7 @@ class _EditForm extends StatelessWidget {
                       icon,
                       size: 15,
                       color: active
-                          ? Colors.white
+                          ? AppColors.primary
                           : theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 6),
@@ -627,7 +634,7 @@ class _EditForm extends StatelessWidget {
                       label,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: active
-                            ? Colors.white
+                            ? AppColors.primary
                             : theme.colorScheme.onSurfaceVariant,
                         fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                       ),

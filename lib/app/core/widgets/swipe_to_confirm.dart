@@ -223,11 +223,13 @@ class _SwipeToConfirmState extends State<SwipeToConfirm>
                           ],
                         ),
                         child: widget.loading
-                            ? Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: scheme.primary,
+                            ? Center(
+                                child: SizedBox.square(
+                                  dimension: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    color: scheme.primary,
+                                  ),
                                 ),
                               )
                             : _SwipeThumbIcon(

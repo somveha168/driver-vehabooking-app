@@ -25,8 +25,11 @@ class BookingDetail {
     this.startLocked = false,
     this.customerName,
     this.customerPhone,
+    this.customerEmail,
     this.pickup = const Place(),
     this.dropoff = const Place(),
+    this.routeOrigin,
+    this.routeDestination,
     this.departureDatetime,
     this.legDepartureDatetime,
     this.linkedOutboundDatetime,
@@ -76,9 +79,12 @@ class BookingDetail {
 
   final String? customerName;
   final String? customerPhone;
+  final String? customerEmail;
 
   final Place pickup;
   final Place dropoff;
+  final String? routeOrigin;
+  final String? routeDestination;
 
   final String? departureDatetime;
   final String? legDepartureDatetime;
@@ -116,6 +122,15 @@ class BookingDetail {
   bool get can => allowedActions.isNotEmpty;
   bool allows(String action) => allowedActions.contains(action);
   bool get canReportPickupIssue => allows('report_pickup_issue');
+  bool get isClosed =>
+      status == 'completed' ||
+      status == 'cancelled' ||
+      stage == 'completed' ||
+      stage == 'cancelled' ||
+      stage == 'pickup_issue' ||
+      driverTripStatus == 'drop_passenger' ||
+      driverTripStatus == 'pickup_issue' ||
+      pickupIssueReason != null;
 
   DateTime? get departureAt {
     final value = displayDepartureDatetime;
@@ -172,6 +187,7 @@ class BookingDetail {
     final operator = json['operator'] as Map<String, dynamic>?;
     final flight = json['flight'] as Map<String, dynamic>?;
     final returnTrip = json['return_trip'] as Map<String, dynamic>?;
+    final routeSummary = json['route_summary'] as Map<String, dynamic>?;
 
     return BookingDetail(
       uuid: json['uuid']?.toString() ?? '',
@@ -205,8 +221,11 @@ class BookingDetail {
       startLocked: json['start_locked'] == true,
       customerName: customer?['name']?.toString(),
       customerPhone: customer?['phone']?.toString(),
+      customerEmail: customer?['email']?.toString(),
       pickup: Place.fromJson(json['pickup'] as Map<String, dynamic>?),
       dropoff: Place.fromJson(json['dropoff'] as Map<String, dynamic>?),
+      routeOrigin: routeSummary?['origin']?.toString(),
+      routeDestination: routeSummary?['destination']?.toString(),
       departureDatetime: json['departure_datetime']?.toString(),
       legDepartureDatetime: json['leg_departure_datetime']?.toString(),
       linkedOutboundDatetime: json['linked_outbound_datetime']?.toString(),

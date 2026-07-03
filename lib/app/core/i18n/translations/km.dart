@@ -13,7 +13,7 @@ const Map<String, String> kmKH = {
 
   // Auth
   'login_title': 'សូមស្វាគមន៍ការត្រឡប់មកវិញ',
-  'login_subtitle': 'ចូលគណនី ដើម្បីចាប់ផ្តើមបើកបរ',
+  'login_subtitle': 'ចូលគណនី ដើម្បីគ្រប់គ្រងការធ្វើដំណើរ',
   'login_field': 'លេខទូរស័ព្ទ ឬ អ៊ីមែល',
   'login_field_hint': 'បញ្ចូលលេខទូរស័ព្ទ ឬ អ៊ីមែល',
   'password': 'ពាក្យសម្ងាត់',
@@ -23,7 +23,39 @@ const Map<String, String> kmKH = {
   'login_field_required': 'សូមបញ្ចូលលេខទូរស័ព្ទ ឬ អ៊ីមែល',
   'password_required': 'សូមបញ្ចូលពាក្យសម្ងាត់',
   'forgot_password': 'ភ្លេចពាក្យសម្ងាត់?',
-  'login_help': 'មិនទាន់មានគណនី? សូមទាក់ទងប្រតិបត្តិករ។',
+  'forgot_password_title': 'កំណត់ពាក្យសម្ងាត់ឡើងវិញ',
+  'forgot_password_subtitle':
+      'បញ្ចូលលេខទូរស័ព្ទ ឬអ៊ីមែលរបស់អ្នក។ យើងនឹងផ្ញើលេខកូដផ្ទៀងផ្ទាត់។',
+  'reset_identifier_label': 'លេខទូរស័ព្ទ ឬ អ៊ីមែល',
+  'reset_via_phone': 'ទូរស័ព្ទ',
+  'reset_via_email': 'អ៊ីមែល',
+  'reset_phone_hint': 'បញ្ចូលលេខទូរស័ព្ទ',
+  'reset_email_hint': 'បញ្ចូល Gmail ឬ អ៊ីមែល',
+  'send_code': 'ផ្ញើលេខកូដ',
+  'reset_code_sent': 'បានផ្ញើលេខកូដផ្ទៀងផ្ទាត់។',
+  'reset_code_verified': 'បានផ្ទៀងផ្ទាត់លេខកូដ។',
+  'reset_request_expired':
+      'សំណើកំណត់ពាក្យសម្ងាត់នេះផុតកំណត់។ សូមស្នើលេខកូដថ្មី។',
+  'verify_code_title': 'ពិនិត្យលេខកូដ',
+  'verify_code_subtitle': 'បញ្ចូលលេខកូដ ៦ ខ្ទង់ដែលយើងបានផ្ញើទៅគណនីរបស់អ្នក។',
+  'code_sent_to': 'លេខកូដបានផ្ញើទៅ @destination',
+  'verification_code': 'លេខកូដផ្ទៀងផ្ទាត់',
+  'verification_code_hint': 'បញ្ចូលលេខកូដ ៦ ខ្ទង់',
+  'verification_code_required': 'សូមបញ្ចូលលេខកូដ ៦ ខ្ទង់',
+  'verify_code': 'ផ្ទៀងផ្ទាត់លេខកូដ',
+  'did_not_receive_code': 'មិនបានទទួលលេខកូដ?',
+  'resend_code': 'ផ្ញើលេខកូដម្តងទៀត',
+  'set_new_password_title': 'បង្កើតពាក្យសម្ងាត់ថ្មី',
+  'set_new_password_subtitle': 'បង្កើតពាក្យសម្ងាត់ថ្មីសម្រាប់គណនីអ្នកបើកបរ។',
+  'new_password': 'ពាក្យសម្ងាត់ថ្មី',
+  'confirm_password': 'បញ្ជាក់ពាក្យសម្ងាត់',
+  'confirm_password_hint': 'បញ្ចូលពាក្យសម្ងាត់ម្តងទៀត',
+  'save_new_password': 'រក្សាទុកពាក្យសម្ងាត់ថ្មី',
+  'password_reset_success': 'បានកំណត់ពាក្យសម្ងាត់ឡើងវិញ។ សូមចូលគណនីម្តងទៀត។',
+  'password_min_length': 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ @count តួអក្សរ។',
+  'passwords_do_not_match': 'ពាក្យសម្ងាត់មិនដូចគ្នា។',
+  'phone_invalid': 'សូមបញ្ចូលលេខទូរស័ព្ទឲ្យត្រឹមត្រូវ',
+  'login_help': 'ត្រូវការសិទ្ធិចូល? សូមទាក់ទងប្រតិបត្តិករ។',
   'login_help_message':
       'គណនីអ្នកបើកបរត្រូវបានផ្តល់ដោយប្រតិបត្តិកររបស់អ្នក។ សូមទាក់ទងពួកគេដើម្បីចូលគណនី។',
 
@@ -103,6 +135,15 @@ const Map<String, String> kmKH = {
   'home_subtitle': 'ទទួលអ្នកដំណើរតាមការកំណត់ឲ្យទាន់ពេល។',
   'no_notifications': 'គ្មានការជូនដំណឹងថ្មីទេ',
   'notification_unread_count': 'មានការជូនដំណឹងមិនទាន់អាន @count',
+  'notifications_title': 'ការជូនដំណឹង',
+  'notifications_subtitle':
+      'ការកំណត់ដំណើរ និងបច្ចុប្បន្នភាពសំខាន់ៗសម្រាប់គណនីអ្នកបើកបរ។',
+  'notifications_empty_title': 'មិនទាន់មានការជូនដំណឹងទេ',
+  'notifications_empty_message':
+      'ការកំណត់ដំណើរថ្មី និងបច្ចុប្បន្នភាពគណនីនឹងបង្ហាញនៅទីនេះ។',
+  'all_notifications': 'ទាំងអស់',
+  'unread': 'មិនទាន់អាន',
+  'mark_all_read': 'សម្គាល់ថាបានអានទាំងអស់',
 
   // Bookings list
   'bookings_title': 'ការកក់របស់ខ្ញុំ',
@@ -190,6 +231,11 @@ const Map<String, String> kmKH = {
 
   // Detail
   'booking_detail': 'ព័ត៌មានលម្អិត',
+  'booking_info': 'ព័ត៌មានការកក់',
+  'customer_info': 'ព័ត៌មានអតិថិជន',
+  'exact_vehicle_info': 'ព័ត៌មានយានយន្តពិត',
+  'origin': 'ចេញពី',
+  'destination': 'គោលដៅ',
   'route': 'ផ្លូវ',
   'trip_details': 'ព័ត៌មានបន្ថែម',
   'round_trip': 'ទៅ​មក',

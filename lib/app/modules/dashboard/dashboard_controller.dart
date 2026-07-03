@@ -210,16 +210,7 @@ class DashboardController extends GetxController {
   }
 
   void openNotifications() {
-    if (unreadNotifications.value == 0) {
-      AppSnackbar.info('no_notifications'.tr);
-      return;
-    }
-
-    AppSnackbar.info(
-      'notification_unread_count'.trParams({
-        'count': unreadNotifications.value.toString(),
-      }),
-    );
+    Get.toNamed(Routes.notifications)?.then((_) => _loadUnreadNotifications());
   }
 
   Future<void> _loadUnreadNotifications() async {

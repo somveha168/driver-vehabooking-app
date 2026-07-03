@@ -14,7 +14,7 @@ const Map<String, String> enUS = {
 
   // Auth
   'login_title': 'Welcome back',
-  'login_subtitle': 'Sign in to start driving',
+  'login_subtitle': 'Sign in to manage your trips',
   'login_field': 'Phone or email',
   'login_field_hint': 'Enter phone or email',
   'password': 'Password',
@@ -24,7 +24,40 @@ const Map<String, String> enUS = {
   'login_field_required': 'Enter your phone or email',
   'password_required': 'Enter your password',
   'forgot_password': 'Forgot password?',
-  'login_help': 'Need an account? Contact your operator.',
+  'forgot_password_title': 'Reset password',
+  'forgot_password_subtitle':
+      'Enter your phone or email. We will send a verification code.',
+  'reset_identifier_label': 'Phone or email',
+  'reset_via_phone': 'Phone',
+  'reset_via_email': 'Email',
+  'reset_phone_hint': 'Enter phone number',
+  'reset_email_hint': 'Enter Gmail or email',
+  'send_code': 'Get code',
+  'reset_code_sent': 'Verification code sent.',
+  'reset_code_verified': 'Code verified.',
+  'reset_request_expired':
+      'This reset request expired. Please request a new code.',
+  'verify_code_title': 'Check your code',
+  'verify_code_subtitle': 'Enter the 6-digit code we sent to your account.',
+  'code_sent_to': 'Code sent to @destination',
+  'verification_code': 'Verification code',
+  'verification_code_hint': 'Enter 6-digit code',
+  'verification_code_required': 'Enter the 6-digit code',
+  'verify_code': 'Verify code',
+  'did_not_receive_code': 'Did not receive it?',
+  'resend_code': 'Resend code',
+  'set_new_password_title': 'Set new password',
+  'set_new_password_subtitle': 'Create a new password for your driver account.',
+  'new_password': 'New password',
+  'confirm_password': 'Confirm password',
+  'confirm_password_hint': 'Enter password again',
+  'save_new_password': 'Save new password',
+  'password_reset_success':
+      'Password reset successfully. Please sign in again.',
+  'password_min_length': 'Password must be at least @count characters.',
+  'passwords_do_not_match': 'Passwords do not match.',
+  'phone_invalid': 'Enter a valid phone number',
+  'login_help': 'Need access? Contact your operator.',
   'login_help_message':
       'Driver accounts are issued by your operator. Reach out to them to sign in.',
 
@@ -104,6 +137,15 @@ const Map<String, String> enUS = {
   'home_subtitle': 'Pick up your assigned trips on time.',
   'no_notifications': 'No new notifications',
   'notification_unread_count': '@count unread notifications',
+  'notifications_title': 'Notifications',
+  'notifications_subtitle':
+      'Trip assignments and important updates for your driver account.',
+  'notifications_empty_title': 'No notifications yet',
+  'notifications_empty_message':
+      'New trip assignments and account updates will appear here.',
+  'all_notifications': 'All',
+  'unread': 'Unread',
+  'mark_all_read': 'Mark all read',
 
   // Bookings list
   'bookings_title': 'My bookings',
@@ -192,6 +234,11 @@ const Map<String, String> enUS = {
 
   // Detail
   'booking_detail': 'Trip detail',
+  'booking_info': 'Booking info',
+  'customer_info': 'Customer info',
+  'exact_vehicle_info': 'Exact vehicle info',
+  'origin': 'Origin',
+  'destination': 'Destination',
   'route': 'Route',
   'trip_details': 'Details',
   'round_trip': 'Round trip',

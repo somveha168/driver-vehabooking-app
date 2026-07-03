@@ -17,6 +17,15 @@ class SplashController extends GetxController {
   void _go() {
     final storage = Get.find<StorageService>();
     final loggedIn = Get.find<AuthService>().isLoggedIn;
+
+    if (!loggedIn && storage.hasValidPendingPasswordReset) {
+      Get.offAllNamed(
+        Routes.forgotPassword,
+        arguments: {'restore_pending_reset': true},
+      );
+      return;
+    }
+
     final next = !storage.seenOnboarding
         ? Routes.welcome
         : (loggedIn ? Routes.home : Routes.login);

@@ -199,73 +199,18 @@ class _Detail extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          // ── Who + contact ──
-          _SectionCard(
-            title: 'passenger_info'.tr,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      '#${b.code ?? '—'}',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                    const Spacer(),
-                    StatusChip(stage: b.stage),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            b.customerName ?? '—',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            _subtitle(),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.outline,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_hasPhone) ...[
-                      const SizedBox(width: AppSpacing.sm),
-                      _callButton(),
-                    ],
-                  ],
-                ),
-                if (_hasPhone) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  const Divider(height: 1),
-                  const SizedBox(height: AppSpacing.md),
-                  _phoneRow(theme),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                const Divider(height: 1),
-                const SizedBox(height: AppSpacing.md),
-                ..._passengerRows(theme),
-              ],
-            ),
-          ),
+          _destinationStrip(theme),
+          const SizedBox(height: AppSpacing.md),
+          _bookingInfoCard(theme),
           const SizedBox(height: AppSpacing.md),
 
-          // ── Vehicle: booked class + the real assigned vehicle ──
-          if (b.hasVehicle) ...[
-            _vehicleCard(theme),
+          if (_hasAssignedVehicle) ...[
+            _exactVehicleCard(theme),
             const SizedBox(height: AppSpacing.md),
           ],
+
+          _customerCard(theme),
+          const SizedBox(height: AppSpacing.md),
 
           if (b.hasOperatorContact) ...[
             _operatorCard(theme),
@@ -307,11 +252,373 @@ class _Detail extends StatelessWidget {
     );
   }
 
-  String _subtitle() {
-    final svc = b.serviceType?.capitalizeFirst ?? '';
-    final leg = b.isReturnLeg ? 'trip_leg_return'.tr : 'trip_leg_outbound'.tr;
-    final trip = b.hasReturn ? '${'round_trip_badge'.tr} · $leg' : leg;
-    return [svc, trip].where((e) => e.isNotEmpty).join(' · ');
+  bool get _hasEmail =>
+      b.customerEmail != null &&
+      b.customerEmail!.isNotEmpty &&
+      b.customerEmail != 'N/A';
+
+  bool get _hasAssignedVehicle =>
+      b.assignedVehicleLabel != null ||
+      (b.vehicleColor != null && b.vehicleColor!.isNotEmpty) ||
+      b.vehicleSeats != null;
+
+  String get _serviceLabel => b.serviceType?.capitalizeFirst ?? '—';
+
+  String get _tripTypeLabel =>
+      b.hasReturn ? 'round_trip_badge'.tr : 'one_way'.tr;
+
+  Widget _bookingInfoCard(ThemeData theme) {
+    return _SectionCard(
+      title: 'booking_info'.tr,
+      titleGap: AppSpacing.sm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _summaryPill(
+                      theme,
+                      icon: IconsaxPlusLinear.ticket,
+                      value: '#${b.code ?? '—'}',
+                    ),
+                    _summaryPill(
+                      theme,
+                      icon: IconsaxPlusLinear.routing_2,
+                      value: _serviceLabel,
+                    ),
+                    _summaryPill(
+                      theme,
+                      icon: IconsaxPlusLinear.routing_2,
+                      value: _tripTypeLabel,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              StatusChip(stage: b.stage),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _compactInfoRow(
+            theme,
+            icon: IconsaxPlusLinear.profile_2user,
+            label: 'passengers'.tr,
+            value: '${b.passengerCount ?? 1}',
+          ),
+          if (b.vehicleBooked != null && b.vehicleBooked!.isNotEmpty) ...[
+            const Divider(height: AppSpacing.lg),
+            _compactInfoRow(
+              theme,
+              icon: IconsaxPlusBold.car,
+              label: 'vehicle_booked'.tr,
+              value: b.vehicleBooked!,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _destinationStrip(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                IconsaxPlusLinear.routing_2,
+                size: 16,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'route'.tr,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _destinationPoint(
+                  theme,
+                  label: 'origin'.tr,
+                  value: _routeOriginLabel,
+                  alignEnd: false,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.sm,
+                  right: AppSpacing.sm,
+                  top: 18,
+                ),
+                child: Icon(
+                  IconsaxPlusLinear.arrow_right_3,
+                  size: 16,
+                  color: AppColors.secondary.withValues(alpha: 0.42),
+                ),
+              ),
+              Expanded(
+                child: _destinationPoint(
+                  theme,
+                  label: 'destination'.tr,
+                  value: _routeDestinationLabel,
+                  alignEnd: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String get _routeOriginLabel {
+    final value = b.routeOrigin;
+    return value != null && value.isNotEmpty ? value : b.pickup.label;
+  }
+
+  String get _routeDestinationLabel {
+    final value = b.routeDestination;
+    return value != null && value.isNotEmpty ? value : b.dropoff.label;
+  }
+
+  Widget _destinationPoint(
+    ThemeData theme, {
+    required String label,
+    required String value,
+    required bool alignEnd,
+  }) {
+    return Column(
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.outline,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            fontSize: 9.5,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: alignEnd ? TextAlign.right : TextAlign.left,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w800,
+            height: 1.18,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _customerCard(ThemeData theme) {
+    return _SectionCard(
+      title: 'customer_info'.tr,
+      titleGap: AppSpacing.sm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  b.customerName ?? '—',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (_hasPhone) ...[
+                const SizedBox(width: AppSpacing.sm),
+                _callButton(),
+              ],
+            ],
+          ),
+          if (_hasPhone) ...[
+            const Divider(height: AppSpacing.lg),
+            _compactInfoRow(
+              theme,
+              icon: IconsaxPlusLinear.call,
+              label: 'phone'.tr,
+              value: b.customerPhone!,
+            ),
+          ],
+          if (_hasEmail) ...[
+            const Divider(height: AppSpacing.lg),
+            _compactInfoRow(
+              theme,
+              icon: IconsaxPlusLinear.sms,
+              label: 'email'.tr,
+              value: b.customerEmail!,
+            ),
+          ],
+          if (b.nationality != null && b.nationality!.isNotEmpty) ...[
+            const Divider(height: AppSpacing.lg),
+            _compactInfoRow(
+              theme,
+              icon: IconsaxPlusLinear.global,
+              label: 'nationality'.tr,
+              value: b.nationality!,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _exactVehicleCard(ThemeData theme) {
+    final assigned = b.assignedVehicleLabel ?? '—';
+    final specsParts = <String>[
+      if (b.vehicleColor != null && b.vehicleColor!.isNotEmpty) b.vehicleColor!,
+      if (b.vehicleSeats != null)
+        '${b.vehicleSeats} ${'seats'.tr.toLowerCase()}',
+    ];
+    final specs = specsParts.join(' · ');
+
+    return _SectionCard(
+      title: 'exact_vehicle_info'.tr,
+      titleGap: AppSpacing.sm,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: const Icon(
+              IconsaxPlusBold.car,
+              size: 21,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  assigned,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (specs.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    specs,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryPill(
+    ThemeData theme, {
+    required IconData icon,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.primary),
+          const SizedBox(width: 5),
+          Text(
+            value,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _compactInfoRow(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 17, color: AppColors.primary),
+        const SizedBox(width: AppSpacing.sm),
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.outline,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   List<Widget> _roundTripCards(ThemeData theme) {
@@ -377,43 +684,6 @@ class _Detail extends StatelessWidget {
     ),
   );
 
-  Widget _phoneRow(ThemeData theme) => Row(
-    children: [
-      Icon(IconsaxPlusLinear.call, size: 16, color: theme.colorScheme.outline),
-      const SizedBox(width: AppSpacing.sm),
-      Text(
-        b.customerPhone!,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ],
-  );
-
-  List<Widget> _passengerRows(ThemeData theme) {
-    final rows = <Widget>[
-      InfoRow(
-        icon: IconsaxPlusLinear.profile_2user,
-        label: 'passengers'.tr,
-        value: '${b.passengerCount ?? 1}',
-      ),
-    ];
-
-    if (b.nationality != null && b.nationality!.isNotEmpty) {
-      rows
-        ..add(const Divider(height: 1))
-        ..add(
-          InfoRow(
-            icon: IconsaxPlusLinear.global,
-            label: 'nationality'.tr,
-            value: b.nationality!,
-          ),
-        );
-    }
-
-    return rows;
-  }
-
   Widget _tripRouteCard(
     ThemeData theme, {
     required String title,
@@ -426,7 +696,10 @@ class _Detail extends StatelessWidget {
   }) {
     final navigateToDropoff = _navigatesToDropoff;
     final canViewRoute =
-        isCurrentLeg && pickup.hasCoordinates && dropoff.hasCoordinates;
+        isCurrentLeg &&
+        !b.isClosed &&
+        pickup.hasCoordinates &&
+        dropoff.hasCoordinates;
 
     return _SectionCard(
       title: title,
@@ -713,90 +986,6 @@ class _Detail extends StatelessWidget {
                   ],
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Vehicle card — the booked class + the real vehicle the vendor assigned.
-  Widget _vehicleCard(ThemeData theme) {
-    final assigned = b.assignedVehicleLabel;
-    final specsParts = <String>[
-      if (b.vehicleColor != null && b.vehicleColor!.isNotEmpty) b.vehicleColor!,
-      if (b.vehicleSeats != null)
-        '${b.vehicleSeats} ${'seats'.tr.toLowerCase()}',
-    ];
-    final specs = specsParts.isEmpty ? null : specsParts.join(' · ');
-    return _SectionCard(
-      title: 'vehicle'.tr,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
-            child: const Icon(
-              IconsaxPlusBold.car,
-              size: 22,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (b.vehicleBooked != null && b.vehicleBooked!.isNotEmpty) ...[
-                  Text(
-                    'vehicle_booked'.tr.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.outline,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                  Text(
-                    b.vehicleBooked!,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-                if (assigned != null) ...[
-                  if (b.vehicleBooked != null && b.vehicleBooked!.isNotEmpty)
-                    const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'vehicle_assigned'.tr.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.outline,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                  Text(
-                    assigned,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (specs != null)
-                    Text(
-                      specs,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                ],
-              ],
             ),
           ),
         ],

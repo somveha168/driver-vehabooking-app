@@ -31,6 +31,83 @@ class AuthRepository {
     );
   }
 
+  /// Start the driver password-reset flow. The backend accepts either phone or
+  /// email and returns a short-lived OTP token.
+  Future<({String token, int expiresIn, String message})> requestPasswordReset({
+    required String identifier,
+    required bool viaEmail,
+  }) async {
+    final res = await _api.postJson(
+      '${AppConfig.authApiUrl}/auth/password/forgot',
+      data: _identifierPayload(identifier, viaEmail: viaEmail),
+    );
+
+    final data = _responseData(res);
+    return (
+      token: data['token'].toString(),
+      expiresIn: int.tryParse(data['expires_in']?.toString() ?? '') ?? 0,
+      message: data['message']?.toString() ?? '',
+    );
+  }
+
+  /// Verify the OTP and exchange it for a reset token.
+  Future<({String resetToken, int minPasswordLength, String message})>
+  verifyPasswordResetOtp({
+    required String identifier,
+    required bool viaEmail,
+    required String otp,
+    required String token,
+  }) async {
+    final res = await _api.postJson(
+      '${AppConfig.authApiUrl}/auth/password/verify_otp',
+      data: {
+        ..._identifierPayload(identifier, viaEmail: viaEmail),
+        'otp': otp.trim(),
+        'token': token,
+      },
+    );
+
+    final data = _responseData(res);
+    return (
+      resetToken: data['reset_token'].toString(),
+      minPasswordLength:
+          int.tryParse(data['min_password_length']?.toString() ?? '') ?? 8,
+      message: data['message']?.toString() ?? '',
+    );
+  }
+
+  /// Resend a password reset OTP for an existing reset request token.
+  Future<({String token, int expiresIn, String message})>
+  resendPasswordResetOtp({required String token}) async {
+    final res = await _api.postJson(
+      '${AppConfig.authApiUrl}/auth/password/resend_otp',
+      data: {'token': token},
+    );
+
+    final data = _responseData(res);
+    return (
+      token: data['token']?.toString() ?? token,
+      expiresIn: int.tryParse(data['expires_in']?.toString() ?? '') ?? 0,
+      message: data['message']?.toString() ?? '',
+    );
+  }
+
+  /// Save the new password after OTP verification.
+  Future<void> resetPassword({
+    required String resetToken,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    await _api.postJson(
+      '${AppConfig.authApiUrl}/auth/password/reset',
+      data: {
+        'reset_token': resetToken,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    );
+  }
+
   /// Revoke the current device token on the server.
   Future<void> logout(String deviceName) async {
     await _api.postJson(
@@ -94,5 +171,18 @@ class AuthRepository {
     final body = res as Map;
     final data = (body['data'] ?? body) as Map<String, dynamic>;
     return AuthUser.fromJson(data);
+  }
+
+  Map<String, dynamic> _identifierPayload(
+    String identifier, {
+    required bool viaEmail,
+  }) {
+    final value = identifier.trim();
+    return viaEmail ? {'email': value} : {'phone': value};
+  }
+
+  Map<String, dynamic> _responseData(dynamic response) {
+    final body = response as Map;
+    return (body['data'] ?? body) as Map<String, dynamic>;
   }
 }
