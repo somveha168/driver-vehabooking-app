@@ -1,15 +1,15 @@
 /// English strings.
 const Map<String, String> enUS = {
-  'app_name': 'Veha Booking Driver',
+  'app_name': 'Veha Driver',
 
   // Welcome / onboarding (first run)
   'welcome_eyebrow': 'Welcome to',
   'welcome_title': 'Drive with Veha',
   'welcome_subtitle':
       'Your assigned trips on every route — drive with confidence.',
-  'welcome_headline': 'Welcome',
-  'welcome_tagline_1': 'Let’s get you on the road',
-  'welcome_tagline_2': 'One journey, one booking.',
+  'welcome_headline': 'Veha Driver',
+  'welcome_tagline_1': 'Manage assigned trips, pickup routes,',
+  'welcome_tagline_2': 'and customer handoffs in one place.',
   'welcome_cta': 'Let’s Get Started',
 
   // Auth

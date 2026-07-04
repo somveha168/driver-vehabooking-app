@@ -77,7 +77,7 @@
 		</array>
 		<!-- Profile photo upload -->
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Veha Booking Driver uses your location to show the pickup route and active trip destination.</string>
+	<string>Veha Driver uses your location to show the pickup route and active trip destination.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Allow access to your photos to set your profile picture.</string>
 		<key>NSCameraUsageDescription</key>

@@ -8,7 +8,7 @@ import 'environment.dart';
 class AppConfig {
   const AppConfig._();
 
-  static const String appName = 'Veha Booking Driver';
+  static const String appName = 'Veha Driver';
 
   /// Backend host per environment.
   static String get baseUrl {

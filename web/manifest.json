@@ -1,11 +1,11 @@
 {
-    "name": "Veha Booking Driver",
-    "short_name": "Veha Booking Driver",
+    "name": "Veha Driver",
+    "short_name": "Veha Driver",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Veha Booking Driver is a smart transportation management application that enables drivers to accept bookings, monitor schedules, update trip progress, and provide reliable service for passengers on the Veha Booking platform.",
+    "background_color": "#2BAE9B",
+    "theme_color": "#2BAE9B",
+    "description": "Veha Driver helps registered Veha transport drivers manage assigned trips, pickup routes, customer handoffs, and trip progress.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

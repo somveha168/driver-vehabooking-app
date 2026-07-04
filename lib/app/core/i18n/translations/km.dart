@@ -1,14 +1,14 @@
 /// Khmer strings.
 const Map<String, String> kmKH = {
-  'app_name': 'Veha Booking Driver',
+  'app_name': 'Veha Driver',
 
   // Welcome / onboarding (first run)
   'welcome_eyebrow': 'សូមស្វាគមន៍មកកាន់',
   'welcome_title': 'បើកបរជាមួយ Veha',
   'welcome_subtitle': 'ការធ្វើដំណើររបស់អ្នកគ្រប់ផ្លូវ — បើកបរដោយទំនុកចិត្ត។',
-  'welcome_headline': 'សូមស្វាគមន៍',
-  'welcome_tagline_1': 'តោះចេញដំណើរទៅ',
-  'welcome_tagline_2': 'មួយដំណើរ មួយការកក់',
+  'welcome_headline': 'Veha Driver',
+  'welcome_tagline_1': 'គ្រប់គ្រងដំណើរ ផ្លូវទៅទទួលភ្ញៀវ',
+  'welcome_tagline_2': 'និងការប្រគល់ភ្ញៀវក្នុងកន្លែងតែមួយ',
   'welcome_cta': 'ចាប់ផ្តើមឥឡូវ',
 
   // Auth
