@@ -7,10 +7,11 @@ const Map<String, String> kmKH = {
   'welcome_title': 'បើកបរជាមួយ Veha',
   'welcome_subtitle': 'ការធ្វើដំណើររបស់អ្នកគ្រប់ផ្លូវ — បើកបរដោយទំនុកចិត្ត។',
   'welcome_headline': 'Veha Driver',
-  'welcome_tagline_1': 'គ្រប់គ្រងដំណើរ ផ្លូវទៅទទួលភ្ញៀវ',
-  'welcome_tagline_2': 'និងការប្រគល់ភ្ញៀវក្នុងកន្លែងតែមួយ',
+  'welcome_tagline_1':
+      'មើលការកក់ដែលបានកំណត់ ផ្លូវទៅទទួលភ្ញៀវ និងគ្រប់គ្រងជំហាននៃដំណើរបានច្បាស់លាស់',
+  'welcome_tagline_2': '',
   'welcome_cta': 'ចាប់ផ្តើមឥឡូវ',
-
+  'welcome_intro': 'សូមស្វាគមន៍មកកាន់',
   // Auth
   'login_title': 'សូមស្វាគមន៍ការត្រឡប់មកវិញ',
   'login_subtitle': 'ចូលគណនី ដើម្បីគ្រប់គ្រងការធ្វើដំណើរ',

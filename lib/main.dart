@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 
 import 'app/core/config/app_config.dart';
@@ -74,6 +75,11 @@ class VehaDriverApp extends StatelessWidget {
       locale: settings.locale.value,
       fallbackLocale: AppTranslations.fallbackLocale,
       supportedLocales: AppTranslations.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
       initialRoute: Routes.splash,
       getPages: AppPages.pages,
     );

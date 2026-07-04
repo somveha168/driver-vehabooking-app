@@ -8,10 +8,11 @@ const Map<String, String> enUS = {
   'welcome_subtitle':
       'Your assigned trips on every route — drive with confidence.',
   'welcome_headline': 'Veha Driver',
-  'welcome_tagline_1': 'Manage assigned trips, pickup routes,',
-  'welcome_tagline_2': 'and customer handoffs in one place.',
-  'welcome_cta': 'Let’s Get Started',
-
+  'welcome_tagline_1':
+      'View assigned bookings, follow pickup routes, and manage each trip step clearly.',
+  'welcome_tagline_2': '',
+  'welcome_cta': 'Get Started',
+  'welcome_intro': 'Welcome to',
   // Auth
   'login_title': 'Welcome back',
   'login_subtitle': 'Sign in to manage your trips',

@@ -62,7 +62,7 @@ class WelcomeView extends GetView<WelcomeController> {
                     SizedBox(height: topOffset),
                     Image.asset(
                           'assets/branding/welcome_lockup.png',
-                          height: size.height < 760 ? 104 : 122,
+                          height: size.height < 760 ? 92 : 112,
                         )
                         .animate()
                         .fadeIn(duration: 500.ms)
@@ -70,21 +70,12 @@ class WelcomeView extends GetView<WelcomeController> {
                           begin: const Offset(0.94, 0.94),
                           curve: Curves.easeOutCubic,
                         ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                          'welcome_headline'.tr,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.fraunces(
-                            fontSize: size.height < 760 ? 46 : 54,
-                            height: 0.98,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
-                        )
+                    SizedBox(height: size.height < 760 ? AppSpacing.sm : 14),
+                    _BrandTitle(compact: size.height < 760)
                         .animate()
                         .fadeIn(delay: 160.ms, duration: 450.ms)
                         .slideY(begin: 0.12),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
                     Container(
                       width: 52,
                       height: 3,
@@ -93,24 +84,22 @@ class WelcomeView extends GetView<WelcomeController> {
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ).animate().fadeIn(delay: 260.ms).scaleX(begin: 0.25),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'welcome_tagline_1'.tr,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: AppColors.secondary.withValues(alpha: 0.86),
-                        fontWeight: FontWeight.w500,
+                    const SizedBox(height: AppSpacing.md),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: Text(
+                        'welcome_tagline_1'.tr,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.secondary.withValues(alpha: 0.72),
+                          fontWeight: FontWeight.w600,
+                          height: 1.38,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ).animate().fadeIn(delay: 340.ms),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'welcome_tagline_2'.tr,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ).animate().fadeIn(delay: 420.ms),
                     const Spacer(),
                     SizedBox(
                           width: double.infinity,
@@ -236,5 +225,52 @@ class WelcomeView extends GetView<WelcomeController> {
         ),
       );
     });
+  }
+}
+
+class _BrandTitle extends StatelessWidget {
+  const _BrandTitle({required this.compact});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final introStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+      color: AppColors.secondary,
+      fontWeight: FontWeight.w800,
+      letterSpacing: 0,
+    );
+    final titleStyle = GoogleFonts.fraunces(
+      fontSize: compact ? 46 : 54,
+      height: 0.98,
+      fontWeight: FontWeight.w700,
+      color: AppColors.secondary,
+      letterSpacing: 0,
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'welcome_intro'.tr,
+          style: introStyle,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: titleStyle,
+            children: [
+              const TextSpan(text: 'Veha '),
+              TextSpan(
+                text: 'Driver',
+                style: titleStyle.copyWith(color: AppColors.primary),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

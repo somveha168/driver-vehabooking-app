@@ -72,13 +72,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                             ),
                           ),
                           SizedBox(height: topGap),
-                          Image.asset(
-                                'assets/branding/app_icon.png',
-                                height: 74,
-                              )
-                              .animate()
-                              .fadeIn(duration: 420.ms)
-                              .scale(begin: const Offset(0.9, 0.9)),
+                          _brand(),
                           const SizedBox(height: AppSpacing.xl),
                           Obx(() => _headline(theme, scheme)),
                           const SizedBox(height: AppSpacing.xl),
@@ -96,6 +90,25 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
       ),
     );
   }
+
+  Widget _brand() => Column(
+    children: [
+      Image.asset(
+        'assets/branding/app_icon.png',
+        height: 74,
+      ).animate().fadeIn(duration: 420.ms).scale(begin: const Offset(0.9, 0.9)),
+      const SizedBox(height: AppSpacing.xs),
+      Text(
+        'VEHA BOOKING',
+        style: GoogleFonts.kantumruyPro(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2.7,
+          color: AppColors.secondary,
+        ),
+      ).animate().fadeIn(delay: 160.ms, duration: 420.ms),
+    ],
+  );
 
   Widget _headline(ThemeData theme, ColorScheme scheme) {
     final step = controller.step.value;
