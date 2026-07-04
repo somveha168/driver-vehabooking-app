@@ -8,6 +8,9 @@ import 'location_service.dart';
 
 enum DriverTrackingMode { off, snapshot, live }
 
+typedef DriverLocationSyncedCallback =
+    FutureOr<void> Function(DriverLocation location);
+
 class DriverTrackingService extends GetxService {
   DriverTrackingService(this._bookingRepository, this._locationService);
 
@@ -22,6 +25,7 @@ class DriverTrackingService extends GetxService {
   String? _activeKey;
   DateTime? _watchStartedAt;
   DriverTrackingMode _mode = DriverTrackingMode.off;
+  DriverLocationSyncedCallback? _onLocationSynced;
   bool _isSyncing = false;
   bool _expiredNoticeShown = false;
 
@@ -45,6 +49,7 @@ class DriverTrackingService extends GetxService {
     required String uuid,
     required int? assignmentId,
     required DriverTrackingMode mode,
+    DriverLocationSyncedCallback? onLocationSynced,
   }) {
     if (uuid.isEmpty ||
         assignmentId == null ||
@@ -55,12 +60,14 @@ class DriverTrackingService extends GetxService {
 
     final key = '$uuid:$assignmentId';
     if (_activeKey == key && _mode == mode && _timer?.isActive == true) {
+      _onLocationSynced = onLocationSynced;
       return;
     }
 
     stop();
     _activeKey = key;
     _mode = mode;
+    _onLocationSynced = onLocationSynced;
     _watchStartedAt = DateTime.now();
     _expiredNoticeShown = false;
 
@@ -89,6 +96,7 @@ class DriverTrackingService extends GetxService {
     _activeKey = null;
     _watchStartedAt = null;
     _mode = DriverTrackingMode.off;
+    _onLocationSynced = null;
   }
 
   bool get _liveWindowExpired {
@@ -112,7 +120,13 @@ class DriverTrackingService extends GetxService {
     if (_isSyncing) return;
     _isSyncing = true;
     try {
-      await syncSnapshot(uuid: uuid, assignmentId: assignmentId);
+      final location = await syncSnapshot(
+        uuid: uuid,
+        assignmentId: assignmentId,
+      );
+      if (location != null) {
+        await _onLocationSynced?.call(location);
+      }
     } catch (_) {
       // Tracking must never block the driver's trip workflow.
     } finally {

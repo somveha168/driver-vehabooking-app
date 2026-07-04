@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:get/get.dart';
 
 import '../../core/location/driver_tracking_service.dart';
+import '../../core/location/location_service.dart';
 import '../../core/maps/route_map_args.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/routes/app_routes.dart';
@@ -8,6 +11,7 @@ import '../../core/utils/app_snackbar.dart';
 import '../../core/utils/external_launcher.dart';
 import '../../data/models/auth_user.dart';
 import '../../data/models/booking_detail.dart';
+import '../../data/models/booking_list_item.dart';
 import '../../data/models/dashboard_summary.dart';
 import '../../data/repositories/booking_repository.dart';
 import '../../data/services/auth_service.dart';
@@ -30,6 +34,7 @@ class DashboardController extends GetxController {
   /// Verification status (pending / approved / rejected).
   final status = 'pending'.obs;
   final active = false.obs;
+  final Set<String> _nearPickupReminderKeys = {};
 
   AuthUser? get user => _auth.currentUser.value;
 
@@ -296,6 +301,8 @@ class DashboardController extends GetxController {
       uuid: next.uuid,
       assignmentId: next.assignmentId,
       mode: _trackingModeForNextAction(next.nextAction),
+      onLocationSynced: (location) =>
+          _maybeShowNearPickupReminder(next, location),
     );
   }
 
@@ -312,6 +319,59 @@ class DashboardController extends GetxController {
         stage == 'drop_passenger' ||
         nextAction == 'complete';
   }
+
+  void _maybeShowNearPickupReminder(
+    BookingListItem booking,
+    DriverLocation location,
+  ) {
+    const radiusMeters = 150.0;
+    const maxAccuracyMeters = 100.0;
+
+    if (booking.nextAction != 'arrived' ||
+        !booking.pickupPlace.hasCoordinates) {
+      return;
+    }
+
+    final accuracy = location.accuracyMeters;
+    if (accuracy != null && accuracy > maxAccuracyMeters) {
+      return;
+    }
+
+    final key = '${booking.uuid}:${booking.assignmentId ?? 'none'}';
+    if (_nearPickupReminderKeys.contains(key)) {
+      return;
+    }
+
+    final pickup = booking.pickupPlace;
+    final distance = _distanceMeters(
+      location.latitude,
+      location.longitude,
+      pickup.latitude!,
+      pickup.longitude!,
+    );
+
+    if (distance > radiusMeters) {
+      return;
+    }
+
+    _nearPickupReminderKeys.add(key);
+    AppSnackbar.info('near_pickup_attention'.tr);
+  }
+
+  double _distanceMeters(double aLat, double aLng, double bLat, double bLng) {
+    const radius = 6371000.0;
+    final dLat = _radians(bLat - aLat);
+    final dLng = _radians(bLng - aLng);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_radians(aLat)) *
+            math.cos(_radians(bLat)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
+  double _radians(double degrees) => degrees * math.pi / 180;
 
   @override
   void onClose() {

@@ -313,6 +313,8 @@ const Map<String, String> enUS = {
   'call_customer': 'Call',
   'pickup_soon':
       'Pickup time is near — confirm when the passenger is on board.',
+  'near_pickup_attention':
+      'You are near the passenger pickup point. Please pay attention and prepare to meet the passenger.',
   'tracking_action_required':
       'Trip tracking stopped. If you already dropped the passenger, please complete the trip.',
 

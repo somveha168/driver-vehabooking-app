@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:get/get.dart';
 
@@ -27,6 +28,7 @@ class BookingDetailController extends GetxController {
   final isLocating = false.obs;
   final Rxn<DriverLocation> driverLocation = Rxn<DriverLocation>();
   final RxnString locationMessage = RxnString();
+  final Set<String> _nearPickupReminderKeys = {};
 
   @override
   void onInit() {
@@ -189,6 +191,7 @@ class BookingDetailController extends GetxController {
       uuid: uuid,
       assignmentId: _currentAssignmentId,
       mode: _trackingModeFor(b),
+      onLocationSynced: (location) => _maybeShowNearPickupReminder(b, location),
     );
   }
 
@@ -217,6 +220,57 @@ class BookingDetailController extends GetxController {
 
     return DriverTrackingMode.off;
   }
+
+  void _maybeShowNearPickupReminder(
+    BookingDetail booking,
+    DriverLocation location,
+  ) {
+    const radiusMeters = 150.0;
+    const maxAccuracyMeters = 100.0;
+
+    if (!booking.allows('arrived') || !booking.pickup.hasCoordinates) {
+      return;
+    }
+
+    final accuracy = location.accuracyMeters;
+    if (accuracy != null && accuracy > maxAccuracyMeters) {
+      return;
+    }
+
+    final key = '${booking.uuid}:${_currentAssignmentId ?? 'none'}';
+    if (_nearPickupReminderKeys.contains(key)) {
+      return;
+    }
+
+    final distance = _distanceMeters(
+      location.latitude,
+      location.longitude,
+      booking.pickup.latitude!,
+      booking.pickup.longitude!,
+    );
+
+    if (distance > radiusMeters) {
+      return;
+    }
+
+    _nearPickupReminderKeys.add(key);
+    AppSnackbar.info('near_pickup_attention'.tr);
+  }
+
+  double _distanceMeters(double aLat, double aLng, double bLat, double bLng) {
+    const radius = 6371000.0;
+    final dLat = _radians(bLat - aLat);
+    final dLng = _radians(bLng - aLng);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_radians(aLat)) *
+            math.cos(_radians(bLat)) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
+  double _radians(double degrees) => degrees * math.pi / 180;
 
   Future<void> navigateToPickup() async {
     final b = booking.value;
