@@ -13,8 +13,8 @@ import '../../core/widgets/section_label.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/step_action_button.dart';
 import '../../core/widgets/swipe_to_confirm.dart';
-import '../../core/widgets/trip_steps.dart';
 import '../../data/models/booking_list_item.dart';
+import '../booking_detail/dispatch_review_sheet.dart';
 import 'dashboard_controller.dart';
 
 /// Soft, editorial card surface used across the home page — crisp white on the
@@ -627,64 +627,28 @@ class _NextPickupCard extends StatelessWidget {
       child: InkWell(
         onTap: controller.openNextPickup,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Contact header: passenger name + phone, with a call action.
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          next.customerName ?? '—',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        _meta(theme),
-                        if (next.hasPhone) ...[
-                          const SizedBox(height: 4),
-                          _phone(theme),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (next.hasPhone) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    _callButton(),
-                  ],
-                ],
-              ),
+              _cardHeader(theme),
               const SizedBox(height: AppSpacing.md),
-              _departure(theme),
-              if (next.isStartOverdue) ...[
+              _routeScheduleGrid(theme),
+              if (next.isStartOverdue && !next.isStartTooOld) ...[
                 const SizedBox(height: AppSpacing.sm),
                 _startOverdueNotice(theme),
               ],
-              const SizedBox(height: AppSpacing.sm + 2),
-              _bookedRouteSummary(theme),
-              if (next.hasDropoff) ...[
-                const SizedBox(height: AppSpacing.sm),
-                _mapButton(theme),
-              ],
 
               if (showProgress) ...[
-                const SizedBox(height: AppSpacing.md),
-                TripSteps(stage: next.stage),
+                const SizedBox(height: AppSpacing.sm),
+                _visualTripSteps(theme),
               ],
               if (next.isStartBlocked) ...[
                 const SizedBox(height: AppSpacing.md),
                 _blockingTripNotice(theme),
               ],
               if (next.nextAction != null) ...[
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sm),
                 _action(theme, next.nextAction!),
                 if (_canReportPickupIssue) ...[
                   const SizedBox(height: 2),
@@ -694,6 +658,559 @@ class _NextPickupCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  DateTime? get _departureAt =>
+      DateTime.tryParse(next.displayDepartureDatetime)?.toLocal();
+
+  String _departureDateLabel() {
+    final departureAt = _departureAt;
+    if (departureAt == null) {
+      return Formatters.dateTime(next.displayDepartureDatetime);
+    }
+
+    return DateFormat('EEE, d MMM yyyy').format(departureAt);
+  }
+
+  String _departureTimeLabel() {
+    final departureAt = _departureAt;
+    if (departureAt == null) {
+      return Formatters.time(next.displayDepartureDatetime);
+    }
+
+    return DateFormat('h:mm a').format(departureAt);
+  }
+
+  Widget _cardHeader(ThemeData theme) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                IconsaxPlusLinear.flash_1,
+                size: 12,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                'needs_action'.tr.toUpperCase(),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 9.5,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (next.code != null && next.code!.isNotEmpty) ...[
+          const Spacer(),
+          Text(
+            next.code!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+              letterSpacing: 0,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _routeTimeline(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _routePointRow(
+          theme,
+          color: AppColors.primary,
+          child: _routePoint(
+            theme,
+            label: 'origin'.tr,
+            title: next.driverRouteOriginLabel,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 7, top: 4, bottom: 4),
+          child: _routeConnector(theme),
+        ),
+        _routePointRow(
+          theme,
+          color: AppColors.cancelled,
+          pin: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _routePoint(
+                theme,
+                label: 'destination'.tr,
+                title: next.driverRouteDestinationLabel,
+              ),
+              if (next.hasDropoff) ...[
+                const SizedBox(height: 4),
+                _routeActionButton(theme),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _routeScheduleGrid(ThemeData theme) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 340;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(flex: compact ? 10 : 11, child: _routeTimeline(theme)),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? AppSpacing.xs : AppSpacing.sm,
+                  vertical: 8,
+                ),
+                child: Container(
+                  width: 1,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.38,
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              Expanded(flex: compact ? 8 : 9, child: _schedulePanel(theme)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _routePointRow(
+    ThemeData theme, {
+    required Color color,
+    bool pin = false,
+    required Widget child,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: pin ? 10 : 1),
+          child: pin ? _routePin(color) : _routeDot(color),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(child: child),
+      ],
+    );
+  }
+
+  Widget _routeConnector(ThemeData theme) {
+    return Column(
+      children: List.generate(
+        3,
+        (index) => Container(
+          width: 1.5,
+          height: 6,
+          margin: EdgeInsets.only(bottom: index == 2 ? 0 : 4),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _routeDot(Color color) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.20),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Container(
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.96),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _routePin(Color color) {
+    return SizedBox(
+      width: 18,
+      height: 21,
+      child: Icon(Icons.location_on_rounded, size: 21, color: color),
+    );
+  }
+
+  Widget _routePoint(
+    ThemeData theme, {
+    String? label,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (label != null && label.trim().isNotEmpty) ...[
+          Text(
+            label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.outline,
+              fontWeight: FontWeight.w700,
+              fontSize: 8.5,
+              letterSpacing: 0.35,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 3),
+        ],
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w700,
+            fontSize: 12.5,
+            letterSpacing: 0,
+            height: 1.15,
+          ),
+        ),
+        if (subtitle != null && subtitle.trim().isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
+            ),
+          ),
+        ],
+        if (trailing != null) ...[const SizedBox(height: 8), trailing],
+      ],
+    );
+  }
+
+  Widget _tripMeta(ThemeData theme) {
+    final facts = [
+      next.isRoundTrip ? 'round_trip_badge'.tr : 'one_way'.tr,
+      if (next.passengerCount != null)
+        '${next.passengerCount} ${'pax_label'.tr}',
+    ];
+
+    return Text(
+      facts.join('  ·  '),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.right,
+      style: theme.textTheme.labelMedium?.copyWith(
+        color: AppColors.secondary.withValues(alpha: 0.86),
+        fontWeight: FontWeight.w500,
+        fontSize: 11,
+        height: 1.1,
+        letterSpacing: 0,
+      ),
+    );
+  }
+
+  Widget _schedulePanel(ThemeData theme) {
+    final timeLabel = _departureTimeLabel();
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        _tripMeta(theme),
+        const SizedBox(height: 7),
+        _scheduleText(theme, value: _departureDateLabel()),
+        const SizedBox(height: 5),
+        _scheduleText(theme, value: timeLabel, highlighted: true),
+        const SizedBox(height: 10),
+        _passengerActionPanel(theme),
+      ],
+    );
+  }
+
+  Widget _scheduleText(
+    ThemeData theme, {
+    required String value,
+    bool highlighted = false,
+  }) {
+    return Text(
+      value,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.right,
+      style: theme.textTheme.labelLarge?.copyWith(
+        color: highlighted ? AppColors.primary : AppColors.secondary,
+        fontWeight: highlighted ? FontWeight.w800 : FontWeight.w600,
+        fontSize: highlighted ? 16 : 11,
+        height: 1.1,
+        letterSpacing: 0,
+      ),
+    );
+  }
+
+  Widget _passengerActionPanel(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          'customer_info'.tr.toUpperCase(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.right,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.outline,
+            fontWeight: FontWeight.w700,
+            fontSize: 8,
+            letterSpacing: 0.35,
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          next.customerName ?? '—',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.right,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: AppColors.secondary.withValues(alpha: 0.92),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            height: 1.15,
+            letterSpacing: 0,
+          ),
+        ),
+        if (next.hasPhone) ...[
+          const SizedBox(height: 2),
+          Text(
+            next.customerPhone!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+              fontWeight: FontWeight.w400,
+              fontSize: 10,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _routeActionButton(ThemeData theme) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      onTap: controller.openNextPickupMap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              IconsaxPlusLinear.map,
+              size: 12,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              (_showsDropoffRoute ? 'view_dropoff_route' : 'view_pickup_route')
+                  .tr,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 9.5,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  int get _visualStepIndex => switch (next.stage) {
+    'start' => 0,
+    'arrived_location' => 1,
+    'meet_passenger' => 2,
+    'drop_passenger' || 'completed' => 3,
+    _ => -1,
+  };
+
+  bool get _hasStartedTrip => _visualStepIndex >= 0;
+
+  Widget _visualTripSteps(ThemeData theme) {
+    const steps = [
+      (label: 'step_short_start', icon: IconsaxPlusBold.car),
+      (label: 'step_short_arrived', icon: IconsaxPlusLinear.flag),
+      (label: 'step_short_meet', icon: IconsaxPlusLinear.profile),
+      (label: 'step_short_drop', icon: IconsaxPlusLinear.location),
+    ];
+    final activeIndex = _visualStepIndex;
+    final isCompleted = next.stage == 'completed';
+    final hasActiveStep = activeIndex >= 0 && (_hasStartedTrip || isCompleted);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var index = 0; index < steps.length; index++) ...[
+            Expanded(
+              child: _visualStep(
+                theme,
+                label: steps[index].label.tr,
+                icon: steps[index].icon,
+                active:
+                    hasActiveStep &&
+                    (isCompleted ? index == 3 : index == activeIndex),
+                done: isCompleted || index < activeIndex,
+              ),
+            ),
+            if (index < steps.length - 1)
+              Expanded(
+                child: _visualStepConnector(
+                  done: isCompleted || index < activeIndex,
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _visualStep(
+    ThemeData theme, {
+    required String label,
+    required IconData icon,
+    required bool active,
+    required bool done,
+  }) {
+    final isPrimary = active || done;
+    final circleColor = isPrimary ? AppColors.primary : Colors.transparent;
+    final borderColor = isPrimary
+        ? AppColors.primary
+        : theme.colorScheme.outlineVariant.withValues(alpha: 0.88);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: circleColor,
+            border: Border.all(color: borderColor, width: isPrimary ? 0 : 1.6),
+            boxShadow: isPrimary
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            done ? IconsaxPlusLinear.tick_circle : icon,
+            size: 15,
+            color: isPrimary ? Colors.white : theme.colorScheme.outline,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: isPrimary ? AppColors.primary : AppColors.secondary,
+            fontWeight: FontWeight.w700,
+            fontSize: 9.5,
+            letterSpacing: 0,
+            height: 1.1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _visualStepConnector({required bool done}) {
+    final color = done
+        ? AppColors.primary.withValues(alpha: 0.70)
+        : const Color(0xFFC8D3D1);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 15),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final dashCount = (constraints.maxWidth / 8).floor().clamp(2, 16);
+
+          return Row(
+            children: List.generate(dashCount, (index) {
+              return Expanded(
+                child: Container(
+                  height: 2,
+                  margin: EdgeInsets.only(
+                    right: index == dashCount - 1 ? 0 : 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              );
+            }),
+          );
+        },
       ),
     );
   }
@@ -837,8 +1354,8 @@ class _NextPickupCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: 9,
+        horizontal: AppSpacing.sm + 2,
+        vertical: 8,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
@@ -860,7 +1377,8 @@ class _NextPickupCard extends StatelessWidget {
               key.tr,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: AppColors.secondary,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
+                height: 1.25,
               ),
             ),
           ),
@@ -870,20 +1388,104 @@ class _NextPickupCard extends StatelessWidget {
   }
 
   Widget _staleStartAction(ThemeData theme) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: null,
-        icon: const Icon(IconsaxPlusLinear.headphone, size: 18),
-        label: Text('contact_dispatch_to_start'.tr),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
-          disabledForegroundColor: AppColors.cancelled.withValues(alpha: 0.78),
-          side: BorderSide(color: AppColors.cancelled.withValues(alpha: 0.22)),
-          textStyle: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w800,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final buttonWidth = (constraints.maxWidth * 0.34).clamp(108.0, 128.0);
+
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.sm + 2),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.cancelled.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  IconsaxPlusLinear.headphone,
+                  size: 16,
+                  color: AppColors.cancelled.withValues(alpha: 0.88),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'contact_dispatch_to_start'.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: AppColors.cancelled,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                        letterSpacing: 0,
+                        height: 1.15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'start_too_old_home'.tr,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.secondary.withValues(alpha: 0.72),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 8.8,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              SizedBox(
+                width: buttonWidth,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showDispatchReviewSheet(context),
+                  icon: const Icon(IconsaxPlusLinear.headphone, size: 13),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('contact_dispatch'.tr),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(34),
+                    disabledForegroundColor: AppColors.cancelled.withValues(
+                      alpha: 0.78,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 7),
+                    side: BorderSide(
+                      color: AppColors.cancelled.withValues(alpha: 0.18),
+                    ),
+                    textStyle: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showDispatchReviewSheet(BuildContext context) async {
+    final detail = await controller.loadNextPickupDetail();
+    if (!context.mounted || detail == null) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DispatchReviewSheet(
+        operator: detail.operator,
+        onCall: () => controller.callOperator(detail.operator),
+        onEmail: () => controller.emailOperator(detail.operator),
       ),
     );
   }
@@ -914,283 +1516,6 @@ class _NextPickupCard extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _mapButton(ThemeData theme) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: controller.openNextPickupMap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  IconsaxPlusLinear.map,
-                  size: 15,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  (_showsDropoffRoute
-                          ? 'view_dropoff_route'
-                          : 'view_pickup_route')
-                      .tr,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Passenger phone, with a call glyph.
-  Widget _phone(ThemeData theme) => Row(
-    children: [
-      Icon(IconsaxPlusLinear.call, size: 13, color: theme.colorScheme.outline),
-      const SizedBox(width: 5),
-      Flexible(
-        child: Text(
-          next.customerPhone!,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ],
-  );
-
-  /// Round call button — dials the passenger straight from the card.
-  Widget _callButton() => Material(
-    color: AppColors.primary.withValues(alpha: 0.12),
-    shape: const CircleBorder(),
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: () => controller.callCustomer(next.customerPhone!),
-      child: const Padding(
-        padding: EdgeInsets.all(9),
-        child: Icon(IconsaxPlusBold.call, size: 18, color: AppColors.primary),
-      ),
-    ),
-  );
-
-  Widget _meta(ThemeData theme) {
-    final code = next.code;
-    if (code == null || code.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Row(
-      children: [
-        Text(
-          code,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: AppColors.secondary,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _departure(ThemeData theme) => Row(
-    children: [
-      Icon(
-        IconsaxPlusLinear.calendar,
-        size: 16,
-        color: theme.colorScheme.outline,
-      ),
-      const SizedBox(width: AppSpacing.sm),
-      Text(
-        Formatters.dateTime(next.displayDepartureDatetime),
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: theme.colorScheme.onSurface,
-        ),
-      ),
-    ],
-  );
-
-  Widget _bookedRouteSummary(ThemeData theme) {
-    final service = next.serviceType?.capitalizeFirst ?? next.serviceType;
-    final bookedVehicle = next.vehicleBooked;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.sm + 2),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  IconsaxPlusLinear.routing_2,
-                  size: 15,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _routePointText(
-                        theme,
-                        label: 'origin'.tr,
-                        value: next.driverRouteOriginLabel,
-                        alignEnd: false,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Icon(
-                        IconsaxPlusLinear.arrow_right_3,
-                        size: 15,
-                        color: AppColors.secondary.withValues(alpha: 0.44),
-                      ),
-                    ),
-                    Expanded(
-                      child: _routePointText(
-                        theme,
-                        label: 'destination'.tr,
-                        value: next.driverRouteDestinationLabel,
-                        alignEnd: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.xs,
-            runSpacing: AppSpacing.xs,
-            children: [
-              if (service != null && service.isNotEmpty)
-                _routeFactPill(
-                  theme,
-                  icon: IconsaxPlusLinear.car,
-                  value: service,
-                ),
-              _routeFactPill(
-                theme,
-                icon: IconsaxPlusLinear.refresh,
-                value: next.isRoundTrip ? 'round_trip_badge'.tr : 'one_way'.tr,
-              ),
-              if (next.passengerCount != null)
-                _routeFactPill(
-                  theme,
-                  icon: IconsaxPlusLinear.profile_2user,
-                  value: '${next.passengerCount} ${'pax_label'.tr}',
-                ),
-              if (bookedVehicle != null && bookedVehicle.isNotEmpty)
-                _routeFactPill(
-                  theme,
-                  icon: IconsaxPlusLinear.bus,
-                  value: bookedVehicle,
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _routePointText(
-    ThemeData theme, {
-    required String label,
-    required String value,
-    required bool alignEnd,
-  }) => Column(
-    crossAxisAlignment: alignEnd
-        ? CrossAxisAlignment.end
-        : CrossAxisAlignment.start,
-    children: [
-      Text(
-        label.toUpperCase(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.outline,
-          fontSize: 8.5,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0,
-        ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        value,
-        textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: AppColors.secondary,
-          fontSize: 13.5,
-          fontWeight: FontWeight.w700,
-          height: 1.1,
-        ),
-      ),
-    ],
-  );
-
-  Widget _routeFactPill(
-    ThemeData theme, {
-    required IconData icon,
-    required String value,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: AppColors.primary),
-          const SizedBox(width: 5),
-          Text(
-            value,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: AppColors.secondary,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              height: 1,
-            ),
-          ),
-        ],
       ),
     );
   }

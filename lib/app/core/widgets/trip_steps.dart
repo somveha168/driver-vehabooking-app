@@ -8,10 +8,16 @@ import '../theme/app_colors.dart';
 /// Done steps show a check, the current step pulses (radar halo), upcoming stay
 /// hollow. Used on the Home NOW card and in the trip-detail footer.
 class TripSteps extends StatelessWidget {
-  const TripSteps({super.key, required this.stage, this.showLabels = true});
+  const TripSteps({
+    super.key,
+    required this.stage,
+    this.showLabels = true,
+    this.compact = false,
+  });
 
   final String stage;
   final bool showLabels;
+  final bool compact;
 
   static const _labels = [
     'step_short_start',
@@ -34,7 +40,11 @@ class TripSteps extends StatelessWidget {
     final muted = theme.colorScheme.outlineVariant;
     final isCompleted = stage == 'completed';
     final stageIndex = _stageIndex;
-    const size = 22.0;
+    final size = compact ? 18.0 : 22.0;
+    final dotSize = compact ? 5.5 : 7.0;
+    final checkSize = compact ? 11.0 : 13.0;
+    final connectorHeight = compact ? 2.0 : 3.0;
+    final labelFontSize = compact ? 9.0 : 10.0;
 
     Widget step(int i) {
       final done = isCompleted || i < stageIndex;
@@ -50,11 +60,11 @@ class TripSteps extends StatelessWidget {
           border: filled ? null : Border.all(color: muted, width: 2),
         ),
         child: done
-            ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
+            ? Icon(Icons.check_rounded, size: checkSize, color: Colors.white)
             : current
             ? Container(
-                width: 7,
-                height: 7,
+                width: dotSize,
+                height: dotSize,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
@@ -79,7 +89,7 @@ class TripSteps extends StatelessWidget {
                     .animate(onPlay: (c) => c.repeat())
                     .scaleXY(
                       begin: 0.9,
-                      end: 1.9,
+                      end: compact ? 1.65 : 1.9,
                       duration: 1300.ms,
                       curve: Curves.easeOut,
                     )
@@ -99,7 +109,7 @@ class TripSteps extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelSmall?.copyWith(
-              fontSize: 10,
+              fontSize: labelFontSize,
               fontWeight: current ? FontWeight.w700 : FontWeight.w600,
               color: current
                   ? AppColors.primary
@@ -117,7 +127,7 @@ class TripSteps extends StatelessWidget {
         // Align to the circle centers when labels push the row taller.
         padding: EdgeInsets.only(top: showLabels ? size / 2 - 1.5 : 0),
         child: Container(
-          height: 3,
+          height: connectorHeight,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: (isCompleted || seg < stageIndex)

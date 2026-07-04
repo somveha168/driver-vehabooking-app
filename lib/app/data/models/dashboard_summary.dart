@@ -14,7 +14,12 @@ class DashboardCounts {
 
   factory DashboardCounts.fromJson(Map<String, dynamic>? json) {
     json ??= const {};
-    int n(dynamic v) => (v as num?)?.toInt() ?? 0;
+    int n(dynamic v) {
+      if (v == null) return 0;
+      if (v is num) return v.toInt();
+      return int.tryParse(v.toString()) ?? 0;
+    }
+
     return DashboardCounts(
       assigned: n(json['assigned']),
       active: n(json['active']),
@@ -52,21 +57,28 @@ class DashboardSummary {
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
     final next = json['next_pickup'];
     final status = json['status']?.toString() ?? 'pending';
+    final counts = json['counts'];
     return DashboardSummary(
       status: status,
       statusLabel: json['status_label']?.toString() ?? _labelForStatus(status),
       active: json['active'] is bool
           ? json['active'] as bool
           : status == 'approved',
-      counts: DashboardCounts.fromJson(json['counts'] as Map<String, dynamic>?),
-      nextPickup: next is Map<String, dynamic>
-          ? BookingListItem.fromJson(next)
+      counts: DashboardCounts.fromJson(_map(counts)),
+      nextPickup: next is Map
+          ? BookingListItem.fromJson(Map<String, dynamic>.from(next))
           : null,
       upcoming: (json['upcoming'] as List? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(BookingListItem.fromJson)
+          .whereType<Map>()
+          .map((e) => BookingListItem.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
+  }
+
+  static Map<String, dynamic>? _map(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return null;
   }
 
   static String _labelForStatus(String status) {

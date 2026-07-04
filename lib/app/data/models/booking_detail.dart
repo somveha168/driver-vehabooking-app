@@ -182,73 +182,90 @@ class BookingDetail {
   bool get hasOperatorContact => operator?.hasContact == true;
 
   factory BookingDetail.fromJson(Map<String, dynamic> json) {
-    final customer = json['customer'] as Map<String, dynamic>?;
-    final vehicle = json['vehicle'] as Map<String, dynamic>?;
-    final operator = json['operator'] as Map<String, dynamic>?;
-    final flight = json['flight'] as Map<String, dynamic>?;
-    final returnTrip = json['return_trip'] as Map<String, dynamic>?;
-    final routeSummary = json['route_summary'] as Map<String, dynamic>?;
+    final customer = _map(json['customer']);
+    final vehicle = _map(json['vehicle']);
+    final operator = _map(json['operator']);
+    final flight = _map(json['flight']);
+    final returnTrip = _map(json['return_trip']);
+    final routeSummary = _map(json['route_summary']);
 
     return BookingDetail(
-      uuid: json['uuid']?.toString() ?? '',
-      stage: json['stage']?.toString() ?? 'assigned',
-      assignmentId: (json['assignment_id'] as num?)?.toInt(),
-      code: json['code']?.toString(),
-      serviceType: json['service_type']?.toString(),
-      tripType: json['trip_type']?.toString(),
+      uuid: _string(json['uuid']) ?? '',
+      stage: _string(json['stage']) ?? 'assigned',
+      assignmentId: _toInt(json['assignment_id']),
+      code: _string(json['code']),
+      serviceType: _string(json['service_type']),
+      tripType: _string(json['trip_type']),
       isRoundTrip: json['is_round_trip'] == true || json['is_return'] == true,
-      status: json['status']?.toString(),
-      driverPickupStatus: json['driver_pickup_status']?.toString(),
-      driverTripStatus: json['driver_trip_status']?.toString(),
-      acceptedAt: json['accepted_at']?.toString(),
-      startedAt: json['started_at']?.toString(),
-      arrivedAt: json['arrived_at']?.toString(),
-      metPassengerAt: json['met_passenger_at']?.toString(),
-      droppedAt: json['dropped_at']?.toString(),
-      pickupIssueReason: json['pickup_issue_reason']?.toString(),
-      pickupIssueReasonOptions:
-          (json['pickup_issue_reason_options'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
+      status: _string(json['status']),
+      driverPickupStatus: _string(json['driver_pickup_status']),
+      driverTripStatus: _string(json['driver_trip_status']),
+      acceptedAt: _string(json['accepted_at']),
+      startedAt: _string(json['started_at']),
+      arrivedAt: _string(json['arrived_at']),
+      metPassengerAt: _string(json['met_passenger_at']),
+      droppedAt: _string(json['dropped_at']),
+      pickupIssueReason: _string(json['pickup_issue_reason']),
+      pickupIssueReasonOptions: _stringList(
+        json['pickup_issue_reason_options'],
+      ),
       pickupIssueNoteMaxLength:
-          (json['pickup_issue_note_max_length'] as num?)?.toInt() ?? 500,
-      allowedActions:
-          (json['allowed_actions'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
+          _toInt(json['pickup_issue_note_max_length']) ?? 500,
+      allowedActions: _stringList(json['allowed_actions']),
       startLocked: json['start_locked'] == true,
-      customerName: customer?['name']?.toString(),
-      customerPhone: customer?['phone']?.toString(),
-      customerEmail: customer?['email']?.toString(),
-      pickup: Place.fromJson(json['pickup'] as Map<String, dynamic>?),
-      dropoff: Place.fromJson(json['dropoff'] as Map<String, dynamic>?),
-      routeOrigin: routeSummary?['origin']?.toString(),
-      routeDestination: routeSummary?['destination']?.toString(),
-      departureDatetime: json['departure_datetime']?.toString(),
-      legDepartureDatetime: json['leg_departure_datetime']?.toString(),
-      linkedOutboundDatetime: json['linked_outbound_datetime']?.toString(),
-      linkedReturnDatetime: json['linked_return_datetime']?.toString(),
-      arrivalDatetime: json['arrival_datetime']?.toString(),
-      duration: (json['duration'] as num?)?.toInt(),
-      passengerCount: (json['passenger_count'] as num?)?.toInt(),
-      nationality: json['nationality']?.toString(),
-      notes: json['notes']?.toString(),
-      vehicleBooked: vehicle?['booked_name']?.toString(),
-      vehicleModel: vehicle?['model']?.toString(),
-      vehiclePlate: vehicle?['plate_number']?.toString(),
-      vehicleColor: vehicle?['color']?.toString(),
-      vehicleSeats: (vehicle?['seats'] as num?)?.toInt(),
+      customerName: _string(customer['name']),
+      customerPhone: _string(customer['phone']),
+      customerEmail: _string(customer['email']),
+      pickup: Place.fromJson(_map(json['pickup'])),
+      dropoff: Place.fromJson(_map(json['dropoff'])),
+      routeOrigin: _string(routeSummary['origin']),
+      routeDestination: _string(routeSummary['destination']),
+      departureDatetime: _string(json['departure_datetime']),
+      legDepartureDatetime: _string(json['leg_departure_datetime']),
+      linkedOutboundDatetime: _string(json['linked_outbound_datetime']),
+      linkedReturnDatetime: _string(json['linked_return_datetime']),
+      arrivalDatetime: _string(json['arrival_datetime']),
+      duration: _toInt(json['duration']),
+      passengerCount: _toInt(json['passenger_count']),
+      nationality: _string(json['nationality']),
+      notes: _string(json['notes']),
+      vehicleBooked: _string(vehicle['booked_name']),
+      vehicleModel: _string(vehicle['model']),
+      vehiclePlate: _string(vehicle['plate_number']),
+      vehicleColor: _string(vehicle['color']),
+      vehicleSeats: _toInt(vehicle['seats']),
       operator: OperatorContact.fromJson(operator),
       isReturn: json['is_return'] == true,
-      returnDate: returnTrip?['date']?.toString(),
-      returnTime: returnTrip?['time']?.toString(),
-      flightNumber: flight?['number']?.toString(),
-      airline: flight?['airline']?.toString(),
-      terminal: flight?['terminal']?.toString(),
-      flightDatetime: flight?['datetime']?.toString(),
+      returnDate: _string(returnTrip['date']),
+      returnTime: _string(returnTrip['time']),
+      flightNumber: _string(flight['number']),
+      airline: _string(flight['airline']),
+      terminal: _string(flight['terminal']),
+      flightDatetime: _string(flight['datetime']),
     );
+  }
+
+  static Map<String, dynamic> _map(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return const {};
+  }
+
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
+  static String? _string(dynamic v) {
+    if (v == null) return null;
+    final value = v.toString();
+    return value.isEmpty ? null : value;
+  }
+
+  static List<String> _stringList(dynamic v) {
+    if (v is! List) return const [];
+    return v.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
   }
 }
 
@@ -257,30 +274,37 @@ class OperatorContact {
     this.name,
     this.phone,
     this.email,
+    this.address,
     this.telegramChatId,
   });
 
   final String? name;
   final String? phone;
   final String? email;
+  final String? address;
   final String? telegramChatId;
 
   bool get hasContact =>
       (name != null && name!.isNotEmpty) ||
       (phone != null && phone!.isNotEmpty) ||
       (email != null && email!.isNotEmpty) ||
+      (address != null && address!.isNotEmpty) ||
       (telegramChatId != null && telegramChatId!.isNotEmpty);
 
   bool get hasPhone => phone != null && phone!.isNotEmpty && phone != 'N/A';
+  bool get hasEmail => email != null && email!.isNotEmpty && email != 'N/A';
+  bool get hasAddress =>
+      address != null && address!.isNotEmpty && address != 'N/A';
 
   factory OperatorContact.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const OperatorContact();
 
     return OperatorContact(
-      name: json['name']?.toString(),
-      phone: json['phone']?.toString(),
-      email: json['email']?.toString(),
-      telegramChatId: json['telegram_chat_id']?.toString(),
+      name: BookingDetail._string(json['name']),
+      phone: BookingDetail._string(json['phone']),
+      email: BookingDetail._string(json['email']),
+      address: BookingDetail._string(json['address']),
+      telegramChatId: BookingDetail._string(json['telegram_chat_id']),
     );
   }
 }

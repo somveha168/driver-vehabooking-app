@@ -128,5 +128,34 @@ void main() {
       expect(b.pickup.label, '—');
       expect(b.isAirport, isFalse);
     });
+
+    test('tolerates invalid nested shapes and string numbers', () {
+      final b = BookingDetail.fromJson({
+        'uuid': 123,
+        'stage': null,
+        'assignment_id': '42',
+        'customer': [],
+        'pickup': 'bad-pickup',
+        'dropoff': null,
+        'vehicle': {'seats': '10'},
+        'duration': '30',
+        'passenger_count': '2',
+        'allowed_actions': 'start',
+        'pickup_issue_reason_options': {'bad': 'shape'},
+        'route_summary': 'bad-route',
+        'operator': 'bad-operator',
+      });
+
+      expect(b.uuid, '123');
+      expect(b.stage, 'assigned');
+      expect(b.assignmentId, 42);
+      expect(b.pickup.label, '—');
+      expect(b.vehicleSeats, 10);
+      expect(b.duration, 30);
+      expect(b.passengerCount, 2);
+      expect(b.allowedActions, isEmpty);
+      expect(b.pickupIssueReasonOptions, isEmpty);
+      expect(b.operator?.hasContact, isFalse);
+    });
   });
 }

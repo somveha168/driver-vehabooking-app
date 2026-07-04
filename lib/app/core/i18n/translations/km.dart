@@ -162,8 +162,7 @@ const Map<String, String> kmKH = {
   'start_trip_now': 'ចាប់ផ្តើមដំណើរឥឡូវ',
   'start_overdue_home': 'ម៉ោងចេញដំណើរបានផុតហើយ។ ចាប់ផ្តើមពេលអ្នករួចរាល់។',
   'start_very_overdue_home': 'ដំណើរនេះយឺតយូរហើយ។ សូមបញ្ជាក់មុនពេលចាប់ផ្តើម។',
-  'start_too_old_home':
-      'ដំណើរនេះចាស់ពេក មិនអាចចាប់ផ្តើមពីកម្មវិធីបានទេ។ សូមទាក់ទងផ្នែកគ្រប់គ្រង។',
+  'start_too_old_home': 'ផ្នែកគ្រប់គ្រងត្រូវពិនិត្យដំណើរនេះ មុនពេលចាប់ផ្តើម។',
   'start_overdue_detail':
       'ដំណើរនេះគួរតែបានចាប់ផ្តើមរួចហើយ។ អ្នកនៅតែអាចចាប់ផ្តើមឥឡូវបាន។',
   'start_very_overdue_detail':
@@ -171,12 +170,22 @@ const Map<String, String> kmKH = {
   'start_too_old_detail':
       'ដំណើរនេះចាស់ពេក មិនអាចចាប់ផ្តើមពីកម្មវិធីបានទេ។ សូមទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីពិនិត្យ។',
   'contact_dispatch_to_start': 'ទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីចាប់ផ្តើម',
+  'contact_dispatch': 'ទាក់ទង',
+  'needs_action': 'ត្រូវការសកម្មភាព',
   'dispatch_must_review_detail':
       'ដំណើរនេះមិនបានចាប់ផ្តើមទាន់ពេល។ ផ្នែកគ្រប់គ្រងត្រូវពិនិត្យ និងបិទដំណើរនេះ មុនពេលអ្នកអាចបន្តបាន។',
   'contact_dispatch_to_review': 'ទាក់ទងផ្នែកគ្រប់គ្រងដើម្បីពិនិត្យ',
   'dispatch_review_needed': 'ត្រូវការការពិនិត្យពីផ្នែកគ្រប់គ្រង',
+  'dispatch_phone_unavailable': 'មិនមានលេខទូរស័ព្ទផ្នែកគ្រប់គ្រង',
+  'dispatch_email_unavailable': 'មិនមានអ៊ីមែលផ្នែកគ្រប់គ្រង',
+  'dispatch_address_unavailable': 'មិនមានអាសយដ្ឋានផ្នែកគ្រប់គ្រង',
+  'call_failed': 'មិនអាចបើកកម្មវិធីទូរស័ព្ទបានទេ។',
+  'email_failed': 'មិនអាចបើកកម្មវិធីអ៊ីមែលបានទេ។',
   'finish_trip_first_title': 'សូមបញ្ចប់ @code ជាមុន',
   'open_trip': 'បើកដំណើរ',
+  'not_started': 'មិនទាន់ចាប់ផ្តើម',
+  'pending': 'កំពុងរង់ចាំ',
+  'completed': 'បានបញ្ចប់',
   'mark_arrived': 'ខ្ញុំបានមកដល់',
   'meet_passenger': 'បានជួបអ្នកដំណើរ',
   'drop_passenger': 'ដាក់អ្នកដំណើរ',
@@ -334,6 +343,7 @@ const Map<String, String> kmKH = {
   'save_changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
   'profile_updated': 'បានធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប។',
   'email': 'អ៊ីមែល',
+  'address': 'អាសយដ្ឋាន',
   'email_invalid': 'សូមបញ្ចូលអ៊ីមែលឲ្យត្រឹមត្រូវ',
   'save_photo': 'រក្សាទុករូបភាព',
   'take_photo': 'ថតរូប',

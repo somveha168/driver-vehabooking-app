@@ -24,7 +24,7 @@ class BookingRepository {
   /// Home dashboard summary: online state, pipeline counts, next pickup.
   Future<DashboardSummary> dashboard() async {
     final res = await _api.getJson('$_base/dashboard');
-    final data = (res as Map)['data'] as Map<String, dynamic>;
+    final data = _mapAt(res, 'data');
     return DashboardSummary.fromJson(data);
   }
 
@@ -40,16 +40,17 @@ class BookingRepository {
       query: {'status': ?status, 'page': page, 'limit': limit},
     );
 
-    final body = res as Map;
+    final body = res is Map ? res : const {};
     final items = (body['data'] as List? ?? [])
-        .map((e) => BookingListItem.fromJson(e as Map<String, dynamic>))
+        .whereType<Map>()
+        .map((e) => BookingListItem.fromJson(Map<String, dynamic>.from(e)))
         .toList();
-    final meta = body['meta'] as Map?;
+    final meta = body['meta'] is Map ? body['meta'] as Map : const {};
 
     return (
       items: items,
-      currentPage: (meta?['current_page'] as num?)?.toInt() ?? page,
-      lastPage: (meta?['last_page'] as num?)?.toInt() ?? page,
+      currentPage: _toInt(meta['current_page']) ?? page,
+      lastPage: _toInt(meta['last_page']) ?? page,
     );
   }
 
@@ -139,7 +140,7 @@ class BookingRepository {
       },
     );
 
-    final data = (res as Map)['data'] as Map<String, dynamic>;
+    final data = _mapAt(res, 'data');
     return TripRoute.fromJson(data);
   }
 
@@ -148,7 +149,21 @@ class BookingRepository {
 
   Future<BookingDetail> _detail(Future<dynamic> request) async {
     final res = await request;
-    final data = (res as Map)['data'] as Map<String, dynamic>;
+    final data = _mapAt(res, 'data');
     return BookingDetail.fromJson(data);
+  }
+
+  Map<String, dynamic> _mapAt(dynamic value, String key) {
+    if (value is! Map) return const {};
+    final data = value[key];
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return const {};
+  }
+
+  int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 }

@@ -28,8 +28,11 @@ const _focusedMapStyle = '''
 ]
 ''';
 
-const _routeRefreshInterval = Duration(seconds: 90);
-const _routeRefreshDistanceMeters = 300.0;
+const _routeRefreshInterval = Duration(seconds: 30);
+const _routeRefreshDistanceMeters = 80.0;
+const _markerUpdateDistanceMeters = 2.0;
+const _locationSyncInterval = Duration(seconds: 20);
+const _locationSyncDistanceMeters = 20.0;
 
 class TripMapView extends StatefulWidget {
   const TripMapView({super.key});
@@ -42,14 +45,18 @@ class _TripMapViewState extends State<TripMapView> {
   GoogleMapController? _mapController;
   DriverLocation? _driverLocation;
   DriverLocation? _lastRouteLocation;
+  DriverLocation? _lastSyncedLocation;
+  DateTime? _lastLocationSyncAt;
   TripRoute? _roadRoute;
   String? _lastRouteMode;
   Timer? _routeRefreshTimer;
+  StreamSubscription<DriverLocation>? _locationSubscription;
   BitmapDescriptor? _pickupIcon;
   BitmapDescriptor? _dropoffIcon;
   BitmapDescriptor? _driverIcon;
   bool _isLocating = false;
   bool _isLoadingRoute = false;
+  bool _isSyncingLocation = false;
   bool _isSheetCollapsed = false;
 
   RouteMapArgs get args => Get.arguments as RouteMapArgs;
@@ -59,12 +66,14 @@ class _TripMapViewState extends State<TripMapView> {
     super.initState();
     unawaited(_prepareMarkerIcons());
     unawaited(_refreshLocation());
+    _startLiveLocationStream();
     _startRouteRefreshTimer();
   }
 
   @override
   void dispose() {
     _routeRefreshTimer?.cancel();
+    _locationSubscription?.cancel();
     _mapController?.dispose();
     super.dispose();
   }
@@ -340,7 +349,8 @@ class _TripMapViewState extends State<TripMapView> {
     try {
       final location = await Get.find<LocationService>().current();
       if (!mounted) return;
-      setState(() => _driverLocation = location);
+      _setDriverLocation(location, force: true);
+      unawaited(_syncLocationForObservers(location));
       unawaited(_loadRoadRoute(force: true));
       await _fitCamera();
     } catch (_) {
@@ -348,6 +358,107 @@ class _TripMapViewState extends State<TripMapView> {
       unawaited(_loadRoadRoute());
     } finally {
       if (mounted) setState(() => _isLocating = false);
+    }
+  }
+
+  void _startLiveLocationStream() {
+    _locationSubscription?.cancel();
+    _locationSubscription = Get.find<LocationService>()
+        .liveStream(distanceFilterMeters: 5)
+        .listen(
+          _handleLiveLocation,
+          onError: (_) {
+            // The manual GPS button remains available for visible retry/error.
+          },
+        );
+  }
+
+  void _handleLiveLocation(DriverLocation location) {
+    if (!mounted || _isLocating) return;
+
+    final previous = _driverLocation;
+    final wasUsingDriverLocation = _hasUsableDriverLocation;
+    final shouldUpdateMarker =
+        previous == null ||
+        _distanceMeters(
+              previous.latitude,
+              previous.longitude,
+              location.latitude,
+              location.longitude,
+            ) >=
+            _markerUpdateDistanceMeters;
+
+    if (!shouldUpdateMarker) return;
+
+    _setDriverLocation(location);
+    unawaited(_syncLocationForObservers(location));
+
+    final isNowUsingDriverLocation = _hasUsableDriverLocation;
+    if (!wasUsingDriverLocation && isNowUsingDriverLocation) {
+      unawaited(_loadRoadRoute(force: true));
+      unawaited(_fitCamera());
+      return;
+    }
+
+    if (_routeMode != 'passenger' && _shouldRefreshRouteFromMovement()) {
+      unawaited(_loadRoadRoute());
+    }
+  }
+
+  void _setDriverLocation(DriverLocation location, {bool force = false}) {
+    if (!mounted) return;
+    if (!force) {
+      final previous = _driverLocation;
+      if (previous != null &&
+          _distanceMeters(
+                previous.latitude,
+                previous.longitude,
+                location.latitude,
+                location.longitude,
+              ) <
+              _markerUpdateDistanceMeters) {
+        return;
+      }
+    }
+
+    setState(() => _driverLocation = location);
+  }
+
+  Future<void> _syncLocationForObservers(DriverLocation location) async {
+    if (_isSyncingLocation || args.uuid.isEmpty || args.assignmentId == null) {
+      return;
+    }
+
+    final lastSynced = _lastSyncedLocation;
+    final lastSyncedAt = _lastLocationSyncAt;
+    final movedEnough =
+        lastSynced == null ||
+        _distanceMeters(
+              lastSynced.latitude,
+              lastSynced.longitude,
+              location.latitude,
+              location.longitude,
+            ) >=
+            _locationSyncDistanceMeters;
+    final waitedEnough =
+        lastSyncedAt == null ||
+        DateTime.now().difference(lastSyncedAt) >= _locationSyncInterval;
+
+    if (!movedEnough && !waitedEnough) return;
+
+    _isSyncingLocation = true;
+    try {
+      await Get.find<BookingRepository>().storeLocation(
+        args.uuid,
+        assignmentId: args.assignmentId!,
+        location: location,
+      );
+      _lastSyncedLocation = location;
+      _lastLocationSyncAt = DateTime.now();
+    } catch (_) {
+      // Live map should stay smooth even if the background sync fails.
+    } finally {
+      _isSyncingLocation = false;
     }
   }
 
@@ -366,7 +477,8 @@ class _TripMapViewState extends State<TripMapView> {
       final location = await Get.find<LocationService>().current();
       if (!mounted) return;
 
-      setState(() => _driverLocation = location);
+      _setDriverLocation(location);
+      unawaited(_syncLocationForObservers(location));
 
       if (_routeMode == 'passenger') {
         await _fitCamera();

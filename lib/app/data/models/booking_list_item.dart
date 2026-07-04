@@ -198,71 +198,84 @@ class BookingListItem {
 
   bool get isStartBlocked => startBlockedBy != null && nextAction == null;
 
-  factory BookingListItem.fromJson(
-    Map<String, dynamic> json,
-  ) => BookingListItem(
-    uuid: json['uuid']?.toString() ?? '',
-    stage: json['stage']?.toString() ?? 'assigned',
-    assignmentId: (json['assignment_id'] as num?)?.toInt(),
-    code: json['code']?.toString(),
-    serviceType: json['service_type']?.toString(),
-    tripType: json['trip_type']?.toString(),
-    isRoundTrip: json['is_round_trip'] == true,
-    driverTripStatus: json['driver_trip_status']?.toString(),
-    customerName: json['customer_name']?.toString(),
-    customerPhone: json['customer_phone']?.toString(),
-    routeOrigin: (json['route_summary'] as Map<String, dynamic>?)?['origin']
-        ?.toString(),
-    routeDestination:
-        (json['route_summary'] as Map<String, dynamic>?)?['destination']
-            ?.toString(),
-    pickupPoint: json['pickup_point']?.toString(),
-    pickupLocationName: json['pickup_location_name']?.toString(),
-    pickupNearbyLocation: json['pickup_nearby_location']?.toString(),
-    pickupLatitude: _toDouble(json['pickup_latitude']),
-    pickupLongitude: _toDouble(json['pickup_longitude']),
-    dropoffPoint: json['dropoff_point']?.toString(),
-    dropoffLocationName: json['dropoff_location_name']?.toString(),
-    dropoffNearbyLocation: json['dropoff_nearby_location']?.toString(),
-    dropoffLatitude: _toDouble(json['dropoff_latitude']),
-    dropoffLongitude: _toDouble(json['dropoff_longitude']),
-    departureDatetime: json['departure_datetime']?.toString(),
-    legDepartureDatetime: json['leg_departure_datetime']?.toString(),
-    linkedOutboundDatetime: json['linked_outbound_datetime']?.toString(),
-    linkedReturnDatetime: json['linked_return_datetime']?.toString(),
-    passengerCount: (json['passenger_count'] as num?)?.toInt(),
-    vehicleBooked: (json['vehicle'] as Map<String, dynamic>?)?['booked_name']
-        ?.toString(),
-    vehicleModel: (json['vehicle'] as Map<String, dynamic>?)?['model']
-        ?.toString(),
-    vehiclePlate: (json['vehicle'] as Map<String, dynamic>?)?['plate_number']
-        ?.toString(),
-    vehicleColor: (json['vehicle'] as Map<String, dynamic>?)?['color']
-        ?.toString(),
-    vehicleSeats: ((json['vehicle'] as Map<String, dynamic>?)?['seats'] as num?)
-        ?.toInt(),
-    acceptedAt: json['accepted_at']?.toString(),
-    startBlockedBy: json['start_blocked_by'] is Map<String, dynamic>
-        ? BlockingTrip.fromJson(
-            json['start_blocked_by'] as Map<String, dynamic>,
-          )
-        : null,
-    pickupIssueReasonOptions:
-        (json['pickup_issue_reason_options'] as List?)
-            ?.map((e) => e.toString())
-            .toList() ??
-        const [],
-    pickupIssueNoteMaxLength:
-        (json['pickup_issue_note_max_length'] as num?)?.toInt() ?? 500,
-    allowedActions:
-        (json['allowed_actions'] as List?)?.map((e) => e.toString()).toList() ??
-        const [],
-  );
+  factory BookingListItem.fromJson(Map<String, dynamic> json) {
+    final routeSummary = _map(json['route_summary']);
+    final vehicle = _map(json['vehicle']);
+    final blockedBy = _map(json['start_blocked_by']);
+
+    return BookingListItem(
+      uuid: _string(json['uuid']) ?? '',
+      stage: _string(json['stage']) ?? 'assigned',
+      assignmentId: _toInt(json['assignment_id']),
+      code: _string(json['code']),
+      serviceType: _string(json['service_type']),
+      tripType: _string(json['trip_type']),
+      isRoundTrip: json['is_round_trip'] == true,
+      driverTripStatus: _string(json['driver_trip_status']),
+      customerName: _string(json['customer_name']),
+      customerPhone: _string(json['customer_phone']),
+      routeOrigin: _string(routeSummary['origin']),
+      routeDestination: _string(routeSummary['destination']),
+      pickupPoint: _string(json['pickup_point']),
+      pickupLocationName: _string(json['pickup_location_name']),
+      pickupNearbyLocation: _string(json['pickup_nearby_location']),
+      pickupLatitude: _toDouble(json['pickup_latitude']),
+      pickupLongitude: _toDouble(json['pickup_longitude']),
+      dropoffPoint: _string(json['dropoff_point']),
+      dropoffLocationName: _string(json['dropoff_location_name']),
+      dropoffNearbyLocation: _string(json['dropoff_nearby_location']),
+      dropoffLatitude: _toDouble(json['dropoff_latitude']),
+      dropoffLongitude: _toDouble(json['dropoff_longitude']),
+      departureDatetime: _string(json['departure_datetime']),
+      legDepartureDatetime: _string(json['leg_departure_datetime']),
+      linkedOutboundDatetime: _string(json['linked_outbound_datetime']),
+      linkedReturnDatetime: _string(json['linked_return_datetime']),
+      passengerCount: _toInt(json['passenger_count']),
+      vehicleBooked: _string(vehicle['booked_name']),
+      vehicleModel: _string(vehicle['model']),
+      vehiclePlate: _string(vehicle['plate_number']),
+      vehicleColor: _string(vehicle['color']),
+      vehicleSeats: _toInt(vehicle['seats']),
+      acceptedAt: _string(json['accepted_at']),
+      startBlockedBy: blockedBy.isEmpty
+          ? null
+          : BlockingTrip.fromJson(blockedBy),
+      pickupIssueReasonOptions: _stringList(
+        json['pickup_issue_reason_options'],
+      ),
+      pickupIssueNoteMaxLength:
+          _toInt(json['pickup_issue_note_max_length']) ?? 500,
+      allowedActions: _stringList(json['allowed_actions']),
+    );
+  }
 
   static double? _toDouble(dynamic v) {
     if (v == null) return null;
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString());
+  }
+
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
+  static String? _string(dynamic v) {
+    if (v == null) return null;
+    final value = v.toString();
+    return value.isEmpty ? null : value;
+  }
+
+  static Map<String, dynamic> _map(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return const {};
+  }
+
+  static List<String> _stringList(dynamic v) {
+    if (v is! List) return const [];
+    return v.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
   }
 }
 
@@ -286,12 +299,14 @@ class BlockingTrip {
   final String? legDepartureDatetime;
 
   factory BlockingTrip.fromJson(Map<String, dynamic> json) => BlockingTrip(
-    uuid: json['uuid']?.toString() ?? '',
-    assignmentId: (json['assignment_id'] as num?)?.toInt(),
-    code: json['code']?.toString(),
-    customerName: json['customer_name']?.toString(),
-    tripType: json['trip_type']?.toString(),
-    stage: json['stage']?.toString(),
-    legDepartureDatetime: json['leg_departure_datetime']?.toString(),
+    uuid: BookingListItem._string(json['uuid']) ?? '',
+    assignmentId: BookingListItem._toInt(json['assignment_id']),
+    code: BookingListItem._string(json['code']),
+    customerName: BookingListItem._string(json['customer_name']),
+    tripType: BookingListItem._string(json['trip_type']),
+    stage: BookingListItem._string(json['stage']),
+    legDepartureDatetime: BookingListItem._string(
+      json['leg_departure_datetime'],
+    ),
   );
 }

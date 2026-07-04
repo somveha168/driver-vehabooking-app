@@ -7,6 +7,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../core/utils/external_launcher.dart';
 import '../../data/models/auth_user.dart';
+import '../../data/models/booking_detail.dart';
 import '../../data/models/dashboard_summary.dart';
 import '../../data/repositories/booking_repository.dart';
 import '../../data/services/auth_service.dart';
@@ -62,6 +63,26 @@ class DashboardController extends GetxController {
     final next = summary.value?.nextPickup;
     if (next == null) return;
     openBooking(next.uuid, assignmentId: next.assignmentId);
+  }
+
+  /// Load full detail for the NOW booking when the Home card needs data that
+  /// is not present in the compact dashboard summary.
+  Future<BookingDetail?> loadNextPickupDetail() async {
+    final next = summary.value?.nextPickup;
+    if (next == null) return null;
+
+    try {
+      return await _bookingRepo.show(
+        next.uuid,
+        assignmentId: next.assignmentId,
+      );
+    } on ApiException catch (e) {
+      AppSnackbar.error(e.message);
+    } catch (_) {
+      AppSnackbar.error('error_generic'.tr);
+    }
+
+    return null;
   }
 
   /// Open the trip that currently blocks the NOW card from starting.
@@ -130,6 +151,32 @@ class DashboardController extends GetxController {
 
   /// Dial the passenger from the NOW card.
   Future<void> callCustomer(String phone) => ExternalLauncher.call(phone);
+
+  Future<void> callOperator(OperatorContact? operator) async {
+    final phone = operator?.phone;
+    if (phone == null || phone.isEmpty || phone == 'N/A') {
+      AppSnackbar.error('dispatch_phone_unavailable'.tr);
+      return;
+    }
+
+    final launched = await ExternalLauncher.call(phone);
+    if (!launched) {
+      AppSnackbar.error('call_failed'.tr);
+    }
+  }
+
+  Future<void> emailOperator(OperatorContact? operator) async {
+    final email = operator?.email;
+    if (email == null || email.isEmpty || email == 'N/A') {
+      AppSnackbar.error('dispatch_email_unavailable'.tr);
+      return;
+    }
+
+    final launched = await ExternalLauncher.email(email);
+    if (!launched) {
+      AppSnackbar.error('email_failed'.tr);
+    }
+  }
 
   /// Advance the NOW pickup one step (start / arrived / meet_passenger /
   /// complete) straight from the Home card, then refresh the dashboard.

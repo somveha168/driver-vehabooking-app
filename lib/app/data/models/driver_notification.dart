@@ -56,14 +56,11 @@ class DriverNotification {
   bool get canOpenTrip => bookingUuid != null && bookingUuid!.isNotEmpty;
 
   String? get routeLine {
-    final origin = tripType == 'return' ? routeDestination : routeOrigin;
-    final destination = tripType == 'return' ? routeOrigin : routeDestination;
-
-    if (origin != null &&
-        origin.isNotEmpty &&
-        destination != null &&
-        destination.isNotEmpty) {
-      return '$origin to $destination';
+    if (routeOrigin != null &&
+        routeOrigin!.isNotEmpty &&
+        routeDestination != null &&
+        routeDestination!.isNotEmpty) {
+      return '$routeOrigin to $routeDestination';
     }
 
     return null;

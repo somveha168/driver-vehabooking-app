@@ -35,6 +35,47 @@ class LocationUnavailableException implements Exception {
 
 class LocationService {
   Future<DriverLocation> current() async {
+    await _ensurePermission();
+
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 12),
+      ),
+    );
+
+    return DriverLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      accuracyMeters: position.accuracy,
+      speedMetersPerSecond: position.speed.isNaN ? null : position.speed,
+      heading: position.heading.isNaN ? null : position.heading,
+    );
+  }
+
+  Stream<DriverLocation> liveStream({
+    LocationAccuracy accuracy = LocationAccuracy.bestForNavigation,
+    int distanceFilterMeters = 5,
+  }) async* {
+    await _ensurePermission();
+
+    yield* Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: accuracy,
+        distanceFilter: distanceFilterMeters,
+      ),
+    ).map(
+      (position) => DriverLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracyMeters: position.accuracy,
+        speedMetersPerSecond: position.speed.isNaN ? null : position.speed,
+        heading: position.heading.isNaN ? null : position.heading,
+      ),
+    );
+  }
+
+  Future<void> _ensurePermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw const LocationUnavailableException('location_service_disabled');
@@ -54,20 +95,5 @@ class LocationService {
         'location_permission_denied_forever',
       );
     }
-
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 12),
-      ),
-    );
-
-    return DriverLocation(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      accuracyMeters: position.accuracy,
-      speedMetersPerSecond: position.speed.isNaN ? null : position.speed,
-      heading: position.heading.isNaN ? null : position.heading,
-    );
   }
 }

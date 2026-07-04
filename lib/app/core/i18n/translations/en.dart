@@ -165,8 +165,7 @@ const Map<String, String> enUS = {
   'start_overdue_home': 'Departure time has passed. Start when you are ready.',
   'start_very_overdue_home':
       'This trip is very overdue. Confirm before starting.',
-  'start_too_old_home':
-      'This trip is too old to start from the app. Contact dispatch.',
+  'start_too_old_home': 'Dispatch must review this trip before it can start.',
   'start_overdue_detail':
       'This trip should already be started. You can still start it now.',
   'start_very_overdue_detail':
@@ -174,12 +173,22 @@ const Map<String, String> enUS = {
   'start_too_old_detail':
       'This trip is too old to start from the app. Contact dispatch so they can review it.',
   'contact_dispatch_to_start': 'Contact dispatch to start',
+  'contact_dispatch': 'Contact',
+  'needs_action': 'Needs action',
   'dispatch_must_review_detail':
       'This trip was not started in time. Dispatch must review and close it before you can continue.',
   'contact_dispatch_to_review': 'Contact dispatch to review',
   'dispatch_review_needed': 'Dispatch review needed',
+  'dispatch_phone_unavailable': 'Dispatch phone unavailable',
+  'dispatch_email_unavailable': 'Dispatch email unavailable',
+  'dispatch_address_unavailable': 'Dispatch address unavailable',
+  'call_failed': 'Could not open the phone app.',
+  'email_failed': 'Could not open the email app.',
   'finish_trip_first_title': 'Finish @code first',
   'open_trip': 'Open trip',
+  'not_started': 'Not started',
+  'pending': 'Pending',
+  'completed': 'Completed',
   'mark_arrived': "I've Arrived",
   'meet_passenger': 'Met Passenger',
   'drop_passenger': 'Drop Passenger',
@@ -338,6 +347,7 @@ const Map<String, String> enUS = {
   'save_changes': 'Save changes',
   'profile_updated': 'Profile updated.',
   'email': 'Email',
+  'address': 'Address',
   'email_invalid': 'Enter a valid email',
   'save_photo': 'Save photo',
   'take_photo': 'Take photo',

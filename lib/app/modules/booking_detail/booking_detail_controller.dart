@@ -43,6 +43,13 @@ class BookingDetailController extends GetxController {
   }
 
   Future<void> load() async {
+    if (uuid.isEmpty) {
+      booking.value = null;
+      error.value = 'error_generic'.tr;
+      isLoading.value = false;
+      return;
+    }
+
     isLoading.value = true;
     error.value = null;
     try {
@@ -268,8 +275,28 @@ class BookingDetailController extends GetxController {
 
   Future<void> callOperator() async {
     final phone = booking.value?.operator?.phone;
-    if (phone == null || phone.isEmpty || phone == 'N/A') return;
-    await ExternalLauncher.call(phone);
+    if (phone == null || phone.isEmpty || phone == 'N/A') {
+      AppSnackbar.error('dispatch_phone_unavailable'.tr);
+      return;
+    }
+
+    final launched = await ExternalLauncher.call(phone);
+    if (!launched) {
+      AppSnackbar.error('call_failed'.tr);
+    }
+  }
+
+  Future<void> emailOperator() async {
+    final email = booking.value?.operator?.email;
+    if (email == null || email.isEmpty || email == 'N/A') {
+      AppSnackbar.error('dispatch_email_unavailable'.tr);
+      return;
+    }
+
+    final launched = await ExternalLauncher.email(email);
+    if (!launched) {
+      AppSnackbar.error('email_failed'.tr);
+    }
   }
 
   @override

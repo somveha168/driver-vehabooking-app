@@ -47,5 +47,27 @@ void main() {
       expect(summary.counts.assigned, 0);
       expect(summary.nextPickup, isNull);
     });
+
+    test('tolerates invalid nested shapes and string counts', () {
+      final summary = DashboardSummary.fromJson({
+        'status': 'approved',
+        'active': 'not-bool',
+        'counts': {'assigned': '4', 'active': '2', 'completed': null},
+        'next_pickup': 'bad-next',
+        'upcoming': [
+          {'uuid': 123, 'stage': null},
+          'bad-upcoming',
+        ],
+      });
+
+      expect(summary.active, isTrue);
+      expect(summary.counts.assigned, 4);
+      expect(summary.counts.active, 2);
+      expect(summary.counts.completed, 0);
+      expect(summary.nextPickup, isNull);
+      expect(summary.upcoming, hasLength(1));
+      expect(summary.upcoming.single.uuid, '123');
+      expect(summary.upcoming.single.stage, 'assigned');
+    });
   });
 }
