@@ -34,6 +34,8 @@ class LocationUnavailableException implements Exception {
 }
 
 class LocationService {
+  Future<void> ensureReady() => _ensurePermission();
+
   Future<DriverLocation> current() async {
     await _ensurePermission();
 

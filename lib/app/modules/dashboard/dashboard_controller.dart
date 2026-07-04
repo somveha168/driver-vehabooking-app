@@ -23,6 +23,7 @@ class DashboardController extends GetxController {
   final BookingRepository _bookingRepo = Get.find<BookingRepository>();
   final DriverTrackingService _trackingService =
       Get.find<DriverTrackingService>();
+  final LocationService _locationService = Get.find<LocationService>();
   final AuthService _auth = Get.find<AuthService>();
 
   final isLoading = false.obs;
@@ -101,6 +102,10 @@ class DashboardController extends GetxController {
   Future<void> openNextPickupMap() async {
     final next = summary.value?.nextPickup;
     if (next == null) {
+      return;
+    }
+
+    if (!await _ensureLocationReady()) {
       return;
     }
 
@@ -191,6 +196,10 @@ class DashboardController extends GetxController {
 
     isActing.value = true;
     try {
+      if (action == 'start' && !await _ensureLocationReady()) {
+        return;
+      }
+
       switch (action) {
         case 'start':
           await _bookingRepo.start(next.uuid, assignmentId: next.assignmentId);
@@ -288,6 +297,19 @@ class DashboardController extends GetxController {
     } catch (_) {
       // Do not block the home action when location is unavailable.
     }
+  }
+
+  Future<bool> _ensureLocationReady() async {
+    try {
+      await _locationService.ensureReady();
+      return true;
+    } on LocationUnavailableException catch (e) {
+      AppSnackbar.error(e.messageKey.tr);
+    } catch (_) {
+      AppSnackbar.error('location_unavailable'.tr);
+    }
+
+    return false;
   }
 
   void _watchNextPickupTracking() {

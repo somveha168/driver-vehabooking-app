@@ -17,6 +17,7 @@ class BookingDetailController extends GetxController {
   final BookingRepository _repo = Get.find<BookingRepository>();
   final DriverTrackingService _trackingService =
       Get.find<DriverTrackingService>();
+  final LocationService _locationService = Get.find<LocationService>();
 
   late final String uuid;
   late final int? assignmentId;
@@ -88,10 +89,16 @@ class BookingDetailController extends GetxController {
   }
 
   // Trip lifecycle.
-  Future<void> start() => _act(
-    () => _repo.start(uuid, assignmentId: assignmentId),
-    'started_done'.tr,
-  );
+  Future<void> start() async {
+    if (!await _ensureLocationReady()) {
+      return;
+    }
+
+    return _act(
+      () => _repo.start(uuid, assignmentId: assignmentId),
+      'started_done'.tr,
+    );
+  }
 
   Future<void> arrived() => _act(
     () => _repo.arrived(uuid, assignmentId: assignmentId),
@@ -275,6 +282,11 @@ class BookingDetailController extends GetxController {
   Future<void> navigateToPickup() async {
     final b = booking.value;
     if (b == null) return;
+
+    if (!await _ensureLocationReady()) {
+      return;
+    }
+
     final ok = await ExternalLauncher.navigateTo(
       latitude: b.pickup.latitude,
       longitude: b.pickup.longitude,
@@ -286,6 +298,10 @@ class BookingDetailController extends GetxController {
   Future<void> navigateToActiveDestination() async {
     final b = booking.value;
     if (b == null) return;
+
+    if (!await _ensureLocationReady()) {
+      return;
+    }
 
     final destination = switch (b.stage) {
       'meet_passenger' || 'drop_passenger' => b.dropoff,
@@ -300,9 +316,13 @@ class BookingDetailController extends GetxController {
     if (!ok) AppSnackbar.error('error_generic'.tr);
   }
 
-  void openMap() {
+  Future<void> openMap() async {
     final b = booking.value;
     if (b == null || !b.pickup.hasCoordinates || !b.dropoff.hasCoordinates) {
+      return;
+    }
+
+    if (!await _ensureLocationReady()) {
       return;
     }
 
@@ -319,6 +339,19 @@ class BookingDetailController extends GetxController {
             b.stage == 'meet_passenger' || b.stage == 'drop_passenger',
       ),
     );
+  }
+
+  Future<bool> _ensureLocationReady() async {
+    try {
+      await _locationService.ensureReady();
+      return true;
+    } on LocationUnavailableException catch (e) {
+      AppSnackbar.error(e.messageKey.tr);
+    } catch (_) {
+      AppSnackbar.error('location_unavailable'.tr);
+    }
+
+    return false;
   }
 
   Future<void> callCustomer() async {

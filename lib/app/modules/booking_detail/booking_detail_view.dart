@@ -964,7 +964,9 @@ class _Detail extends StatelessWidget {
               label: navigateToDropoff
                   ? 'view_dropoff_route'.tr
                   : 'view_pickup_route'.tr,
-              onTap: controller.openMap,
+              onTap: () {
+                controller.openMap();
+              },
             ),
           ],
           if (footer != null && footer.isNotEmpty) ...[
