@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/network/api_client.dart';
+import '../../core/network/api_exception.dart';
 import '../models/auth_user.dart';
 import '../models/driver_document.dart';
 
@@ -144,9 +145,22 @@ class AuthRepository {
 
   /// Upload a new profile photo (multipart). Returns the new image URL.
   Future<String?> uploadAvatar(String filePath) async {
-    final bytes = await File(filePath).readAsBytes();
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw const ApiException(
+        message: 'Selected photo is no longer available.',
+      );
+    }
+
+    final filename = file.uri.pathSegments.isEmpty
+        ? 'avatar.jpg'
+        : file.uri.pathSegments.last;
     final form = FormData({
-      'image': MultipartFile(bytes, filename: filePath.split('/').last),
+      'image': MultipartFile(
+        file,
+        filename: filename,
+        contentType: _imageContentType(filename),
+      ),
     });
     final res = await _api.postJson(
       '${AppConfig.authApiUrl}/auth/avatar',
@@ -154,6 +168,14 @@ class AuthRepository {
     );
     final data = (res as Map)['data'] as Map<String, dynamic>;
     return data['image_url']?.toString();
+  }
+
+  String _imageContentType(String filename) {
+    final lower = filename.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+
+    return 'image/jpeg';
   }
 
   /// The driver's read-only documents (Personal ID, Driving License).
