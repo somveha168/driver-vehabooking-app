@@ -27,138 +27,11 @@ class WelcomeView extends GetView<WelcomeController> {
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: AppColors.canvas,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              'assets/branding/welcome_screen.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.center,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.74),
-                    Colors.white.withValues(alpha: 0.18),
-                    Colors.transparent,
-                  ],
-                  stops: const [0, 0.42, 1],
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _langToggle(context),
-                    ).animate().fadeIn(duration: 350.ms),
-                    SizedBox(height: topOffset),
-                    Image.asset(
-                          'assets/branding/welcome_lockup.png',
-                          height: size.height < 760 ? 92 : 112,
-                        )
-                        .animate()
-                        .fadeIn(duration: 500.ms)
-                        .scale(
-                          begin: const Offset(0.94, 0.94),
-                          curve: Curves.easeOutCubic,
-                        ),
-                    SizedBox(height: size.height < 760 ? AppSpacing.sm : 14),
-                    _BrandTitle(compact: size.height < 760)
-                        .animate()
-                        .fadeIn(delay: 160.ms, duration: 450.ms)
-                        .slideY(begin: 0.12),
-                    const SizedBox(height: AppSpacing.sm),
-                    Container(
-                      width: 52,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ).animate().fadeIn(delay: 260.ms).scaleX(begin: 0.25),
-                    const SizedBox(height: AppSpacing.md),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                      ),
-                      child: Text(
-                        'welcome_tagline_1'.tr,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.secondary.withValues(alpha: 0.72),
-                          fontWeight: FontWeight.w600,
-                          height: 1.38,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 340.ms),
-                    const Spacer(),
-                    SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: controller.start,
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(56),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusLg,
-                                ),
-                              ),
-                              elevation: 10,
-                              shadowColor: AppColors.primary.withValues(
-                                alpha: 0.28,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('welcome_cta'.tr),
-                                const SizedBox(width: AppSpacing.sm),
-                                const Icon(
-                                      IconsaxPlusLinear.arrow_right_3,
-                                      size: 19,
-                                    )
-                                    .animate(
-                                      onPlay: (controller) =>
-                                          controller.repeat(reverse: true),
-                                    )
-                                    .moveX(
-                                      begin: -1,
-                                      end: 4,
-                                      duration: 700.ms,
-                                      curve: Curves.easeInOut,
-                                    ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(period: 3600.ms),
-                        )
-                        .shimmer(
-                          delay: 1700.ms,
-                          duration: 1000.ms,
-                          color: Colors.white.withValues(alpha: 0.36),
-                        )
-                        .animate()
-                        .fadeIn(delay: 520.ms, duration: 450.ms)
-                        .slideY(begin: 0.24),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        body: _WelcomeScene(
+          topOffset: topOffset,
+          compact: size.height < 760,
+          langToggle: _langToggle(context),
+          controller: controller,
         ),
       ),
     );
@@ -225,6 +98,159 @@ class WelcomeView extends GetView<WelcomeController> {
         ),
       );
     });
+  }
+}
+
+class _WelcomeScene extends StatelessWidget {
+  const _WelcomeScene({
+    required this.topOffset,
+    required this.compact,
+    required this.langToggle,
+    required this.controller,
+  });
+
+  final double topOffset;
+  final bool compact;
+  final Widget langToggle;
+  final WelcomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          'assets/branding/welcome_screen.png',
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.center,
+              colors: [
+                Colors.white.withValues(alpha: 0.74),
+                Colors.white.withValues(alpha: 0.18),
+                Colors.transparent,
+              ],
+              stops: const [0, 0.42, 1],
+            ),
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: langToggle,
+                ).animate().fadeIn(duration: 350.ms),
+                SizedBox(height: topOffset),
+                Image.asset(
+                      'assets/branding/welcome_lockup.png',
+                      height: compact ? 92 : 112,
+                    )
+                    .animate()
+                    .fadeIn(duration: 500.ms)
+                    .scale(
+                      begin: const Offset(0.94, 0.94),
+                      curve: Curves.easeOutCubic,
+                    ),
+                SizedBox(height: compact ? AppSpacing.sm : 14),
+                _BrandTitle(compact: compact)
+                    .animate()
+                    .fadeIn(delay: 160.ms, duration: 450.ms)
+                    .slideY(begin: 0.12),
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  width: 52,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ).animate().fadeIn(delay: 260.ms).scaleX(begin: 0.25),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  child: Text(
+                    'welcome_tagline_1'.tr,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.secondary.withValues(alpha: 0.72),
+                      fontWeight: FontWeight.w600,
+                      height: 1.38,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 340.ms),
+                const Spacer(),
+                SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: controller.start,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusLg,
+                            ),
+                          ),
+                          elevation: 10,
+                          shadowColor: AppColors.primary.withValues(
+                            alpha: 0.28,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('welcome_cta'.tr),
+                            const SizedBox(width: AppSpacing.sm),
+                            const Icon(
+                                  IconsaxPlusLinear.arrow_right_3,
+                                  size: 19,
+                                )
+                                .animate(
+                                  onPlay: (controller) =>
+                                      controller.repeat(reverse: true),
+                                )
+                                .moveX(
+                                  begin: -1,
+                                  end: 4,
+                                  duration: 700.ms,
+                                  curve: Curves.easeInOut,
+                                ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .animate(
+                      onPlay: (controller) =>
+                          controller.repeat(period: 3600.ms),
+                    )
+                    .shimmer(
+                      delay: 1700.ms,
+                      duration: 1000.ms,
+                      color: Colors.white.withValues(alpha: 0.36),
+                    )
+                    .animate()
+                    .fadeIn(delay: 520.ms, duration: 450.ms)
+                    .slideY(begin: 0.24),
+                const SizedBox(height: AppSpacing.md),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

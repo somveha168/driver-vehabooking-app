@@ -80,8 +80,67 @@ class VehaDriverApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
+      builder: (context, child) => _MobileAppFrame(child: child),
       initialRoute: Routes.splash,
       getPages: AppPages.pages,
+    );
+  }
+}
+
+class _MobileAppFrame extends StatelessWidget {
+  const _MobileAppFrame({required this.child});
+
+  static const double _maxWidth = 430;
+  static const double _maxHeight = 940;
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = child ?? const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth <= 600) {
+          return app;
+        }
+
+        final width = constraints.maxWidth < _maxWidth
+            ? constraints.maxWidth
+            : _maxWidth;
+        final height = constraints.maxHeight < _maxHeight
+            ? constraints.maxHeight
+            : _maxHeight;
+        final media = MediaQuery.of(context).copyWith(
+          size: Size(width, height),
+          padding: EdgeInsets.zero,
+          viewPadding: EdgeInsets.zero,
+          viewInsets: EdgeInsets.zero,
+        );
+
+        return ColoredBox(
+          color: const Color(0xFFEFF7F6),
+          child: Center(
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 32,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.hardEdge,
+              child: MediaQuery(data: media, child: app),
+            ),
+          ),
+        );
+      },
     );
   }
 }
