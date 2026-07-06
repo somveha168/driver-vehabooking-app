@@ -17,29 +17,23 @@ import '../../data/models/booking_list_item.dart';
 import '../booking_detail/dispatch_review_sheet.dart';
 import 'dashboard_controller.dart';
 
-/// Soft, editorial card surface used across the home page — crisp white on the
-/// tinted canvas with a soft layered shadow (no grey border).
+/// Clean operational card surface: white, subtle border, restrained shadow.
 BoxDecoration _softCard(BuildContext context) {
   final theme = Theme.of(context);
   final isDark = theme.brightness == Brightness.dark;
   return BoxDecoration(
     color: isDark ? theme.colorScheme.surfaceContainerHigh : Colors.white,
-    borderRadius: BorderRadius.circular(AppSpacing.radiusLg + 2),
-    border: isDark
-        ? Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-          )
-        : null,
+    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+    border: Border.all(
+      color: theme.colorScheme.outlineVariant.withValues(
+        alpha: isDark ? 0.44 : 0.34,
+      ),
+    ),
     boxShadow: [
       BoxShadow(
-        color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.04),
-        blurRadius: 2,
-        offset: const Offset(0, 1),
-      ),
-      BoxShadow(
-        color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.09),
-        blurRadius: 26,
-        offset: const Offset(0, 14),
+        color: AppColors.secondary.withValues(alpha: isDark ? 0.0 : 0.055),
+        blurRadius: 18,
+        offset: const Offset(0, 10),
       ),
     ],
   );
@@ -71,21 +65,7 @@ class DashboardView extends GetView<DashboardController> {
         final upcoming = controller.summary.value?.upcoming ?? const [];
 
         return Container(
-          // Brand wash: a soft primary radial glow from the top-right corner
-          // diffusing across the whole page over the cream canvas.
-          decoration: BoxDecoration(
-            color: canvas,
-            gradient: RadialGradient(
-              center: Alignment.topRight,
-              radius: 1.55,
-              colors: [
-                AppColors.primary.withValues(alpha: isDark ? 0.16 : 0.26),
-                AppColors.primary.withValues(alpha: isDark ? 0.06 : 0.10),
-                Colors.transparent,
-              ],
-              stops: const [0.0, 0.4, 0.82],
-            ),
-          ),
+          decoration: BoxDecoration(color: canvas),
           child: SafeArea(
             bottom: false,
             child: RefreshIndicator(
@@ -97,7 +77,7 @@ class DashboardView extends GetView<DashboardController> {
                   AppSpacing.lg,
                   AppSpacing.lg,
                   AppSpacing.lg,
-                  AppSpacing.navClearance,
+                  AppSpacing.navClearance + AppSpacing.lg,
                 ),
                 children: [
                   _Hero(controller: controller),
@@ -222,7 +202,7 @@ class DashboardView extends GetView<DashboardController> {
   }
 }
 
-/// Editorial hero: date eyebrow, serif greeting with an accent stop, subtitle.
+/// Calm home header: date, working state, notifications, greeting.
 class _Hero extends StatelessWidget {
   const _Hero({required this.controller});
 
@@ -242,10 +222,10 @@ class _Hero extends StatelessWidget {
       'EEEE, MMMM d',
     ).format(DateTime.now()).toUpperCase();
 
-    final serif = GoogleFonts.fraunces(
-      fontSize: 34,
-      height: 1.02,
-      letterSpacing: -0.5,
+    final display = GoogleFonts.fraunces(
+      fontSize: 28,
+      height: 1.05,
+      letterSpacing: -0.15,
     );
 
     return Column(
@@ -312,9 +292,9 @@ class _Hero extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.secondary.withValues(alpha: 0.08),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
+                            color: AppColors.secondary.withValues(alpha: 0.045),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -358,18 +338,16 @@ class _Hero extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         Text(
           '${greeting.tr},',
-          style: serif.copyWith(
+          style: display.copyWith(
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w400,
-            color: scheme.onSurfaceVariant,
+            color: scheme.onSurfaceVariant.withValues(alpha: 0.86),
           ),
         ),
         const SizedBox(height: 2),
-        // Name in a teal→navy brand gradient (like the web "Veha."), with a
-        // teal accent period.
         Obx(() {
           final name = controller.user?.displayName ?? '';
 
@@ -377,25 +355,16 @@ class _Hero extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? const [Color(0xFF4FC3A1), AppColors.primary]
-                      : const [AppColors.primary, AppColors.secondary],
-                ).createShader(bounds),
-                child: Text(
-                  name,
-                  style: serif.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+              Text(
+                name,
+                style: display.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.primary : AppColors.secondary,
                 ),
               ),
               Text(
                 '.',
-                style: serif.copyWith(
+                style: display.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
@@ -403,19 +372,10 @@ class _Hero extends StatelessWidget {
             ],
           );
         }),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         Container(
           height: 1,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.32),
-                AppColors.primary.withValues(alpha: 0.04),
-                Colors.transparent,
-              ],
-              stops: const [0.0, 0.4, 0.8],
-            ),
-          ),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
         ),
       ],
     );
@@ -452,9 +412,9 @@ class _StatusPill extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: 0.20)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.secondary.withValues(alpha: 0.07),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              color: AppColors.secondary.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -1542,30 +1502,22 @@ class _EmptyCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: _softCard(context),
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       child: Row(
         children: [
-          // Concentric brand halo behind the icon.
           Container(
-            width: 60,
-            height: 60,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Center(
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 22, color: color),
-              ),
-            ),
+            child: Icon(icon, size: 21, color: color),
           ),
-          const SizedBox(width: AppSpacing.lg),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1573,15 +1525,18 @@ class _EmptyCard extends StatelessWidget {
                 Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   hint,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.outline,
-                    height: 1.35,
+                    height: 1.30,
                   ),
                 ),
               ],
@@ -1615,7 +1570,7 @@ class _StatCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.radiusLg + 2),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.lg,
+          vertical: AppSpacing.md,
           horizontal: 4,
         ),
         decoration: _softCard(context),

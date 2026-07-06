@@ -140,13 +140,7 @@ class _TripMapViewState extends State<TripMapView> {
 
   Widget _fallbackMap(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFE8F4F2), AppColors.canvas],
-        ),
-      ),
+      decoration: const BoxDecoration(color: AppColors.canvas),
       child: Center(
         child: Icon(
           IconsaxPlusLinear.map,

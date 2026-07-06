@@ -128,16 +128,7 @@ class _WelcomeScene extends StatelessWidget {
         ),
         DecoratedBox(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.center,
-              colors: [
-                Colors.white.withValues(alpha: 0.74),
-                Colors.white.withValues(alpha: 0.18),
-                Colors.transparent,
-              ],
-              stops: const [0, 0.42, 1],
-            ),
+            color: Colors.white.withValues(alpha: 0.10),
           ),
         ),
         SafeArea(

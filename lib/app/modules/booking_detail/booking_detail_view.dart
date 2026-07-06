@@ -528,9 +528,18 @@ class _Detail extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.045),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.34),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.045),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -722,7 +731,7 @@ class _Detail extends StatelessWidget {
             height: 42,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
+              color: AppColors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             ),
             child: const Icon(
@@ -774,8 +783,9 @@ class _Detail extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.07),
+        color: AppColors.primary.withValues(alpha: 0.055),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -991,7 +1001,7 @@ class _Detail extends StatelessWidget {
       builder: (context) {
         final theme = Theme.of(context);
         return Material(
-          color: AppColors.primary.withValues(alpha: 0.10),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -1003,7 +1013,7 @@ class _Detail extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.18),
                 ),
               ),
               child: Row(
@@ -1014,6 +1024,9 @@ class _Detail extends StatelessWidget {
                     height: 22,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.72),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -1306,7 +1319,7 @@ class _Detail extends StatelessWidget {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
                 child: const Icon(
@@ -1345,7 +1358,7 @@ class _Detail extends StatelessWidget {
               if (operator.hasPhone) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Material(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.08),
                   shape: const CircleBorder(),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
@@ -1397,7 +1410,7 @@ class _Detail extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     return Material(
-      color: AppColors.primary.withValues(alpha: 0.07),
+      color: AppColors.primary.withValues(alpha: 0.055),
       borderRadius: BorderRadius.circular(999),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -1480,15 +1493,15 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(
           color: isDark
               ? theme.colorScheme.outlineVariant.withValues(alpha: 0.4)
-              : AppColors.secondary.withValues(alpha: 0.045),
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.34),
         ),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: 0.045),
-                  blurRadius: 16,
-                  offset: const Offset(0, 7),
+                  color: AppColors.secondary.withValues(alpha: 0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 9),
                 ),
               ],
       ),
@@ -1504,9 +1517,9 @@ class _SectionCard extends StatelessWidget {
               title!.toUpperCase(),
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.outline,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 letterSpacing: 0.55,
-                fontSize: 10,
+                fontSize: 9.5,
                 height: 1,
               ),
             ),
@@ -1526,7 +1539,7 @@ class _DottedRowSeparator extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Theme.of(
       context,
-    ).colorScheme.outlineVariant.withValues(alpha: 0.78);
+    ).colorScheme.outlineVariant.withValues(alpha: 0.58);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
@@ -1540,8 +1553,8 @@ class _DottedRowSeparator extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    width: 2.4,
-                    height: 2.4,
+                    width: 2.1,
+                    height: 2.1,
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
@@ -1564,7 +1577,7 @@ class _RouteCardSeparator extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Theme.of(
       context,
-    ).colorScheme.outlineVariant.withValues(alpha: 0.78);
+    ).colorScheme.outlineVariant.withValues(alpha: 0.58);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
@@ -1578,8 +1591,8 @@ class _RouteCardSeparator extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    width: 2.4,
-                    height: 2.4,
+                    width: 2.1,
+                    height: 2.1,
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,

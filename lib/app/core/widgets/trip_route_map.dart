@@ -677,14 +677,9 @@ class _FallbackRoutePreview extends StatelessWidget {
       height: 210,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.10),
-            const Color(0xFFEAF7F3),
-            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-          ],
+        color: theme.colorScheme.surface,
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.34),
         ),
       ),
       clipBehavior: Clip.antiAlias,

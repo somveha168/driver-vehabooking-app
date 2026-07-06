@@ -70,6 +70,11 @@ const Map<String, String> enUS = {
 
   // Guide
   'guide_title': 'Guide & Support',
+  'guide_driver_guide': 'Driver guide',
+  'guide_intro':
+      'Quick help for assigned bookings, pickup routes, and trip steps.',
+  'guide_driver_note':
+      'Use this screen when you need a quick reminder during a trip.',
   'guide_videos': 'Training videos',
   'guide_videos_loading': 'Loading videos...',
   'guide_videos_empty': 'No training videos yet.',
@@ -79,6 +84,9 @@ const Map<String, String> enUS = {
   'guide_read_more': 'Read more',
   'guide_show_less': 'Show less',
   'guide_support': 'Support',
+  'guide_need_help': 'Need help?',
+  'guide_need_help_subtitle':
+      'Contact support for booking, pickup, or trip progress issues.',
   'guide_support_loading': 'Loading support info...',
   'guide_platform_help': 'VehaBooking platform contact',
   'guide_call_dispatch': 'Call dispatch',
@@ -89,6 +97,17 @@ const Map<String, String> enUS = {
   'guide_youtube': 'YouTube',
   'guide_tiktok': 'TikTok',
   'guide_app_version': 'App version',
+  'guide_tag_assigned': 'Assigned bookings',
+  'guide_tag_route': 'Pickup routes',
+  'guide_tag_steps': 'Trip steps',
+  'guide_summary_start':
+      'Review the booking, customer details, and route before starting the trip.',
+  'guide_summary_pickup':
+      'Know what to do when you arrive, meet the passenger, and prepare to continue.',
+  'guide_summary_complete':
+      'Complete the trip correctly or report a pickup issue when something is wrong.',
+  'guide_summary_default':
+      'Follow the guide to manage your booking step by step with confidence.',
 
   // Home dashboard
   'good_morning': 'Good morning',

@@ -24,16 +24,6 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
         backgroundColor: isDark ? scheme.surface : AppColors.canvas,
         body: Stack(
           children: [
-            Positioned(
-              top: -130,
-              right: -90,
-              child: _glow(AppColors.primary, 360, isDark ? 0.20 : 0.28),
-            ),
-            Positioned(
-              bottom: -150,
-              left: -120,
-              child: _glow(AppColors.secondary, 320, isDark ? 0.18 : 0.12),
-            ),
             SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -761,21 +751,5 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
         ),
       ),
     ],
-  );
-
-  Widget _glow(Color color, double size, double opacity) => IgnorePointer(
-    child: Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0),
-          ],
-        ),
-      ),
-    ),
   );
 }

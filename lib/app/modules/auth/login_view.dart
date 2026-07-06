@@ -12,9 +12,7 @@ import '../../core/utils/validators.dart';
 import '../../data/services/settings_service.dart';
 import 'login_controller.dart';
 
-/// Driver sign-in. Brand-consistent with the Welcome screen: soft teal/navy
-/// aurora glows on the canvas, logo + wordmark, and an open form layout that
-/// keeps the screen light and spacious.
+/// Driver sign-in with brand logo, language switcher, and an open form layout.
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
@@ -37,18 +35,6 @@ class LoginView extends GetView<LoginController> {
         resizeToAvoidBottomInset: true,
         body: Stack(
           children: [
-            // Brand aurora — two soft glows for depth, no image.
-            Positioned(
-              top: -120,
-              right: -90,
-              child: _glow(AppColors.primary, 360, isDark ? 0.22 : 0.30),
-            ),
-            Positioned(
-              bottom: -150,
-              left: -110,
-              child: _glow(AppColors.secondary, 320, isDark ? 0.20 : 0.14),
-            ),
-
             SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
@@ -358,23 +344,6 @@ class LoginView extends GetView<LoginController> {
   );
 
   // ---- Bits --------------------------------------------------------------
-
-  /// A soft radial brand glow (an "aurora" blob).
-  Widget _glow(Color color, double size, double opacity) => IgnorePointer(
-    child: Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0.0),
-          ],
-        ),
-      ),
-    ),
-  );
 
   /// Segmented EN / ខ្មែរ toggle (matches the Welcome screen).
   Widget _langToggle(BuildContext context, SettingsService settings) {

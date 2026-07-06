@@ -68,6 +68,10 @@ const Map<String, String> kmKH = {
 
   // Guide
   'guide_title': 'ការណែនាំ និងជំនួយ',
+  'guide_driver_guide': 'ការណែនាំសម្រាប់អ្នកបើកបរ',
+  'guide_intro': 'ជំនួយរហ័សសម្រាប់ការកក់ ផ្លូវទៅទទួលភ្ញៀវ និងជំហាននៃដំណើរ។',
+  'guide_driver_note':
+      'ប្រើអេក្រង់នេះពេលអ្នកត្រូវការរំលឹករហ័សក្នុងពេលធ្វើដំណើរ។',
   'guide_videos': 'វីដេអូបណ្តុះបណ្តាល',
   'guide_videos_loading': 'កំពុងផ្ទុកវីដេអូ...',
   'guide_videos_empty': 'មិនទាន់មានវីដេអូបណ្តុះបណ្តាលទេ។',
@@ -77,6 +81,9 @@ const Map<String, String> kmKH = {
   'guide_read_more': 'អានបន្ថែម',
   'guide_show_less': 'បង្ហាញតិច',
   'guide_support': 'ជំនួយ',
+  'guide_need_help': 'ត្រូវការជំនួយ?',
+  'guide_need_help_subtitle':
+      'ទាក់ទងជំនួយសម្រាប់បញ្ហាការកក់ ការទទួលភ្ញៀវ ឬស្ថានភាពដំណើរ។',
   'guide_support_loading': 'កំពុងផ្ទុកព័ត៌មានជំនួយ...',
   'guide_platform_help': 'ព័ត៌មានទំនាក់ទំនងវេទិកា VehaBooking',
   'guide_call_dispatch': 'ហៅទៅផ្នែកគ្រប់គ្រង',
@@ -87,6 +94,17 @@ const Map<String, String> kmKH = {
   'guide_youtube': 'YouTube',
   'guide_tiktok': 'TikTok',
   'guide_app_version': 'កំណែកម្មវិធី',
+  'guide_tag_assigned': 'ការកក់ដែលបានផ្ដល់',
+  'guide_tag_route': 'ផ្លូវទៅទទួលភ្ញៀវ',
+  'guide_tag_steps': 'ជំហានដំណើរ',
+  'guide_summary_start':
+      'ពិនិត្យការកក់ ព័ត៌មានភ្ញៀវ និងផ្លូវ មុនចាប់ផ្ដើមដំណើរ។',
+  'guide_summary_pickup':
+      'ដឹងអ្វីត្រូវធ្វើពេលទៅដល់ ជួបភ្ញៀវ និងត្រៀមបន្តដំណើរ។',
+  'guide_summary_complete':
+      'បញ្ចប់ដំណើរឲ្យត្រឹមត្រូវ ឬរាយការណ៍បញ្ហាទទួលភ្ញៀវពេលមានអ្វីខុស។',
+  'guide_summary_default':
+      'អនុវត្តតាមការណែនាំ ដើម្បីគ្រប់គ្រងការកក់ជាជំហានៗដោយទំនុកចិត្ត។',
 
   // Home dashboard
   'good_morning': 'អរុណសួស្តី',

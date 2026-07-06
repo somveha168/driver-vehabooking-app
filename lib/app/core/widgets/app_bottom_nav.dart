@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -19,8 +18,7 @@ class AppNavItem {
   final String label;
 }
 
-/// Modern floating "pill" bottom navigation — a rounded, elevated bar detached
-/// from the screen edges with a soft shadow and an active-item highlight.
+/// Floating pill bottom navigation with a clean surface and active highlight.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,
@@ -40,16 +38,7 @@ class AppBottomNav extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final radius = BorderRadius.circular(AppSpacing.radiusXl + 4);
-    // Frosted-glass sheen: a translucent top→bottom gradient so the blurred
-    // content beneath shows through (true glassmorphism).
     final base = isDark ? scheme.surfaceContainerHigh : Colors.white;
-    final glassGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: isDark
-          ? [base.withValues(alpha: 0.55), base.withValues(alpha: 0.40)]
-          : [base.withValues(alpha: 0.62), base.withValues(alpha: 0.40)],
-    );
 
     // Sit just above the home indicator: use half the system inset (min 8) so
     // the bar hugs the bottom instead of leaving the full safe-area gap.
@@ -70,33 +59,30 @@ class AppBottomNav extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: radius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: base.withValues(alpha: isDark ? 0.96 : 0.98),
+            borderRadius: radius,
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.42),
+              width: 1,
             ),
-            decoration: BoxDecoration(
-              gradient: glassGradient,
-              borderRadius: radius,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.55),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(items.length, (i) {
-                return Expanded(
-                  child: _NavButton(
-                    item: items[i],
-                    selected: i == currentIndex,
-                    onTap: () => onTap(i),
-                  ),
-                );
-              }),
-            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(items.length, (i) {
+              return Expanded(
+                child: _NavButton(
+                  item: items[i],
+                  selected: i == currentIndex,
+                  onTap: () => onTap(i),
+                ),
+              );
+            }),
           ),
         ),
       ),

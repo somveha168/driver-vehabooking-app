@@ -27,14 +27,7 @@ class SectionLabel extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  scheme.onSurface.withValues(alpha: 0.14),
-                  scheme.onSurface.withValues(alpha: 0.02),
-                ],
-              ),
-            ),
+            color: scheme.outlineVariant.withValues(alpha: 0.50),
           ),
         ),
       ],

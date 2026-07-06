@@ -99,12 +99,7 @@ class _SwipeToConfirmState extends State<SwipeToConfirm>
                   duration: const Duration(milliseconds: 120),
                   width: fillWidth,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        scheme.primary.withValues(alpha: 0.92),
-                        scheme.primary.withValues(alpha: 0.62),
-                      ],
-                    ),
+                    color: scheme.primary.withValues(alpha: 0.84),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                   ),
                 ),

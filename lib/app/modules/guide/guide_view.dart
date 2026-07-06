@@ -17,9 +17,11 @@ class GuideView extends GetView<GuideController> {
           AppSpacing.lg,
           AppSpacing.lg,
           AppSpacing.lg,
-          AppSpacing.navClearance,
+          AppSpacing.navClearance + 28,
         ),
         children: [
+          const _GuideHeader(),
+          const SizedBox(height: AppSpacing.lg),
           Obx(() {
             if (controller.loadingVideos.value && controller.videos.isEmpty) {
               return const _VideoLoadingCard();
@@ -46,14 +48,38 @@ class GuideView extends GetView<GuideController> {
 
             return Column(
               children: controller.videos
+                  .asMap()
+                  .entries
                   .map(
-                    (video) => Padding(
+                    (entry) => Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: _VideoCard(
-                        title: video.title,
-                        description: _plainText(video.description),
-                        canOpen: video.url?.isNotEmpty == true,
-                        onTap: () => controller.openVideo(video),
+                        index: entry.key,
+                        title: entry.value.title,
+                        description: _plainText(entry.value.description),
+                        canOpen:
+                            entry.value.url?.isNotEmpty == true ||
+                            entry.value.embedUrl?.isNotEmpty == true,
+                        onTap: () {
+                          final description = _plainText(
+                            entry.value.description,
+                          );
+                          final hasVideo =
+                              entry.value.url?.isNotEmpty == true ||
+                              entry.value.embedUrl?.isNotEmpty == true;
+
+                          if (hasVideo) {
+                            controller.openVideo(entry.value);
+                            return;
+                          }
+
+                          _showGuideDetailSheet(
+                            context,
+                            title: entry.value.title,
+                            description: description,
+                            index: entry.key,
+                          );
+                        },
                       ),
                     ),
                   )
@@ -64,6 +90,91 @@ class GuideView extends GetView<GuideController> {
           _PlatformSupportSection(controller: controller),
         ],
       ),
+    );
+  }
+}
+
+class _GuideHeader extends StatelessWidget {
+  const _GuideHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeading(
+          title: 'guide_driver_guide'.tr,
+          subtitle: 'guide_intro'.tr,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 11,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                IconsaxPlusLinear.shield_tick,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'guide_driver_note'.tr,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            height: 1.15,
+          ),
+        ),
+        if (subtitle?.isNotEmpty == true) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -122,7 +233,10 @@ class _PlatformSupportSection extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('guide_support'.tr, style: theme.textTheme.titleMedium),
+          _SectionHeading(
+            title: 'guide_need_help'.tr,
+            subtitle: 'guide_need_help_subtitle'.tr,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Card(
             color: Colors.white,
@@ -489,12 +603,14 @@ String? _plainText(String? value) {
 
 class _VideoCard extends StatefulWidget {
   const _VideoCard({
+    required this.index,
     required this.title,
     required this.onTap,
     required this.canOpen,
     this.description,
   });
 
+  final int index;
   final String title;
   final String? description;
   final bool canOpen;
@@ -507,8 +623,6 @@ class _VideoCard extends StatefulWidget {
 class _VideoCardState extends State<_VideoCard> {
   bool _expanded = false;
 
-  bool get _canReadMore => (widget.description?.length ?? 0) > 140;
-
   void _toggleExpanded() {
     setState(() => _expanded = !_expanded);
   }
@@ -519,6 +633,9 @@ class _VideoCardState extends State<_VideoCard> {
     final readToggleLabel = _expanded
         ? 'guide_show_less'.tr
         : 'guide_read_more'.tr;
+    final summary = _guideSummary(widget.title, widget.description);
+    final meta = _guideMeta(widget.index, widget.canOpen);
+    final canReadMore = summary.length > 92;
 
     return Card(
       color: Colors.white,
@@ -532,26 +649,20 @@ class _VideoCardState extends State<_VideoCard> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: widget.canOpen ? widget.onTap : null,
+        onTap: widget.onTap,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+                  color: meta.color.withValues(alpha: 0.11),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  widget.canOpen
-                      ? Icons.play_arrow_rounded
-                      : IconsaxPlusLinear.document_text,
-                  color: theme.colorScheme.primary,
-                  size: widget.canOpen ? 28 : 20,
-                ),
+                child: Icon(meta.icon, color: meta.color, size: 21),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -564,60 +675,60 @@ class _VideoCardState extends State<_VideoCard> {
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
-                        height: 1.2,
+                        height: 1.18,
                       ),
                     ),
-                    if (widget.description != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        widget.description!,
-                        maxLines: _expanded ? null : 3,
-                        overflow: _expanded
-                            ? TextOverflow.visible
-                            : TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.outline,
-                          height: 1.4,
-                        ),
+                    const SizedBox(height: 6),
+                    Text(
+                      summary,
+                      maxLines: _expanded ? null : 2,
+                      overflow: _expanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                        height: 1.32,
                       ),
-                    ],
-                    if (_canReadMore) ...[
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _toggleExpanded,
-                        child: Text(
-                          readToggleLabel,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w800,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
                           ),
-                        ),
-                      ),
-                    ],
-                    if (widget.canOpen) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            IconsaxPlusLinear.export_3,
-                            size: 13,
-                            color: theme.colorScheme.primary,
+                          decoration: BoxDecoration(
+                            color: meta.color.withValues(alpha: 0.09),
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'guide_open_video'.tr,
+                          child: Text(
+                            meta.label,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w700,
+                              color: meta.color,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                        if (canReadMore) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _toggleExpanded,
+                            child: Text(
+                              readToggleLabel,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                    ],
+                      ],
+                    ),
                     if (!widget.canOpen && widget.description == null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         'guide_text_only'.tr,
                         style: theme.textTheme.labelSmall?.copyWith(
@@ -628,19 +739,209 @@ class _VideoCardState extends State<_VideoCard> {
                   ],
                 ),
               ),
-              if (widget.canOpen) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  IconsaxPlusLinear.arrow_right_3,
-                  color: theme.colorScheme.outline,
-                ),
-              ],
+              const SizedBox(width: AppSpacing.sm),
+              Icon(
+                IconsaxPlusLinear.arrow_right_3,
+                color: theme.colorScheme.outline.withValues(alpha: 0.75),
+                size: 19,
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+Future<void> _showGuideDetailSheet(
+  BuildContext context, {
+  required String title,
+  required int index,
+  String? description,
+}) {
+  final theme = Theme.of(context);
+  final summary = _guideSummary(title, description);
+  final meta = _guideMeta(index, false);
+  final hasFullDescription =
+      description != null && description.isNotEmpty && description != summary;
+
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return DraggableScrollableSheet(
+        initialChildSize: 0.52,
+        minChildSize: 0.32,
+        maxChildSize: 0.84,
+        expand: false,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
+            ),
+            child: ListView(
+              controller: scrollController,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: meta.color.withValues(alpha: 0.11),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(meta.icon, color: meta.color, size: 22),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              height: 1.18,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            meta.label,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: meta.color,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  summary,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.76),
+                    height: 1.45,
+                  ),
+                ),
+                if (hasFullDescription) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.42),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      description,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.72,
+                        ),
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+class _GuideCardMeta {
+  const _GuideCardMeta({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+}
+
+_GuideCardMeta _guideMeta(int index, bool canOpen) {
+  final items = [
+    _GuideCardMeta(
+      icon: IconsaxPlusLinear.calendar_1,
+      label: 'guide_tag_assigned'.tr,
+      color: const Color(0xFF2F9F93),
+    ),
+    _GuideCardMeta(
+      icon: IconsaxPlusLinear.routing_2,
+      label: 'guide_tag_route'.tr,
+      color: const Color(0xFF2F8CCF),
+    ),
+    _GuideCardMeta(
+      icon: IconsaxPlusLinear.tick_circle,
+      label: 'guide_tag_steps'.tr,
+      color: const Color(0xFF27A76F),
+    ),
+  ];
+
+  if (!canOpen) {
+    return _GuideCardMeta(
+      icon: IconsaxPlusLinear.document_text,
+      label: 'guide_text_only'.tr,
+      color: const Color(0xFF6B7280),
+    );
+  }
+
+  return items[index % items.length];
+}
+
+String _guideSummary(String title, String? description) {
+  final lowerTitle = title.toLowerCase();
+
+  if (lowerTitle.contains('start')) {
+    return 'guide_summary_start'.tr;
+  }
+
+  if (lowerTitle.contains('arrived') ||
+      lowerTitle.contains('pickup') ||
+      lowerTitle.contains('passenger')) {
+    return 'guide_summary_pickup'.tr;
+  }
+
+  if (lowerTitle.contains('complete') ||
+      lowerTitle.contains('drop') ||
+      lowerTitle.contains('issue')) {
+    return 'guide_summary_complete'.tr;
+  }
+
+  return description?.isNotEmpty == true
+      ? description!
+      : 'guide_summary_default'.tr;
 }
 
 class _VideoLoadingCard extends StatelessWidget {

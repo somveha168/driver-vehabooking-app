@@ -25,21 +25,7 @@ class ProfileView extends GetView<ProfileController> {
     return Scaffold(
       backgroundColor: canvas,
       body: Container(
-        // Brand wash: soft primary radial glow from the top-right over the
-        // canvas — identical to the home/dashboard page, for consistency.
-        decoration: BoxDecoration(
-          color: canvas,
-          gradient: RadialGradient(
-            center: Alignment.topRight,
-            radius: 1.55,
-            colors: [
-              AppColors.primary.withValues(alpha: isDark ? 0.16 : 0.26),
-              AppColors.primary.withValues(alpha: isDark ? 0.06 : 0.10),
-              Colors.transparent,
-            ],
-            stops: const [0.0, 0.4, 0.82],
-          ),
-        ),
+        decoration: BoxDecoration(color: canvas),
         child: Form(
           key: controller.formKey,
           child: ListView(
