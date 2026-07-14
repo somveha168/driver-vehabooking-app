@@ -13,7 +13,7 @@ const Map<String, String> kmKH = {
   'welcome_cta': 'ចាប់ផ្តើមឥឡូវ',
   'welcome_intro': 'សូមស្វាគមន៍មកកាន់',
   // Auth
-  'login_title': 'សូមស្វាគមន៍ការត្រឡប់មកវិញ',
+  'login_title': 'សូមស្វាគមន៍',
   'login_subtitle': 'ចូលគណនី ដើម្បីគ្រប់គ្រងការធ្វើដំណើរ',
   'login_field': 'លេខទូរស័ព្ទ ឬ អ៊ីមែល',
   'login_field_hint': 'បញ្ចូលលេខទូរស័ព្ទ ឬ អ៊ីមែល',

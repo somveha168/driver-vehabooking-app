@@ -14,7 +14,7 @@ const Map<String, String> enUS = {
   'welcome_cta': 'Get Started',
   'welcome_intro': 'Welcome to',
   // Auth
-  'login_title': 'Welcome back',
+  'login_title': 'Welcome',
   'login_subtitle': 'Sign in to manage your trips',
   'login_field': 'Phone or email',
   'login_field_hint': 'Enter phone or email',
