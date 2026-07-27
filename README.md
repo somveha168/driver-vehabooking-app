@@ -8,10 +8,16 @@ to them, navigates to the pickup, and advances each trip through the lifecycle:
 **Pickup issue** terminal close path at the
 on-the-way / at-pickup stages. No "accept" step — the vendor pre-assigns.
 
-> **Docs:** the backend **[DRIVER_OVERVIEW.md](../../Herd/vehabooking/modules/Taxi/docs/DRIVER_OVERVIEW.md)**
-> is the master index + audit log for the whole driver feature; **DRIVER_APP_API.md**
-> is the endpoint/field contract. This README is the **app-side** master — keep its
-> [Audit Log](#audit-log) current. Design plan: [docs/ACTIVE_TRIP_REDESIGN.md](docs/ACTIVE_TRIP_REDESIGN.md).
+> **Docs:** backend
+> **[driver/README.md](../../Herd/vehabooking/modules/Taxi/docs/driver/README.md)**
+> is the master index + audit log for the whole driver feature;
+> **[APP_API.md](../../Herd/vehabooking/modules/Taxi/docs/driver/APP_API.md)**
+> is the endpoint/field contract; and
+> **[RETURN_TRIP_END_TO_END.md](../../Herd/vehabooking/modules/Taxi/docs/RETURN_TRIP_END_TO_END.md)**
+> is the single cross-role return-trip source of truth. This README is the
+> **app-side** master — keep
+> its [Audit Log](#audit-log) current. Design plan:
+> [docs/ACTIVE_TRIP_REDESIGN.md](docs/ACTIVE_TRIP_REDESIGN.md).
 
 ## Stack
 
@@ -49,7 +55,7 @@ every failure is normalized to an `ApiException` (`{message, statusCode, errorCo
 
 ## Backend
 
-Two API prefixes (see `modules/Taxi/docs/DRIVER_APP_API.md` in the backend repo):
+Two API prefixes (see `modules/Taxi/docs/driver/APP_API.md` in the backend repo):
 - Identity: `{baseUrl}/api/driver/v1/auth/*`
 - Bookings: `{baseUrl}/api/taxi/v1/driver/*`
 
@@ -104,6 +110,7 @@ flutter test
 
 | Date | Change | Files | Status |
 |---|---|---|---|
+| 2026-07-27 | **Exact BookingLeg identity** — booking list/detail/notification models parse read-only `booking_leg_id`; lifecycle/navigation still sends `assignment_id`. The detail screen renders only the selected assignment leg's exact pickup/drop-off and never invents the other leg by reversing it. Added cancelled-leg notification parsing for `booking.taxi.driver.leg_cancelled` | `booking_list_item.dart`, `booking_detail.dart`, `driver_notification.dart`, `booking_detail_view.dart`, focused model tests | ✅ 10 tests + `flutter analyze` |
 | 2026-06-20 | **Start gating + est-drop** — Start button now **hidden** unless this is the active or earliest-due trip (backend omits `start` from `allowed_actions`); detail footer shows a "finish your current trip first" lock hint when `start_locked`. Route card shows **Est. drop** time (`arrival_datetime`). Model gains `arrivalDatetime`/`duration`/`startLocked` | `booking_detail.dart`, `booking_detail_view.dart`, en/km i18n | ✅ analyze + tests |
 | 2026-06-20 | **HTTP: Dio → GetConnect** — `ApiClient` now uses the standard GetConnect structure: **`extends GetConnect`**, configures `httpClient` in `onInit()` (timeout, `addRequestModifier` → bearer + Accept, `addResponseModifier` → 401 clear+login). Guarded `getJson`/`postJson` verbs throw `ApiException.fromResponse` on non-2xx and return the decoded body; repos call those. Multipart avatar via GetConnect `FormData`/`MultipartFile`. Skipped `defaultDecoder` (per-repo decode) + `addAuthenticator` (Sanctum doesn't refresh). Dropped the `dio` dependency | `core/network/api_client.dart`, `api_exception.dart`, `auth_repository.dart`, `booking_repository.dart`, `main.dart`, `test/core/api_exception_test.dart`, `pubspec.yaml` | ✅ analyze + tests |
 | 2026-06-20 | **Trip detail v3** — (1) **Vehicle card on top** showing booked class + real assigned vehicle (model · plate · color · seats); (2) **Trip Progress → sticky footer**, horizontal `TripSteps` with small labels above the action; (3) action is now the animated `StepActionButton` (glow + shimmer + nudge); (4) modern circular-back app bar. Extracted shared `TripSteps` + `StepActionButton` (Home NOW card now reuses them) | `booking_detail_view.dart`, `booking_detail.dart`, `dashboard_view.dart`, `core/widgets/trip_steps.dart`, `core/widgets/step_action_button.dart`, en/km i18n | ✅ analyze + tests |
@@ -136,5 +143,7 @@ flutter test
 
 ### Keeping docs current (rule)
 1. Shipped an app change? **Add an Audit Log row** above (date, change, files, status).
-2. Endpoint/field changed? It's a **backend** contract — update `DRIVER_APP_API.md` too.
-3. Big flow/feature? Note it in **Current features** and the backend `DRIVER_OVERVIEW.md`.
+2. Endpoint/field changed? It's a **backend** contract — update
+   `modules/Taxi/docs/driver/APP_API.md` too.
+3. Big flow/feature? Note it in **Current features** and the backend
+   `modules/Taxi/docs/driver/README.md`.

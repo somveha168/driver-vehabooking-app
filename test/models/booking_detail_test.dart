@@ -6,6 +6,15 @@ void main() {
     test('parses an airport booking with pickup coordinates and actions', () {
       final json = {
         'uuid': 'abc-123',
+        'booking_leg_id': 999,
+        'leg': {
+          'id': 88,
+          'uuid': 'leg-outbound',
+          'status': 'active',
+          'schedule_id': 45,
+          'origin_id': 21,
+          'destination_id': 22,
+        },
         'code': 'TAX-1',
         'service_type': 'airport',
         'trip_type': 'outbound',
@@ -35,6 +44,12 @@ void main() {
       final b = BookingDetail.fromJson(json);
 
       expect(b.uuid, 'abc-123');
+      expect(b.bookingLegId, 88);
+      expect(b.bookingLegUuid, 'leg-outbound');
+      expect(b.bookingLegStatus, 'active');
+      expect(b.scheduleId, 45);
+      expect(b.originId, 21);
+      expect(b.destinationId, 22);
       expect(b.stage, 'accepted');
       expect(b.isAirport, isTrue);
       expect(b.allows('confirm_pickup'), isTrue);
@@ -127,6 +142,21 @@ void main() {
       expect(b.pickup.hasCoordinates, isFalse);
       expect(b.pickup.label, '—');
       expect(b.isAirport, isFalse);
+    });
+
+    test('keeps a cancelled return assignment identified as a return trip', () {
+      final b = BookingDetail.fromJson({
+        'uuid': 'return-cancelled',
+        'trip_type': 'return',
+        'is_round_trip': true,
+        'is_return': false,
+        'stage': 'cancelled',
+        'leg': {'id': 91, 'direction': 'return', 'status': 'cancelled'},
+      });
+
+      expect(b.isReturnLeg, isTrue);
+      expect(b.hasReturn, isTrue);
+      expect(b.bookingLegStatus, 'cancelled');
     });
 
     test('tolerates invalid nested shapes and string numbers', () {

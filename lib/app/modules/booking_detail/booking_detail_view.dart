@@ -397,23 +397,25 @@ class _Detail extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm + 2),
           ],
 
-          // ── Route: one-way shows a single route; 2-way always reads
-          // Outbound first, Return second, regardless of the selected active leg.
-          if (b.hasReturn)
-            ..._roundTripCards(theme)
-          else ...[
-            _tripRouteCard(
-              theme,
-              title: 'route'.tr,
-              legLabel: 'departure'.tr,
-              when: b.displayDepartureDatetime,
-              estimatedDropTime: _estimatedDropTime(b.displayDepartureDatetime),
-              pickup: b.pickup,
-              dropoff: b.dropoff,
-              isCurrentLeg: true,
-            ),
-            const SizedBox(height: AppSpacing.sm + 2),
-          ],
+          // The API response represents one assignment and one exact booking leg.
+          // Never reconstruct another leg by reversing this leg's route.
+          _tripRouteCard(
+            theme,
+            title: b.isRoundTrip
+                ? (b.isReturnLeg ? 'return_trip'.tr : 'outbound_trip'.tr)
+                : 'route'.tr,
+            legLabel: b.isRoundTrip
+                ? (b.isReturnLeg
+                      ? 'trip_leg_return'.tr
+                      : 'trip_leg_outbound'.tr)
+                : 'departure'.tr,
+            when: b.displayDepartureDatetime,
+            estimatedDropTime: _estimatedDropTime(b.displayDepartureDatetime),
+            pickup: b.pickup,
+            dropoff: b.dropoff,
+            isCurrentLeg: true,
+          ),
+          const SizedBox(height: AppSpacing.sm + 2),
 
           // ── Extra details (only when present) ──
           if (details.isNotEmpty)
@@ -845,73 +847,16 @@ class _Detail extends StatelessWidget {
     );
   }
 
-  List<Widget> _roundTripCards(ThemeData theme) {
-    final outboundPickup = b.isReturnLeg ? b.dropoff : b.pickup;
-    final outboundDropoff = b.isReturnLeg ? b.pickup : b.dropoff;
-    final returnPickup = b.isReturnLeg ? b.pickup : b.dropoff;
-    final returnDropoff = b.isReturnLeg ? b.dropoff : b.pickup;
-    final outboundWhen = _outboundWhen();
-    final returnWhen = _returnWhen();
-
-    return [
-      _tripRouteCard(
-        theme,
-        title: 'outbound_trip'.tr,
-        legLabel: 'trip_leg_outbound'.tr,
-        when: outboundWhen,
-        estimatedDropTime: _estimatedDropTime(outboundWhen),
-        pickup: outboundPickup,
-        dropoff: outboundDropoff,
-        isCurrentLeg: b.isOutboundLeg,
-      ),
-      const SizedBox(height: AppSpacing.md),
-      _tripRouteCard(
-        theme,
-        title: 'return_trip'.tr,
-        legLabel: 'trip_leg_return'.tr,
-        when: returnWhen,
-        estimatedDropTime: _estimatedDropTime(returnWhen),
-        pickup: returnPickup,
-        dropoff: returnDropoff,
-        isCurrentLeg: b.isReturnLeg,
-        footer: 'return_note'.tr,
-      ),
-      const SizedBox(height: AppSpacing.md),
-    ];
-  }
-
-  String _outboundWhen() {
-    final outbound = b.linkedOutboundDatetime;
-    if (outbound != null && outbound.isNotEmpty) return outbound;
-    return b.isOutboundLeg
-        ? b.displayDepartureDatetime
-        : b.departureDatetime ?? '';
-  }
-
-  String _returnWhen() {
-    final returnLeg = b.linkedReturnDatetime;
-    if (returnLeg != null && returnLeg.isNotEmpty) return returnLeg;
-    if (b.isReturnLeg) return b.displayDepartureDatetime;
-
-    final date = Formatters.shortDate(b.returnDate);
-    final time = b.returnTime;
-    return [date, if (time != null && time.isNotEmpty) time].join(' · ');
-  }
-
   String? _estimatedDropTime(String departure) {
-    final duration = b.duration;
-    if (duration == null || duration <= 0) {
-      final outboundDeparture =
-          b.linkedOutboundDatetime ?? b.departureDatetime ?? '';
-      if (departure == outboundDeparture &&
-          b.arrivalDatetime != null &&
-          b.arrivalDatetime!.isNotEmpty) {
-        final value = Formatters.time(b.arrivalDatetime);
-        return value == '—' ? null : value;
-      }
-
-      return null;
+    if (departure == b.displayDepartureDatetime &&
+        b.arrivalDatetime != null &&
+        b.arrivalDatetime!.isNotEmpty) {
+      final value = Formatters.time(b.arrivalDatetime);
+      if (value != '—') return value;
     }
+
+    final duration = b.duration;
+    if (duration == null || duration <= 0) return null;
 
     final departureAt = DateTime.tryParse(departure);
     if (departureAt == null) return null;

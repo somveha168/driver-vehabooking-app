@@ -207,7 +207,7 @@ List<_Section> _groupByDay(List<BookingListItem> items, bool group) {
   final laterItems = <BookingListItem>[];
 
   for (final b in items) {
-    final dt = DateTime.tryParse(b.departureDatetime ?? '')?.toLocal();
+    final dt = DateTime.tryParse(b.displayDepartureDatetime)?.toLocal();
     if (dt == null) {
       laterItems.add(b);
       continue;

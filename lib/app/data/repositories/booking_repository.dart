@@ -29,7 +29,7 @@ class BookingRepository {
   }
 
   /// List the driver's bookings, optionally filtered by [status]
-  /// (assigned | accepted | on_trip | completed).
+  /// (assigned | active | completed).
   Future<BookingPage> list({
     String? status,
     int page = 1,
@@ -85,7 +85,7 @@ class BookingRepository {
     ),
   );
 
-  /// Pickup issue → terminal note, completes the booking and frees the driver.
+  /// Pickup issue → terminal outcome for this exact assignment leg.
   Future<BookingDetail> reportPickupIssue(
     String uuid, {
     int? assignmentId,

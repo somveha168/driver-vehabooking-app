@@ -37,7 +37,7 @@ class BookingDetailController extends GetxController {
     final args = Get.arguments;
     if (args is Map) {
       uuid = args['uuid']?.toString() ?? '';
-      assignmentId = (args['assignment_id'] as num?)?.toInt();
+      assignmentId = _parseId(args['assignment_id']);
     } else {
       uuid = args?.toString() ?? '';
       assignmentId = null;
@@ -95,33 +95,33 @@ class BookingDetailController extends GetxController {
     }
 
     return _act(
-      () => _repo.start(uuid, assignmentId: assignmentId),
+      () => _repo.start(uuid, assignmentId: _currentAssignmentId),
       'started_done'.tr,
     );
   }
 
   Future<void> arrived() => _act(
-    () => _repo.arrived(uuid, assignmentId: assignmentId),
+    () => _repo.arrived(uuid, assignmentId: _currentAssignmentId),
     'arrived_done'.tr,
   );
 
   Future<void> meetPassenger() => _act(
-    () => _repo.meetPassenger(uuid, assignmentId: assignmentId),
+    () => _repo.meetPassenger(uuid, assignmentId: _currentAssignmentId),
     'met_done'.tr,
   );
 
   Future<void> complete() => _act(
-    () => _repo.complete(uuid, assignmentId: assignmentId),
+    () => _repo.complete(uuid, assignmentId: _currentAssignmentId),
     'completed_done'.tr,
     syncBefore: true,
     syncAfter: false,
   );
 
-  /// Pickup issue → terminal note, completes the booking and frees the driver.
+  /// Pickup issue → terminal outcome for this exact assignment leg.
   Future<void> reportPickupIssue(String reason, String? note) => _act(
     () => _repo.reportPickupIssue(
       uuid,
-      assignmentId: assignmentId,
+      assignmentId: _currentAssignmentId,
       reason: reason,
       note: note,
     ),
@@ -174,6 +174,11 @@ class BookingDetailController extends GetxController {
   }
 
   int? get _currentAssignmentId => assignmentId ?? booking.value?.assignmentId;
+
+  int? _parseId(dynamic value) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
 
   Future<void> _syncCurrentLocationSnapshot() async {
     try {

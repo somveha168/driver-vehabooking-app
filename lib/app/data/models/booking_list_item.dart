@@ -6,6 +6,12 @@ class BookingListItem {
     required this.uuid,
     required this.stage,
     this.assignmentId,
+    this.bookingLegId,
+    this.bookingLegUuid,
+    this.bookingLegStatus,
+    this.scheduleId,
+    this.originId,
+    this.destinationId,
     this.code,
     this.serviceType,
     this.tripType,
@@ -45,6 +51,12 @@ class BookingListItem {
   final String uuid;
   final String stage;
   final int? assignmentId;
+  final int? bookingLegId;
+  final String? bookingLegUuid;
+  final String? bookingLegStatus;
+  final int? scheduleId;
+  final int? originId;
+  final int? destinationId;
   final String? code;
   final String? serviceType;
   final String? tripType;
@@ -106,11 +118,9 @@ class BookingListItem {
     return dropoffLabel;
   }
 
-  String get driverRouteOriginLabel =>
-      isReturnLeg ? routeDestinationLabel : routeOriginLabel;
+  String get driverRouteOriginLabel => routeOriginLabel;
 
-  String get driverRouteDestinationLabel =>
-      isReturnLeg ? routeOriginLabel : routeDestinationLabel;
+  String get driverRouteDestinationLabel => routeDestinationLabel;
 
   /// Whether a usable destination is present.
   bool get hasDropoff => dropoffLabel != '—';
@@ -200,6 +210,7 @@ class BookingListItem {
 
   factory BookingListItem.fromJson(Map<String, dynamic> json) {
     final routeSummary = _map(json['route_summary']);
+    final leg = _map(json['leg']);
     final vehicle = _map(json['vehicle']);
     final blockedBy = _map(json['start_blocked_by']);
 
@@ -207,6 +218,12 @@ class BookingListItem {
       uuid: _string(json['uuid']) ?? '',
       stage: _string(json['stage']) ?? 'assigned',
       assignmentId: _toInt(json['assignment_id']),
+      bookingLegId: _toInt(leg['id'] ?? json['booking_leg_id']),
+      bookingLegUuid: _string(leg['uuid']),
+      bookingLegStatus: _string(leg['status']),
+      scheduleId: _toInt(leg['schedule_id']),
+      originId: _toInt(leg['origin_id']),
+      destinationId: _toInt(leg['destination_id']),
       code: _string(json['code']),
       serviceType: _string(json['service_type']),
       tripType: _string(json['trip_type']),
@@ -283,6 +300,7 @@ class BlockingTrip {
   const BlockingTrip({
     required this.uuid,
     this.assignmentId,
+    this.bookingLegId,
     this.code,
     this.customerName,
     this.tripType,
@@ -292,6 +310,7 @@ class BlockingTrip {
 
   final String uuid;
   final int? assignmentId;
+  final int? bookingLegId;
   final String? code;
   final String? customerName;
   final String? tripType;
@@ -301,6 +320,7 @@ class BlockingTrip {
   factory BlockingTrip.fromJson(Map<String, dynamic> json) => BlockingTrip(
     uuid: BookingListItem._string(json['uuid']) ?? '',
     assignmentId: BookingListItem._toInt(json['assignment_id']),
+    bookingLegId: BookingListItem._toInt(json['booking_leg_id']),
     code: BookingListItem._string(json['code']),
     customerName: BookingListItem._string(json['customer_name']),
     tripType: BookingListItem._string(json['trip_type']),

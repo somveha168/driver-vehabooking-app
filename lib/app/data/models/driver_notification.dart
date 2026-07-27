@@ -23,6 +23,7 @@ class DriverNotification {
     this.bookingUuid,
     this.bookingCode,
     this.assignmentId,
+    this.bookingLegId,
     this.tripType,
     this.serviceType,
     this.routeOrigin,
@@ -43,6 +44,7 @@ class DriverNotification {
   final String? bookingUuid;
   final String? bookingCode;
   final int? assignmentId;
+  final int? bookingLegId;
   final String? tripType;
   final String? serviceType;
   final String? routeOrigin;
@@ -85,6 +87,7 @@ class DriverNotification {
       bookingUuid: _string(json['booking_uuid'] ?? data['booking_uuid']),
       bookingCode: _string(json['booking_code'] ?? data['booking_code']),
       assignmentId: _int(json['assignment_id'] ?? data['assignment_id']),
+      bookingLegId: _int(json['booking_leg_id'] ?? data['booking_leg_id']),
       tripType: _string(json['trip_type'] ?? data['trip_type']),
       serviceType: _string(json['service_type'] ?? data['service_type']),
       routeOrigin: _string(json['route_origin'] ?? data['route_origin']),

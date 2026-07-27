@@ -6,6 +6,12 @@ class BookingDetail {
     required this.uuid,
     required this.stage,
     this.assignmentId,
+    this.bookingLegId,
+    this.bookingLegUuid,
+    this.bookingLegStatus,
+    this.scheduleId,
+    this.originId,
+    this.destinationId,
     this.code,
     this.serviceType,
     this.tripType,
@@ -57,6 +63,12 @@ class BookingDetail {
   final String uuid;
   final String stage;
   final int? assignmentId;
+  final int? bookingLegId;
+  final String? bookingLegUuid;
+  final String? bookingLegStatus;
+  final int? scheduleId;
+  final int? originId;
+  final int? destinationId;
   final String? code;
   final String? serviceType;
   final String? tripType;
@@ -160,9 +172,8 @@ class BookingDetail {
     return diff != null && diff >= const Duration(hours: 6);
   }
 
-  /// A round-trip booking with a usable return date.
-  bool get hasReturn =>
-      isReturn && returnDate != null && returnDate!.isNotEmpty;
+  /// Whether this assignment belongs to a two-leg trip contract.
+  bool get hasReturn => isRoundTrip;
 
   /// Whether any vehicle info (booked or assigned) exists.
   bool get hasVehicle =>
@@ -183,6 +194,7 @@ class BookingDetail {
 
   factory BookingDetail.fromJson(Map<String, dynamic> json) {
     final customer = _map(json['customer']);
+    final leg = _map(json['leg']);
     final vehicle = _map(json['vehicle']);
     final operator = _map(json['operator']);
     final flight = _map(json['flight']);
@@ -193,6 +205,12 @@ class BookingDetail {
       uuid: _string(json['uuid']) ?? '',
       stage: _string(json['stage']) ?? 'assigned',
       assignmentId: _toInt(json['assignment_id']),
+      bookingLegId: _toInt(leg['id'] ?? json['booking_leg_id']),
+      bookingLegUuid: _string(leg['uuid']),
+      bookingLegStatus: _string(leg['status']),
+      scheduleId: _toInt(leg['schedule_id']),
+      originId: _toInt(leg['origin_id']),
+      destinationId: _toInt(leg['destination_id']),
       code: _string(json['code']),
       serviceType: _string(json['service_type']),
       tripType: _string(json['trip_type']),

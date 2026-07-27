@@ -31,6 +31,34 @@ void main() {
       expect(item.pickupLabel, 'Street 240');
     });
 
+    test('uses the linked return leg route without reversing it again', () {
+      final item = BookingListItem.fromJson({
+        'uuid': 'u-return',
+        'assignment_id': 7,
+        'booking_leg_id': 999,
+        'leg': {
+          'id': '88',
+          'uuid': 'leg-return',
+          'status': 'active',
+          'schedule_id': '44',
+          'origin_id': 12,
+          'destination_id': 13,
+        },
+        'trip_type': 'return',
+        'stage': 'assigned',
+        'route_summary': {'origin': 'Phnom Penh', 'destination': 'Siem Reap'},
+      });
+
+      expect(item.bookingLegId, 88);
+      expect(item.bookingLegUuid, 'leg-return');
+      expect(item.bookingLegStatus, 'active');
+      expect(item.scheduleId, 44);
+      expect(item.originId, 12);
+      expect(item.destinationId, 13);
+      expect(item.driverRouteOriginLabel, 'Phnom Penh');
+      expect(item.driverRouteDestinationLabel, 'Siem Reap');
+    });
+
     test('tolerates invalid nested shapes and string numbers', () {
       final item = BookingListItem.fromJson({
         'uuid': 100,
