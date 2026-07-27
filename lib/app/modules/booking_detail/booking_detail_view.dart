@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:get/get.dart';
@@ -25,17 +26,39 @@ class BookingDetailView extends GetView<BookingDetailController> {
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
         backgroundColor: AppColors.canvas,
-        titleSpacing: 4,
-        leadingWidth: 60,
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: 74,
+        titleSpacing: 0,
+        leadingWidth: 64,
         scrolledUnderElevation: 0,
-        leading: const _CircleBack(),
-        title: Text(
-          'booking_detail'.tr,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 21,
-            letterSpacing: 0,
-          ),
+        leading: const _IosBackButton(),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'booking_detail'.tr,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 21,
+                letterSpacing: -0.15,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'booking_detail_subtitle'.tr,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0,
+                height: 1.2,
+              ),
+            ),
+          ],
         ),
       ),
       body: Obx(() {
@@ -170,25 +193,50 @@ class _StickyFooter extends StatelessWidget {
   }
 }
 
-/// Modern circular back button for the detail app bar.
-class _CircleBack extends StatelessWidget {
-  const _CircleBack();
+/// Familiar iOS-style back affordance with a full Material tap target.
+class _IosBackButton extends StatelessWidget {
+  const _IosBackButton();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Center(
       child: Material(
-        color: AppColors.primary.withValues(alpha: 0.10),
-        shape: const CircleBorder(),
+        color: isDark ? theme.colorScheme.surfaceContainerHigh : Colors.white,
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
+        elevation: 0,
         child: InkWell(
           onTap: () => Get.back<void>(),
-          child: const Padding(
-            padding: EdgeInsets.all(8),
-            child: Icon(
-              IconsaxPlusLinear.arrow_left_2,
-              size: 20,
-              color: AppColors.secondary,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.32),
+              ),
+              boxShadow: isDark
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.secondary.withValues(alpha: 0.055),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+            ),
+            child: Tooltip(
+              message: MaterialLocalizations.of(context).backButtonTooltip,
+              child: const Icon(
+                CupertinoIcons.back,
+                size: 24,
+                color: AppColors.secondary,
+              ),
             ),
           ),
         ),

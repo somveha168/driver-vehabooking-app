@@ -262,7 +262,8 @@ const Map<String, String> enUS = {
   'stage_cancelled': 'Cancelled',
 
   // Detail
-  'booking_detail': 'Trip detail',
+  'booking_detail': 'Trip overview',
+  'booking_detail_subtitle': 'Route, passenger and trip progress',
   'booking_info': 'Booking info',
   'customer_info': 'Customer info',
   'exact_vehicle_info': 'Exact vehicle info',

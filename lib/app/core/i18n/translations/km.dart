@@ -258,7 +258,8 @@ const Map<String, String> kmKH = {
   'stage_cancelled': 'បានលុបចោល',
 
   // Detail
-  'booking_detail': 'ព័ត៌មានលម្អិត',
+  'booking_detail': 'ទិដ្ឋភាពទូទៅនៃដំណើរ',
+  'booking_detail_subtitle': 'ផ្លូវ អ្នកដំណើរ និងវឌ្ឍនភាពនៃដំណើរ',
   'booking_info': 'ព័ត៌មានការកក់',
   'customer_info': 'ព័ត៌មានអតិថិជន',
   'exact_vehicle_info': 'ព័ត៌មានយានយន្តពិត',

@@ -372,11 +372,6 @@ class _Hero extends StatelessWidget {
             ],
           );
         }),
-        const SizedBox(height: AppSpacing.md),
-        Container(
-          height: 1,
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.42),
-        ),
       ],
     );
   }
