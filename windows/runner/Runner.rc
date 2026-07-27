@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "veha_driver_app" "\0"
+            VALUE "FileDescription", "Veha Driver" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "veha_driver_app" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "veha_driver_app.exe" "\0"
-            VALUE "ProductName", "veha_driver_app" "\0"
+            VALUE "ProductName", "Veha Driver" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

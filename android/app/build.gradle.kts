@@ -54,7 +54,7 @@ android {
         create("dev") {
             dimension = "env"
             applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Veha Driver Dev")
+            resValue("string", "app_name", "Veha Driver")
             manifestPlaceholders["googleMapsApiKey"] =
                 localOrEnv("VEHA_GOOGLE_MAPS_ANDROID_DEV_KEY")
         }
