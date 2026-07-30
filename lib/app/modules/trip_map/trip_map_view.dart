@@ -12,6 +12,7 @@ import '../../core/location/location_service.dart';
 import '../../core/maps/route_map_args.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/external_launcher.dart';
+import '../../core/widgets/app_back_button.dart';
 import '../../data/models/place.dart';
 import '../../data/models/trip_route.dart';
 import '../../data/repositories/booking_repository.dart';
@@ -154,7 +155,7 @@ class _TripMapViewState extends State<TripMapView> {
   Widget _mapHeader(BuildContext context) {
     return Row(
       children: [
-        _circleButton(icon: IconsaxPlusLinear.arrow_left, onTap: Get.back),
+        const AppBackButton(),
         Expanded(child: Center(child: _routePill(context))),
         _circleButton(
           icon: IconsaxPlusLinear.gps,

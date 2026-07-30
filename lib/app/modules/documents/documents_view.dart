@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/external_launcher.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/state_views.dart';
 import '../../data/models/driver_document.dart';
 import 'documents_controller.dart';
@@ -17,7 +18,12 @@ class DocumentsView extends GetView<DocumentsController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('documents'.tr)),
+      appBar: AppBar(
+        leadingWidth: 64,
+        leading: const AppBackButton(),
+        titleSpacing: 0,
+        title: Text('documents'.tr),
+      ),
       body: Obx(() {
         if (controller.isLoading.value) return const LoadingView();
         if (controller.error.value != null) {

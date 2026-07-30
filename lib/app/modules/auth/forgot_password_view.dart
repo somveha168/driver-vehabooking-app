@@ -7,6 +7,7 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'forgot_password_controller.dart';
 
 class ForgotPasswordView extends GetView<ForgotPasswordController> {
@@ -52,13 +53,8 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                               () =>
                                   controller.step.value ==
                                       ForgotPasswordStep.reset
-                                  ? const SizedBox.square(dimension: 40)
-                                  : IconButton.filledTonal(
-                                      onPressed: controller.goBack,
-                                      icon: const Icon(
-                                        IconsaxPlusLinear.arrow_left_2,
-                                      ),
-                                    ),
+                                  ? const SizedBox.square(dimension: 46)
+                                  : AppBackButton(onPressed: controller.goBack),
                             ),
                           ),
                           SizedBox(height: topGap),

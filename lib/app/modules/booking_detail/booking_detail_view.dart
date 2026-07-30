@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:get/get.dart';
@@ -6,6 +5,7 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/info_row.dart';
 import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/state_views.dart';
@@ -31,7 +31,7 @@ class BookingDetailView extends GetView<BookingDetailController> {
         titleSpacing: 0,
         leadingWidth: 64,
         scrolledUnderElevation: 0,
-        leading: const _IosBackButton(),
+        leading: const AppBackButton(),
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,58 +187,6 @@ class _StickyFooter extends StatelessWidget {
                 ],
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Familiar iOS-style back affordance with a full Material tap target.
-class _IosBackButton extends StatelessWidget {
-  const _IosBackButton();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Center(
-      child: Material(
-        color: isDark ? theme.colorScheme.surfaceContainerHigh : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
-        elevation: 0,
-        child: InkWell(
-          onTap: () => Get.back<void>(),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: 38,
-            height: 38,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.32),
-              ),
-              boxShadow: isDark
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: AppColors.secondary.withValues(alpha: 0.055),
-                        blurRadius: 12,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-            ),
-            child: Tooltip(
-              message: MaterialLocalizations.of(context).backButtonTooltip,
-              child: const Icon(
-                CupertinoIcons.back,
-                size: 24,
-                color: AppColors.secondary,
-              ),
-            ),
-          ),
         ),
       ),
     );

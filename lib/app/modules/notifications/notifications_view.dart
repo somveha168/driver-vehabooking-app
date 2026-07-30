@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/state_views.dart';
 import '../../data/models/driver_notification.dart';
 import 'notifications_controller.dart';
@@ -65,10 +66,7 @@ class _Header extends GetView<NotificationsController> {
         children: [
           Row(
             children: [
-              _IconButton(
-                icon: IconsaxPlusLinear.arrow_left_2,
-                onTap: Get.back,
-              ),
+              const AppBackButton(),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -92,34 +90,6 @@ class _Header extends GetView<NotificationsController> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _IconButton extends StatelessWidget {
-  const _IconButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        width: 36,
-        height: 36,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.76),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: AppColors.secondary.withValues(alpha: 0.06),
-          ),
-        ),
-        child: Icon(icon, color: AppColors.secondary, size: 19),
       ),
     );
   }
