@@ -249,13 +249,13 @@ prod flavor -> VEHA_GOOGLE_MAPS_ANDROID_PROD_KEY -> com.vehabooking.driver
 Run development APK:
 
 ```bash
-flutter run --flavor dev --dart-define=ENV=dev
+flutter run --flavor dev
 ```
 
 Build production app bundle later:
 
 ```bash
-flutter build appbundle --release --flavor prod --dart-define=ENV=prod
+flutter build appbundle --release --flavor prod
 ```
 
 ## Local iOS Key Values
@@ -285,13 +285,13 @@ Release -> GOOGLE_MAPS_API_KEY_PROD -> com.vehabooking.driver
 Run iOS debug:
 
 ```bash
-flutter run --dart-define=ENV=dev
+flutter run
 ```
 
 Build iOS release later:
 
 ```bash
-flutter build ios --release --dart-define=ENV=prod
+flutter build ios --release
 ```
 
 ## Driver App Map Behavior

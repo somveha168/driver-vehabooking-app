@@ -61,15 +61,32 @@ Two API prefixes (see `modules/Taxi/docs/driver/APP_API.md` in the backend repo)
 
 ## Running
 
-The environment is selected at build time with `--dart-define=ENV`:
+The backend host lives in a single `.env` file at the project root. To switch
+environments, edit `APP_URL` and rebuild — nothing else changes.
 
 ```bash
-# Local dev (default) → http://vehabooking.test
-flutter run --dart-define=ENV=dev
+# .env
+APP_URL=https://staging.app.vehabooking.com
+```
 
-# Staging / prod (URLs are TODO in lib/app/core/config/app_config.dart)
-flutter run --dart-define=ENV=staging
-flutter run --dart-define=ENV=prod
+| Target  | APP_URL                                |
+|---------|----------------------------------------|
+| local   | `http://vehabooking.test`              |
+| staging | `https://staging.app.vehabooking.com`  |
+| prod    | `https://app.vehabooking.com`          |
+
+`APP_URL` is the **host only** — no trailing slash and no `/api` suffix. The app
+appends its own prefixes (`/api/driver/v1`, `/api/taxi/v1/driver`,
+`/api/v1/platform/info`), so baking `/api` into `APP_URL` breaks every call.
+
+`.env` is bundled as a Flutter asset (declared in `pubspec.yaml`) and read once
+in `main()` via `AppConfig.load()`. It holds configuration only — **never
+secrets**: anything bundled into the app can be extracted from the installed
+binary.
+
+```bash
+flutter run
+flutter build apk --release
 ```
 
 ### Local host resolution
@@ -78,8 +95,8 @@ resolve that host:
 
 - **iOS Simulator** resolves the Mac's `/etc/hosts`, so `vehabooking.test` works directly.
 - **Android emulator** cannot see `vehabooking.test`. Either map it to the host
-  alias `10.0.2.2` (run the API on a port and point `AppConfig.baseUrl` at
-  `http://10.0.2.2:<port>` for the `dev` case), or add a hosts entry.
+  alias `10.0.2.2` (run the API on a port and set `APP_URL=http://10.0.2.2:<port>`
+  in `.env`), or add a hosts entry.
 
 Cleartext http is permitted **only** for the dev host (Android
 `network_security_config.xml`, iOS ATS exception). Production traffic uses https.

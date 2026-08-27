@@ -138,7 +138,7 @@ A short **API contract doc** (`modules/Taxi/docs/DRIVER_APP_API.md`) listing eac
 ### B0a. Environment configuration (standard)
 Clean, no-secrets-in-code, multi-environment setup:
 - An `Environment` enum (`dev`, `staging`, `prod`) + an `AppConfig` class exposing `baseUrl`, `apiTimeout`, etc.
-- Environment selected at build time via **`--dart-define=ENV=dev|staging|prod`** (no hardcoded switch shipped; defaults to `dev`).
+- Backend host read at boot from **`APP_URL` in the root `.env`** (bundled asset, loaded by `AppConfig.load()`); switch environments by editing that one value and rebuilding.
 - Base URLs:
   - `dev` → `http://vehabooking.test`
   - `staging` → _(to fill when staging URL is known)_

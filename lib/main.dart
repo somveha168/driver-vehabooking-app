@@ -21,6 +21,11 @@ import 'app/data/services/settings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Backend host comes from the bundled `.env` (APP_URL) — load it first so
+  // AppConfig is resolved before any repository builds a URL.
+  await AppConfig.load();
+
   await StorageService.init();
 
   // Core singletons (order matters: storage → client → repos → services).
