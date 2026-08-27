@@ -4,4 +4,3 @@
 
 APP_BUNDLE_ID = com.vehabooking.driver
 APP_DISPLAY_NAME = Veha Driver
-GOOGLE_MAPS_API_KEY = $(GOOGLE_MAPS_API_KEY_PROD)

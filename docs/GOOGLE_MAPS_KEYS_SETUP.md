@@ -1,25 +1,31 @@
 # Google Maps API Key Setup
 
-This guide documents how to create Google Maps keys for the Veha Booking Driver app.
+How Google Maps keys are created and wired for the Veha Booking Driver app.
 
 Do not commit real API key values into the repository.
 
-## Required Keys
+## Model: one key per platform
 
-Create separate keys for each platform and environment:
+The app has **no build flavors and no dev/prod variants**. There is one app id,
+one bundle id, and therefore **one Maps key per platform**:
 
-| Key name | Platform | Environment | Used by |
-| --- | --- | --- | --- |
-| `Veha Booking Driver Android Maps Key` | Android | Production | Play Store / release app |
-| `Veha Booking Driver Android Maps Key - Dev` | Android | Development | Local APK / debug testing |
-| `Veha Booking Driver iOS Maps Key` | iOS | Production | App Store / TestFlight production bundle |
-| `Veha Booking Driver iOS Maps Key - Dev` | iOS | Development | iOS simulator/dev bundle |
+| Key name | Platform | Used by |
+| --- | --- | --- |
+| `Veha Booking Driver Android Maps Key` | Android | every Android build (debug and release) |
+| `Veha Booking Driver iOS Maps Key` | iOS | every iOS build (Debug and Release) |
 
-Backend Routes key is intentionally skipped for now. Create it later only if Laravel needs to call Google Routes API server-side for official route distance, ETA, pricing, or reporting.
+The `- Dev` keys are no longer used by this app. Leave them in the console if
+other projects use them, otherwise delete them.
+
+A Maps key is restricted by **app identity**, not by backend. It is read by
+native code at startup from `AndroidManifest.xml` / `Info.plist`, before Dart
+runs. It therefore cannot come from `.env` — and must not, since `.env` ships
+in plaintext inside the app bundle.
+
+Which backend the app talks to is a separate, unrelated switch: `APP_URL` in
+the root `.env`. See the README.
 
 ## Google Cloud Project
-
-Use the Veha Booking Google Cloud project:
 
 ```text
 vehabooking-app
@@ -31,276 +37,119 @@ Open:
 Google Cloud Console > APIs & Services > Credentials
 ```
 
-Before creating keys, make sure these APIs are enabled:
+These APIs must be enabled:
 
 ```text
 Maps SDK for Android
 Maps SDK for iOS
 ```
 
-## Android Dev Key
+## Android key restrictions
 
-Create an API key:
-
-```text
-Name:
-Veha Booking Driver Android Maps Key - Dev
-```
-
-Set API restrictions:
+Restrict the Android key to the package name plus **every** signing certificate
+that will run the app. One key, several package/SHA-1 pairs:
 
 ```text
-Maps SDK for Android
+Application restriction : Android apps
+API restriction         : Maps SDK for Android
+
+Package name : com.vehabooking.driver
+SHA-1        : <debug keystore SHA-1>      (local flutter run)
+SHA-1        : <upload keystore SHA-1>     (what you sign the release with)
+SHA-1        : <Play App Signing SHA-1>    (from Play Console, if using Play)
 ```
 
-Leave this unchecked:
+All three entries are required. Miss one and that build shows **blank grey map
+tiles** — no crash, no error message. That is the signature symptom of a key
+restriction mismatch.
 
-```text
-Authenticate API calls through a service account
-```
-
-Set application restrictions:
-
-```text
-Android apps
-```
-
-Add Android app restriction:
-
-```text
-Package name:
-com.vehabooking.driver.dev
-
-SHA-1 certificate fingerprint:
-62:6E:E0:EE:A4:93:B1:46:8F:03:EC:F8:58:4E:7A:3E:D9:90:EA:4C
-```
-
-Click `Done`, then `Create`.
-
-This key is used by development APK builds.
-
-## Android Production Key
-
-Create or keep this API key:
-
-```text
-Name:
-Veha Booking Driver Android Maps Key
-```
-
-Set API restrictions:
-
-```text
-Maps SDK for Android
-```
-
-Leave this unchecked:
-
-```text
-Authenticate API calls through a service account
-```
-
-Set application restrictions:
-
-```text
-Android apps
-```
-
-Add Android app restriction:
-
-```text
-Package name:
-com.vehabooking.driver
-
-SHA-1 certificate fingerprint:
-<release-signing-sha1>
-```
-
-Use the real release signing SHA-1 before publishing to Play Store. Do not use the debug SHA-1 for production.
-
-## iOS Dev Key
-
-Create an API key:
-
-```text
-Name:
-Veha Booking Driver iOS Maps Key - Dev
-```
-
-Set API restrictions:
-
-```text
-Maps SDK for iOS
-```
-
-Set application restrictions:
-
-```text
-iOS apps
-```
-
-Add iOS app restriction:
-
-```text
-Bundle ID:
-com.vehabooking.driver.dev
-```
-
-This key is used by development iOS builds once the iOS dev bundle is configured.
-
-## iOS Production Key
-
-Create or keep this API key:
-
-```text
-Name:
-Veha Booking Driver iOS Maps Key
-```
-
-Set API restrictions:
-
-```text
-Maps SDK for iOS
-```
-
-Set application restrictions:
-
-```text
-iOS apps
-```
-
-Add iOS app restriction:
-
-```text
-Bundle ID:
-com.vehabooking.driver
-```
-
-## App Package And Bundle IDs
-
-Current Android setup:
-
-```text
-Dev package:
-com.vehabooking.driver.dev
-
-Production package:
-com.vehabooking.driver
-```
-
-Target iOS setup:
-
-```text
-Dev bundle:
-com.vehabooking.driver.dev
-
-Production bundle:
-com.vehabooking.driver
-```
-
-## Get Android SHA-1 Again
-
-From the Flutter app Android folder:
+### Get the debug SHA-1
 
 ```bash
-cd android
-./gradlew signingReport
+keytool -list -v \
+  -keystore ~/.android/debug.keystore \
+  -alias androiddebugkey -storepass android -keypass android | grep SHA1
 ```
 
-Look for:
+### Get the Play App Signing SHA-1
 
 ```text
-Variant: devDebug
-SHA1: ...
+Play Console > your app > Setup > App signing > App signing key certificate
 ```
 
-For production, use the release signing SHA-1 from the real release keystore or Play App Signing certificate.
+## iOS key restrictions
 
-## What Not To Do
-
-- Do not use unrestricted keys.
-- Do not share one key across every environment unless it is temporary.
-- Do not commit the key value into Git.
-- Do not use the Android debug SHA-1 for production.
-- Do not create the Backend Routes key yet unless Laravel needs server-side route calculations.
-
-## Next App Step
-
-After the keys are ready, wire them into the Flutter app.
-
-## Local Android Key Values
-
-Put local Android key values in `android/local.properties`.
-
-This file is ignored by Git.
-
-```properties
-VEHA_GOOGLE_MAPS_ANDROID_DEV_KEY=your_android_dev_key_here
-VEHA_GOOGLE_MAPS_ANDROID_PROD_KEY=your_android_prod_key_here
-```
-
-Android flavor mapping:
+iOS keys are restricted by bundle id only — no certificate involved:
 
 ```text
-dev flavor  -> VEHA_GOOGLE_MAPS_ANDROID_DEV_KEY  -> com.vehabooking.driver.dev
-prod flavor -> VEHA_GOOGLE_MAPS_ANDROID_PROD_KEY -> com.vehabooking.driver
+Application restriction : iOS apps
+API restriction         : Maps SDK for iOS
+
+Bundle ID : com.vehabooking.driver
 ```
 
-Run development APK:
+Debug and Release share this bundle id, so one entry covers both.
 
-```bash
-flutter run --flavor dev
-```
-
-Build production app bundle later:
-
-```bash
-flutter build appbundle --release --flavor prod
-```
-
-## Local iOS Key Values
-
-Copy:
-
-```bash
-cp ios/Flutter/MapsKeys.example.xcconfig ios/Flutter/MapsKeys.xcconfig
-```
-
-Then fill:
-
-```xcconfig
-GOOGLE_MAPS_API_KEY_DEV = your_ios_dev_key_here
-GOOGLE_MAPS_API_KEY_PROD = your_ios_prod_key_here
-```
-
-`MapsKeys.xcconfig` is ignored by Git.
-
-iOS build config mapping:
+## App identity
 
 ```text
-Debug   -> GOOGLE_MAPS_API_KEY_DEV  -> com.vehabooking.driver.dev
-Release -> GOOGLE_MAPS_API_KEY_PROD -> com.vehabooking.driver
+Android applicationId    : com.vehabooking.driver
+iOS bundle identifier    : com.vehabooking.driver
 ```
 
-Run iOS debug:
+Both are set in one place each:
+- Android — `applicationId` in `android/app/build.gradle.kts`
+- iOS — `APP_BUNDLE_ID` in `ios/Flutter/Debug.xcconfig` and `Release.xcconfig`
+
+## Where the key values live locally
+
+Both files are gitignored. Never commit them.
+
+### Android — `android/local.properties`
+
+```text
+VEHA_GOOGLE_MAPS_ANDROID_KEY=your_android_key_here
+```
+
+Read by `localOrEnv()` in `android/app/build.gradle.kts`, which falls back to a
+Gradle property then an environment variable of the same name — so CI can supply
+it without a file. Injected into the manifest as `${googleMapsApiKey}`.
+
+### iOS — `ios/Flutter/MapsKeys.xcconfig`
+
+Copy `MapsKeys.example.xcconfig` to `MapsKeys.xcconfig`, then set:
+
+```text
+GOOGLE_MAPS_API_KEY = your_ios_key_here
+```
+
+`Debug.xcconfig` and `Release.xcconfig` both `#include?` this file, and
+`Info.plist` reads `$(GOOGLE_MAPS_API_KEY)`.
+
+## Building
+
+No flavor flags. The key is the same either way.
 
 ```bash
 flutter run
-```
-
-Build iOS release later:
-
-```bash
+flutter build apk --release
+flutter build appbundle --release
 flutter build ios --release
 ```
 
-## Driver App Map Behavior
+## What not to do
 
-The driver app uses the native Google Maps SDK keys directly:
+- Do not use unrestricted keys.
+- Do not commit a key value into Git.
+- Do not put a Maps key in `.env` — it is bundled in plaintext and read too late.
+- Do not forget the Play App Signing SHA-1; the store-delivered app is re-signed
+  by Google and will otherwise render grey tiles in production only.
+
+## Driver app map behavior
 
 ```text
 Android key -> AndroidManifest metadata
-iOS key     -> AppDelegate GMSServices setup
+iOS key     -> Info.plist / GMSServices setup
 ```
 
 The embedded booking map shows:
@@ -312,4 +161,5 @@ The embedded booking map shows:
 - route preview line
 - button to open Google Maps for real turn-by-turn navigation
 
-Because Backend Routes key is skipped for now, in-app route lines are visual guidance. Real road navigation still opens Google Maps through the Navigate button.
+No Backend Routes key is used, so in-app route lines are visual guidance. Real
+road navigation opens Google Maps through the Navigate button.

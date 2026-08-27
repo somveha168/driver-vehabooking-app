@@ -46,25 +46,13 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-    }
 
-    flavorDimensions += "env"
+        resValue("string", "app_name", "Veha Driver")
 
-    productFlavors {
-        create("dev") {
-            dimension = "env"
-            applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Veha Driver")
-            manifestPlaceholders["googleMapsApiKey"] =
-                localOrEnv("VEHA_GOOGLE_MAPS_ANDROID_DEV_KEY")
-        }
-
-        create("prod") {
-            dimension = "env"
-            resValue("string", "app_name", "Veha Driver")
-            manifestPlaceholders["googleMapsApiKey"] =
-                localOrEnv("VEHA_GOOGLE_MAPS_ANDROID_PROD_KEY")
-        }
+        // Single Maps key for every build. Kept in local.properties (gitignored)
+        // or supplied by CI as a Gradle property / environment variable.
+        manifestPlaceholders["googleMapsApiKey"] =
+            localOrEnv("VEHA_GOOGLE_MAPS_ANDROID_KEY")
     }
 
     buildTypes {

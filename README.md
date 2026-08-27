@@ -84,9 +84,13 @@ in `main()` via `AppConfig.load()`. It holds configuration only — **never
 secrets**: anything bundled into the app can be extracted from the installed
 binary.
 
+There are no build flavors and no dev/prod variants. One app id, one Maps key
+per platform, one Firebase config. `.env` is the only environment switch.
+
 ```bash
 flutter run
 flutter build apk --release
+flutter build appbundle --release
 ```
 
 ### Local host resolution
