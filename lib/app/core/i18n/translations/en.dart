@@ -17,7 +17,7 @@ const Map<String, String> enUS = {
   'login_title': 'Welcome',
   'login_subtitle': 'Sign in to manage your trips',
   'login_field': 'Phone or email',
-  'login_field_hint': 'Enter phone or email',
+  'login_field_hint': 'e.g. 012345678 or name@email.com',
   'password': 'Password',
   'password_hint': 'Enter your password',
   'sign_in': 'Sign in',

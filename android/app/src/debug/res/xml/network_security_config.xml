@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG BUILDS ONLY. This file lives in the `debug` source set, so it replaces
+  the strict `src/main` config for debug builds and is never shipped in a
+  release APK/AAB.
+
+  Debug builds talk to whatever local backend APP_URL points at - a Herd .test
+  domain, the emulator alias 10.0.2.2, or the Mac's LAN IP from a physical
+  phone. Those move around, so cleartext is permitted for any host here rather
+  than maintaining a list. Release builds keep the strict config in
+  src/main/res/xml/network_security_config.xml (https only, plus the local dev
+  hosts) and are unaffected.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

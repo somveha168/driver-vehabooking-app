@@ -16,7 +16,7 @@ const Map<String, String> kmKH = {
   'login_title': 'សូមស្វាគមន៍',
   'login_subtitle': 'ចូលគណនី ដើម្បីគ្រប់គ្រងការធ្វើដំណើរ',
   'login_field': 'លេខទូរស័ព្ទ ឬ អ៊ីមែល',
-  'login_field_hint': 'បញ្ចូលលេខទូរស័ព្ទ ឬ អ៊ីមែល',
+  'login_field_hint': 'ឧ. 012345678 ឬ name@email.com',
   'password': 'ពាក្យសម្ងាត់',
   'password_hint': 'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក',
   'sign_in': 'ចូលគណនី',
