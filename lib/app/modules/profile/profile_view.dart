@@ -34,9 +34,9 @@ class ProfileView extends GetView<ProfileController> {
               _CoverHeader(controller: controller),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
+                  AppSpacing.pageH,
                   AppSpacing.xs,
-                  AppSpacing.lg,
+                  AppSpacing.pageH,
                   0,
                 ),
                 child: Column(

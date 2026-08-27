@@ -14,9 +14,9 @@ class GuideView extends GetView<GuideController> {
       appBar: AppBar(title: Text('guide_title'.tr)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageH,
           AppSpacing.lg,
-          AppSpacing.lg,
-          AppSpacing.lg,
+          AppSpacing.pageH,
           AppSpacing.navClearance + 28,
         ),
         children: [
@@ -786,9 +786,9 @@ Future<void> _showGuideDetailSheet(
             child: ListView(
               controller: scrollController,
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
+                AppSpacing.pageH,
                 AppSpacing.sm,
-                AppSpacing.lg,
+                AppSpacing.pageH,
                 AppSpacing.xl,
               ),
               children: [

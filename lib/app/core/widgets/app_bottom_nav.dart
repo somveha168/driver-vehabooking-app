@@ -46,7 +46,14 @@ class AppBottomNav extends StatelessWidget {
     final bottomGap = math.max(inset * 0.5, AppSpacing.sm);
 
     return Container(
-      margin: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, bottomGap),
+      // Side inset matches the page-level content inset so the bar lines up
+      // with the cards above it.
+      margin: EdgeInsets.fromLTRB(
+        AppSpacing.pageH,
+        0,
+        AppSpacing.pageH,
+        bottomGap,
+      ),
       decoration: BoxDecoration(
         borderRadius: radius,
         boxShadow: [

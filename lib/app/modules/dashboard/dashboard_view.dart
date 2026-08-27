@@ -74,17 +74,17 @@ class DashboardView extends GetView<DashboardController> {
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.pageH,
                   AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
+                  AppSpacing.pageH,
                   AppSpacing.navClearance + AppSpacing.lg,
                 ),
                 children: [
                   _Hero(controller: controller),
                   const SizedBox(height: AppSpacing.xl),
-                  // NOW — the one trip to act on, or its own empty template.
-                  SectionLabel('section_now'.tr),
-                  const SizedBox(height: AppSpacing.lg),
+                  // The one trip to act on, or its own empty template. It sits
+                  // directly under the hero with no header - the card carries
+                  // its own status chip, so a label above it only added noise.
                   _nextPickup(context),
                   const SizedBox(height: AppSpacing.xxl),
                   // UPCOMING — the queue, or its own empty template.
@@ -182,22 +182,23 @@ class DashboardView extends GetView<DashboardController> {
       ('active', counts?.active ?? 0, 'tab_active'),
       ('completed', counts?.completed ?? 0, 'tab_completed'),
     ];
+    // Gaps go *between* the cards only - a symmetric padding on each one would
+    // inset the row's outer edges and break alignment with the section titles
+    // and the cards above.
     return Row(
-      children: items
-          .map(
-            (e) => Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: _StatCard(
-                  stage: e.$1,
-                  count: e.$2,
-                  label: e.$3.tr,
-                  onTap: () => controller.goToBookings(e.$1),
-                ),
-              ),
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _StatCard(
+              stage: items[i].$1,
+              count: items[i].$2,
+              label: items[i].$3.tr,
+              onTap: () => controller.goToBookings(items[i].$1),
             ),
-          )
-          .toList(),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -218,10 +219,6 @@ class _Hero extends StatelessWidget {
     final greeting = hour < 12
         ? 'good_morning'
         : (hour < 17 ? 'good_afternoon' : 'good_evening');
-    final dateLabel = DateFormat(
-      'EEEE, MMMM d',
-    ).format(DateTime.now()).toUpperCase();
-
     final display = GoogleFonts.fraunces(
       fontSize: 28,
       height: 1.05,
@@ -231,47 +228,21 @@ class _Hero extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // The greeting shares its row with the bell, and the status pill moves
+        // down beside the driver name - otherwise both rows sit half-empty.
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Date eyebrow with brand dot.
-            Flexible(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.18),
-                          blurRadius: 0,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Flexible(
-                    child: Text(
-                      dateLabel,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
+            Expanded(
+              child: Text(
+                '${greeting.tr},',
+                style: display.copyWith(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w400,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.86),
+                ),
               ),
             ),
-            const Spacer(),
-            // Compact working-state pill.
-            _StatusPill(controller: controller),
             const SizedBox(width: AppSpacing.sm),
             // Notification bell.
             Obx(
@@ -338,37 +309,38 @@ class _Hero extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          '${greeting.tr},',
-          style: display.copyWith(
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w400,
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.86),
-          ),
-        ),
         const SizedBox(height: 2),
         Obx(() {
           final name = controller.user?.displayName ?? '';
 
+          // Baseline-aligned so the status word sits on the same line as the
+          // name and its full stop, instead of floating at the name's mid
+          // height. The name is ellipsised so a long one cannot push the
+          // status off screen.
           return Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                name,
-                style: display.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.primary : AppColors.secondary,
+              Flexible(
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: display.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.primary : AppColors.secondary,
+                  ),
                 ),
               ),
               Text(
                 '.',
                 style: display.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: _driverStatus(context, controller).$1,
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
+              _StatusText(controller: controller),
             ],
           );
         }),
@@ -379,57 +351,36 @@ class _Hero extends StatelessWidget {
 
 /// Compact working-state pill (header): Active/Inactive for approved drivers,
 /// with Pending/Rejected verification states taking priority.
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.controller});
+/// Driver working-state color + label, shared by the status text and the
+/// coloured full stop after the driver name.
+(Color, String) _driverStatus(BuildContext context, DashboardController c) {
+  return switch (c.status.value) {
+    'pending' => (AppColors.assigned, 'status_pending'.tr),
+    'rejected' => (AppColors.pickupIssue, 'status_rejected'.tr),
+    'approved' when c.active.value => (AppColors.completed, 'status_active'.tr),
+    'approved' => (Theme.of(context).colorScheme.outline, 'status_inactive'.tr),
+    _ => (AppColors.assigned, 'status_pending'.tr),
+  };
+}
+
+class _StatusText extends StatelessWidget {
+  const _StatusText({required this.controller});
 
   final DashboardController controller;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Obx(() {
-      final (Color color, String label) = switch (controller.status.value) {
-        'pending' => (AppColors.assigned, 'status_pending'.tr),
-        'rejected' => (AppColors.pickupIssue, 'status_rejected'.tr),
-        'approved' when controller.active.value => (
-          AppColors.completed,
-          'status_active'.tr,
-        ),
-        'approved' => (theme.colorScheme.outline, 'status_inactive'.tr),
-        _ => (AppColors.assigned, 'status_pending'.tr),
-      };
+      final (color, label) = _driverStatus(context, controller);
 
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.76),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          border: Border.all(color: color.withValues(alpha: 0.20)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondary.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+      // Plain text, no chip and no dot of its own - the full stop after the
+      // driver name is the status dot.
+      return Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.w700,
         ),
       );
     });
@@ -1088,11 +1039,10 @@ class _NextPickupCard extends StatelessWidget {
     required bool done,
   }) {
     final isPrimary = active || done;
-    final circleColor = isPrimary ? AppColors.primary : Colors.transparent;
-    final borderColor = isPrimary
-        ? AppColors.primary
-        : theme.colorScheme.outlineVariant.withValues(alpha: 0.88);
 
+    // Reached steps keep the filled teal disc - it is what marks "you are
+    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
+    // 32x32 box is kept either way so the dashed connectors stay aligned.
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1100,23 +1050,22 @@ class _NextPickupCard extends StatelessWidget {
           width: 32,
           height: 32,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: circleColor,
-            border: Border.all(color: borderColor, width: isPrimary ? 0 : 1.6),
-            boxShadow: isPrimary
-                ? [
+          decoration: isPrimary
+              ? BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                  boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.22),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
-                  ]
-                : null,
-          ),
+                  ],
+                )
+              : null,
           child: Icon(
             done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 15,
+            size: 18,
             color: isPrimary ? Colors.white : theme.colorScheme.outline,
           ),
         ),

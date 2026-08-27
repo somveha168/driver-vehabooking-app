@@ -116,9 +116,9 @@ class _StickyFooter extends StatelessWidget {
       ),
       child: SafeArea(
         minimum: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
+          AppSpacing.pageH,
           AppSpacing.sm + 2,
-          AppSpacing.lg,
+          AppSpacing.pageH,
           AppSpacing.sm,
         ),
         child: Column(
@@ -261,10 +261,10 @@ class _FooterTripStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isPrimary = active || done;
-    final borderColor = isPrimary
-        ? AppColors.primary
-        : theme.colorScheme.outlineVariant.withValues(alpha: 0.9);
 
+    // Reached steps keep the filled teal disc - it is what marks "you are
+    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
+    // 30x30 box is kept either way so the dashed connectors stay aligned.
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -272,14 +272,15 @@ class _FooterTripStep extends StatelessWidget {
           width: 30,
           height: 30,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isPrimary ? AppColors.primary : Colors.transparent,
-            border: Border.all(color: borderColor, width: isPrimary ? 0 : 1.5),
-          ),
+          decoration: isPrimary
+              ? const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                )
+              : null,
           child: Icon(
             done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 14,
+            size: 17,
             color: isPrimary ? Colors.white : theme.colorScheme.outline,
           ),
         ),
@@ -363,9 +364,9 @@ class _Detail extends StatelessWidget {
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
+          AppSpacing.pageH,
           AppSpacing.md,
-          AppSpacing.lg,
+          AppSpacing.pageH,
           AppSpacing.lg,
         ),
         children: [

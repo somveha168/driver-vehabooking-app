@@ -39,9 +39,9 @@ class LoginView extends GetView<LoginController> {
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xxl,
+                    AppSpacing.xl,
                     AppSpacing.md,
-                    AppSpacing.xxl,
+                    AppSpacing.xl,
                     AppSpacing.lg,
                   ),
                   child: ConstrainedBox(

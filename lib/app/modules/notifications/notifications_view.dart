@@ -33,9 +33,9 @@ class NotificationsView extends GetView<NotificationsController> {
           },
           child: ListView(
             padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pageH,
               AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
+              AppSpacing.pageH,
               AppSpacing.navClearance,
             ),
             children: const [

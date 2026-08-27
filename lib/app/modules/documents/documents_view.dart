@@ -41,7 +41,10 @@ class DocumentsView extends GetView<DocumentsController> {
         return RefreshIndicator(
           onRefresh: controller.load,
           child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.pageH,
+              vertical: AppSpacing.lg,
+            ),
             children: [
               Row(
                 children: [

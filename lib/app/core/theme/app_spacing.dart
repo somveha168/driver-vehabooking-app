@@ -10,6 +10,11 @@ class AppSpacing {
   static const double xxl = 24;
   static const double xxxl = 32;
 
+  /// Horizontal inset for page-level content (scroll views, sheets).
+  /// Deliberately tighter than [lg] so cards get more usable width on
+  /// phone screens. Card *interior* padding still uses [lg].
+  static const double pageH = 12;
+
   /// Bottom padding for scroll views so content clears the floating glass nav.
   static const double navClearance = 104;
 

@@ -35,9 +35,9 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.xxl,
+                      AppSpacing.xl,
                       AppSpacing.lg,
-                      AppSpacing.xxl,
+                      AppSpacing.xl,
                       AppSpacing.xl,
                     ),
                     child: ConstrainedBox(

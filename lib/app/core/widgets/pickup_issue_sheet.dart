@@ -133,9 +133,9 @@ class _PickupIssueSheetState extends State<_PickupIssueSheet> {
           top: false,
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
+              AppSpacing.pageH,
               AppSpacing.sm,
-              AppSpacing.lg,
+              AppSpacing.pageH,
               AppSpacing.lg + bottomInset,
             ),
             child: Column(

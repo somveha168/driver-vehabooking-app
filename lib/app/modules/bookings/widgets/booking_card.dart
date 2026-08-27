@@ -540,11 +540,10 @@ class BookingCard extends StatelessWidget {
     required bool done,
   }) {
     final isPrimary = active || done;
-    final circleColor = isPrimary ? AppColors.primary : Colors.transparent;
-    final borderColor = isPrimary
-        ? AppColors.primary
-        : theme.colorScheme.outlineVariant.withValues(alpha: 0.88);
 
+    // Reached steps keep the filled teal disc - it is what marks "you are
+    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
+    // 32x32 box is kept either way so the dashed connectors stay aligned.
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -552,14 +551,15 @@ class BookingCard extends StatelessWidget {
           width: 32,
           height: 32,
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: circleColor,
-            border: Border.all(color: borderColor, width: isPrimary ? 0 : 1.6),
-          ),
+          decoration: isPrimary
+              ? const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                )
+              : null,
           child: Icon(
             done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 15,
+            size: 18,
             color: isPrimary ? Colors.white : theme.colorScheme.outline,
           ),
         ),

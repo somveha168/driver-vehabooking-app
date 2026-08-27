@@ -25,18 +25,18 @@ class BookingsView extends GetView<BookingsController> {
             const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageH,
                 AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
+                AppSpacing.pageH,
                 AppSpacing.md,
               ),
               child: _BookingsHeader(controller: controller),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
+                AppSpacing.pageH,
                 0,
-                AppSpacing.lg,
+                AppSpacing.pageH,
                 AppSpacing.sm,
               ),
               child: _SegmentedTabs(controller: controller),
@@ -78,9 +78,9 @@ class BookingsView extends GetView<BookingsController> {
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
+                      AppSpacing.pageH,
                       AppSpacing.sm,
-                      AppSpacing.lg,
+                      AppSpacing.pageH,
                       AppSpacing.navClearance,
                     ),
                     children: _buildRows(context),

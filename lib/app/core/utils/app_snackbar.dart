@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 
 /// App-level floating feedback with compact, driver-friendly styling.
 class AppSnackbar {
@@ -48,7 +49,14 @@ class AppSnackbar {
         messageText: _ToastContent(message: message, color: color, icon: icon),
         snackPosition: SnackPosition.BOTTOM,
         snackStyle: SnackStyle.FLOATING,
-        margin: const EdgeInsets.fromLTRB(18, 0, 18, 22),
+        // Matches the page-level content inset and the bottom nav, so the
+        // toast lines up with whatever it floats over.
+        margin: const EdgeInsets.fromLTRB(
+          AppSpacing.pageH,
+          0,
+          AppSpacing.pageH,
+          22,
+        ),
         padding: EdgeInsets.zero,
         borderRadius: 22,
         backgroundColor: Colors.transparent,

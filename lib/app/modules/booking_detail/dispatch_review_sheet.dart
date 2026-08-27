@@ -44,9 +44,9 @@ class DispatchReviewSheet extends StatelessWidget {
           top: false,
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
+              AppSpacing.pageH,
               AppSpacing.sm,
-              AppSpacing.lg,
+              AppSpacing.pageH,
               contentBottomPadding + AppSpacing.xs,
             ),
             child: Column(
