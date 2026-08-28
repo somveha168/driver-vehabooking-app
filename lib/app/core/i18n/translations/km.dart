@@ -126,24 +126,18 @@ const Map<String, String> kmKH = {
   'section_now': 'ឥឡូវនេះ',
   'section_upcoming': 'ការធ្វើដំណើរបន្ទាប់',
   // ស្ថានភាពទទេនៅទំព័រដើម (តាមស្ថានភាព)
-  'empty_ready_title': 'អ្នកត្រៀមរួចហើយ',
-  'empty_ready_hint':
-      'មិនទាន់មានដំណើរទេ។ ការធ្វើដំណើរថ្មីដែលបានកំណត់ឲ្យអ្នកនឹងបង្ហាញនៅទីនេះ។',
+  'empty_ready_title': 'មិនទាន់មានដំណើរ',
+  'empty_ready_hint': 'ដំណើរថ្មីនឹងបង្ហាញនៅទីនេះ។',
   'empty_inactive_title': 'អ្នកមិនសកម្ម',
-  'empty_inactive_hint':
-      'សូមស្នើឲ្យប្រតិបត្តិករបើកសកម្មភាព មុនពេលមានការកំណត់ដំណើរថ្មី។',
-  'empty_pending_title': 'ជិតរួចរាល់ហើយ',
-  'empty_pending_hint':
-      'គណនីរបស់អ្នកកំពុងត្រូវបានពិនិត្យ។ អ្នកនឹងទទួលដំណើរនៅពេលអនុម័ត។',
-  'empty_rejected_title': 'គណនីត្រូវការការពិនិត្យ',
-  'empty_rejected_hint':
-      'គណនីអ្នកបើកបររបស់អ្នកត្រូវបានបដិសេធ។ សូមទាក់ទងប្រតិបត្តិករ។',
-  'empty_assigned_title': 'មានការធ្វើដំណើរកំណត់ហើយ',
-  'empty_assigned_hint':
-      'ថ្ងៃនេះគ្មានការចេញដំណើរ — ការទទួលបន្ទាប់នៅខាងក្រោមក្នុង «ការធ្វើដំណើរបន្ទាប់»។',
-  'empty_upcoming_title': 'គ្មានការធ្វើដំណើរបន្ទាប់',
-  'empty_upcoming_hint':
-      'កាលវិភាគរបស់អ្នកទំនេរ។ ការធ្វើដំណើរថ្មីនឹងបន្ថែមនៅទីនេះ។',
+  'empty_inactive_hint': 'សូមស្នើប្រតិបត្តិករបើកសកម្មភាព។',
+  'empty_pending_title': 'គណនីកំពុងពិនិត្យ',
+  'empty_pending_hint': 'សូមរង់ចាំការអនុម័ត។',
+  'empty_rejected_title': 'គណនីត្រូវបានបដិសេធ',
+  'empty_rejected_hint': 'សូមទាក់ទងប្រតិបត្តិករ។',
+  'empty_assigned_title': 'ថ្ងៃនេះគ្មានដំណើរ',
+  'empty_assigned_hint': 'មើលដំណើរបន្ទាប់ខាងក្រោម។',
+  'empty_upcoming_title': 'គ្មានដំណើរបន្ទាប់',
+  'empty_upcoming_hint': 'កាលវិភាគរបស់អ្នកទំនេរ។',
   'next_pickup': 'ការទទួលបន្ទាប់',
   'no_next_pickup': 'គ្មានការទទួលខាងមុខ',
   'no_next_pickup_hint': 'បច្ចុប្បន្នអ្នកគ្មានដំណើរដែលរង់ចាំទទួលទេ។',
@@ -390,4 +384,24 @@ const Map<String, String> kmKH = {
   'retry': 'ព្យាយាមម្តងទៀត',
   'error_generic': 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។',
   'cancel': 'បោះបង់',
+  'yes': 'បាទ/ចាស',
+  'no': 'ទេ',
+
+  // Step action confirmations - shown before the trip is advanced, so a
+  // mis-tap cannot move the trip forward.
+  'confirm_start_title': 'ចាប់ផ្តើមដំណើរនេះ?',
+  'confirm_start_message':
+      'បញ្ជាក់ថាអ្នកកំពុងចាប់ផ្តើមដំណើរនេះ ហើយធ្វើដំណើរទៅកន្លែងទទួលភ្ញៀវ។',
+  'confirm_arrived_title': 'បញ្ជាក់ថាបានមកដល់?',
+  'confirm_arrived_message': 'បញ្ជាក់ថាអ្នកបានមកដល់កន្លែងទទួលភ្ញៀវហើយ។',
+  'confirm_meet_title': 'បានជួបភ្ញៀវ?',
+  'confirm_meet_message':
+      'បញ្ជាក់ថាអ្នកបានជួបភ្ញៀវ ហើយត្រៀមខ្លួនចាប់ផ្តើមដំណើរ។',
+
+  // Shown when a trip is still in progress long after its departure time -
+  // usually one the driver forgot to finish.
+  'stale_trip_title': 'ដំណើរនេះនៅមិនទាន់បញ្ចប់',
+  'stale_trip_detail':
+      'ដំណើរនេះបានហួសពេលចេញដំណើរយូរហើយ ហើយមិនទាន់បានបញ្ចប់។ '
+      'សូមបញ្ចប់វា ឬរាយការណ៍បញ្ហាទទួលភ្ញៀវ ដើម្បីឱ្យផ្នែកគ្រប់គ្រងបិទវា។',
 };

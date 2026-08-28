@@ -1,4 +1,5 @@
 import 'place.dart';
+import 'trip_staleness.dart';
 
 /// Full booking detail (from `DriverBookingDetailResource`).
 class BookingDetail {
@@ -170,6 +171,26 @@ class BookingDetail {
   bool get isStartTooOld {
     final diff = startOverdueBy;
     return diff != null && diff >= const Duration(hours: 6);
+  }
+
+  /// How long ago this trip was due to depart, whatever step it is on.
+  /// Null when the departure is still in the future or unknown.
+  Duration? get departedAgo {
+    final dt = departureAt;
+    if (dt == null) return null;
+    final diff = DateTime.now().difference(dt);
+    return diff.isNegative ? null : diff;
+  }
+
+  /// A trip that is already under way but departed long ago - almost always a
+  /// trip the driver forgot to finish, or one whose app was killed mid-trip.
+  ///
+  /// Distinct from [isStartTooOld], which only covers trips that were never
+  /// started: every `isStart*` getter switches off the moment the trip begins.
+  bool get isStaleInProgress {
+    if (allows('start') || !can) return false;
+    final diff = departedAgo;
+    return diff != null && diff >= staleTripThreshold;
   }
 
   /// Whether this assignment belongs to a two-leg trip contract.

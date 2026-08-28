@@ -4,6 +4,7 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/trip_step_tracker.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/booking_list_item.dart';
 
@@ -14,20 +15,8 @@ class BookingCard extends StatelessWidget {
   final BookingListItem booking;
   final VoidCallback onTap;
 
-  int get _stepIndex => switch (booking.driverTripStatus ?? booking.stage) {
-    'start' => 0,
-    'arrived_location' => 1,
-    'meet_passenger' => 2,
-    'drop_passenger' || 'completed' => 3,
-    _ => -1,
-  };
-
   bool get _showSteps =>
       booking.stage != 'cancelled' && booking.stage != 'pickup_issue';
-
-  bool get _isCompleted =>
-      booking.stage == 'completed' ||
-      (booking.driverTripStatus ?? booking.stage) == 'drop_passenger';
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +59,10 @@ class BookingCard extends StatelessWidget {
                 _vehicleLine(theme),
                 if (_showSteps) ...[
                   const SizedBox(height: AppSpacing.md),
-                  _tripSteps(theme),
+                  TripStepTracker(
+                    stage: booking.stage,
+                    driverTripStatus: booking.driverTripStatus,
+                  ),
                 ],
                 if (booking.nextAction != null) ...[
                   const SizedBox(height: AppSpacing.sm),
@@ -495,120 +487,6 @@ class BookingCard extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _tripSteps(ThemeData theme) {
-    const steps = [
-      (label: 'step_short_start', icon: IconsaxPlusBold.car),
-      (label: 'step_short_arrived', icon: IconsaxPlusLinear.flag),
-      (label: 'step_short_meet', icon: IconsaxPlusLinear.profile),
-      (label: 'step_short_drop', icon: IconsaxPlusLinear.location),
-    ];
-    final activeIndex = _stepIndex;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < steps.length; index++) ...[
-          Expanded(
-            child: _tripStep(
-              theme,
-              label: steps[index].label.tr,
-              icon: steps[index].icon,
-              active: !_isCompleted && index == activeIndex,
-              done: _isCompleted || (activeIndex >= 0 && index < activeIndex),
-            ),
-          ),
-          if (index < steps.length - 1)
-            Expanded(
-              child: _stepConnector(
-                done: _isCompleted || (activeIndex > 0 && index < activeIndex),
-              ),
-            ),
-        ],
-      ],
-    );
-  }
-
-  Widget _tripStep(
-    ThemeData theme, {
-    required String label,
-    required IconData icon,
-    required bool active,
-    required bool done,
-  }) {
-    final isPrimary = active || done;
-
-    // Reached steps keep the filled teal disc - it is what marks "you are
-    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
-    // 32x32 box is kept either way so the dashed connectors stay aligned.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: isPrimary
-              ? const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                )
-              : null,
-          child: Icon(
-            done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 18,
-            color: isPrimary ? Colors.white : theme.colorScheme.outline,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: isPrimary ? AppColors.primary : AppColors.secondary,
-            fontWeight: FontWeight.w700,
-            fontSize: 9.5,
-            letterSpacing: 0,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _stepConnector({required bool done}) {
-    final color = done
-        ? AppColors.primary.withValues(alpha: 0.70)
-        : const Color(0xFFC8D3D1);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 15),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final dashCount = (constraints.maxWidth / 8).floor().clamp(2, 16);
-
-          return Row(
-            children: List.generate(dashCount, (index) {
-              return Expanded(
-                child: Container(
-                  height: 2,
-                  margin: EdgeInsets.only(
-                    right: index == dashCount - 1 ? 0 : 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              );
-            }),
-          );
-        },
       ),
     );
   }

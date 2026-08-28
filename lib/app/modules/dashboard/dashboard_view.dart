@@ -8,11 +8,13 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/section_label.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/step_action_button.dart';
 import '../../core/widgets/swipe_to_confirm.dart';
+import '../../core/widgets/trip_step_tracker.dart';
 import '../../data/models/booking_list_item.dart';
 import '../booking_detail/dispatch_review_sheet.dart';
 import 'dashboard_controller.dart';
@@ -125,43 +127,38 @@ class DashboardView extends GetView<DashboardController> {
   Widget _emptyNow() {
     final hasUpcoming =
         (controller.summary.value?.upcoming.isNotEmpty) ?? false;
-    final (Color color, IconData icon, String title, String hint) = switch ((
+    final (IconData icon, String title, String hint) = switch ((
       controller.status.value,
       controller.active.value,
       hasUpcoming,
     )) {
       ('pending', _, _) => (
-        AppColors.assigned,
-        IconsaxPlusBold.clock,
+        IconsaxPlusBold.shield_search,
         'empty_pending_title'.tr,
         'empty_pending_hint'.tr,
       ),
       ('rejected', _, _) => (
-        AppColors.pickupIssue,
         IconsaxPlusBold.shield_cross,
         'empty_rejected_title'.tr,
         'empty_rejected_hint'.tr,
       ),
       ('approved', false, _) => (
-        themeColorInactive,
-        IconsaxPlusBold.pause_circle,
+        IconsaxPlusBold.toggle_off_circle,
         'empty_inactive_title'.tr,
         'empty_inactive_hint'.tr,
       ),
       ('approved', true, true) => (
-        AppColors.assigned,
         IconsaxPlusBold.calendar_tick,
         'empty_assigned_title'.tr,
         'empty_assigned_hint'.tr,
       ),
       _ => (
-        AppColors.primary,
-        IconsaxPlusBold.car,
+        IconsaxPlusBold.routing,
         'empty_ready_title'.tr,
         'empty_ready_hint'.tr,
       ),
     };
-    return _EmptyCard(color: color, icon: icon, title: title, hint: hint);
+    return _EmptyCard(icon: icon, title: title, hint: hint);
   }
 
   Color get themeColorInactive =>
@@ -169,7 +166,6 @@ class DashboardView extends GetView<DashboardController> {
 
   /// UPCOMING empty — the schedule queue is clear.
   Widget _emptyUpcoming() => _EmptyCard(
-    color: AppColors.primary,
     icon: IconsaxPlusBold.calendar,
     title: 'empty_upcoming_title'.tr,
     hint: 'empty_upcoming_hint'.tr,
@@ -547,7 +543,10 @@ class _NextPickupCard extends StatelessWidget {
 
               if (showProgress) ...[
                 const SizedBox(height: AppSpacing.sm),
-                _visualTripSteps(theme),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: TripStepTracker(stage: next.stage),
+                ),
               ],
               if (next.isStartBlocked) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -981,144 +980,6 @@ class _NextPickupCard extends StatelessWidget {
     );
   }
 
-  int get _visualStepIndex => switch (next.stage) {
-    'start' => 0,
-    'arrived_location' => 1,
-    'meet_passenger' => 2,
-    'drop_passenger' || 'completed' => 3,
-    _ => -1,
-  };
-
-  bool get _hasStartedTrip => _visualStepIndex >= 0;
-
-  Widget _visualTripSteps(ThemeData theme) {
-    const steps = [
-      (label: 'step_short_start', icon: IconsaxPlusBold.car),
-      (label: 'step_short_arrived', icon: IconsaxPlusLinear.flag),
-      (label: 'step_short_meet', icon: IconsaxPlusLinear.profile),
-      (label: 'step_short_drop', icon: IconsaxPlusLinear.location),
-    ];
-    final activeIndex = _visualStepIndex;
-    final isCompleted = next.stage == 'completed';
-    final hasActiveStep = activeIndex >= 0 && (_hasStartedTrip || isCompleted);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var index = 0; index < steps.length; index++) ...[
-            Expanded(
-              child: _visualStep(
-                theme,
-                label: steps[index].label.tr,
-                icon: steps[index].icon,
-                active:
-                    hasActiveStep &&
-                    (isCompleted ? index == 3 : index == activeIndex),
-                done: isCompleted || index < activeIndex,
-              ),
-            ),
-            if (index < steps.length - 1)
-              Expanded(
-                child: _visualStepConnector(
-                  done: isCompleted || index < activeIndex,
-                ),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _visualStep(
-    ThemeData theme, {
-    required String label,
-    required IconData icon,
-    required bool active,
-    required bool done,
-  }) {
-    final isPrimary = active || done;
-
-    // Reached steps keep the filled teal disc - it is what marks "you are
-    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
-    // 32x32 box is kept either way so the dashed connectors stay aligned.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: isPrimary
-              ? BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.22),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                )
-              : null,
-          child: Icon(
-            done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 18,
-            color: isPrimary ? Colors.white : theme.colorScheme.outline,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: isPrimary ? AppColors.primary : AppColors.secondary,
-            fontWeight: FontWeight.w700,
-            fontSize: 9.5,
-            letterSpacing: 0,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _visualStepConnector({required bool done}) {
-    final color = done
-        ? AppColors.primary.withValues(alpha: 0.70)
-        : const Color(0xFFC8D3D1);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 15),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final dashCount = (constraints.maxWidth / 8).floor().clamp(2, 16);
-
-          return Row(
-            children: List.generate(dashCount, (index) {
-              return Expanded(
-                child: Container(
-                  height: 2,
-                  margin: EdgeInsets.only(
-                    right: index == dashCount - 1 ? 0 : 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              );
-            }),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _blockingTripNotice(ThemeData theme) {
     final blockedBy = next.startBlockedBy!;
     final title = 'finish_trip_first_title'.trParams({
@@ -1234,7 +1095,13 @@ class _NextPickupCard extends StatelessWidget {
         label: label,
         icon: icon,
         loading: controller.isActing.value,
-        onPressed: () => controller.runNextAction(action),
+        // Confirm first: advancing a step cannot be undone from the app, and
+        // this button sits right under the trip card where a mis-tap is easy.
+        onPressed: () async {
+          if (await confirmStepAction(action)) {
+            controller.runNextAction(action);
+          }
+        },
       ),
     );
   }
@@ -1429,13 +1296,11 @@ class _NextPickupCard extends StatelessWidget {
 /// both the NOW and UPCOMING sections so each has its own purposeful empty state.
 class _EmptyCard extends StatelessWidget {
   const _EmptyCard({
-    required this.color,
     required this.icon,
     required this.title,
     required this.hint,
   });
 
-  final Color color;
   final IconData icon;
   final String title;
   final String hint;
@@ -1443,47 +1308,40 @@ class _EmptyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Container(
       width: double.infinity,
       decoration: _softCard(context),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
+        vertical: AppSpacing.xxl + AppSpacing.xs,
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(16),
+          // Bare glyph in the brand colour - no badge, no tint block.
+          Icon(icon, size: 42, color: AppColors.primary),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.1,
+              height: 1.2,
             ),
-            child: Icon(icon, size: 21, color: color),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  hint,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                    height: 1.30,
-                  ),
-                ),
-              ],
+          const SizedBox(height: AppSpacing.xs + 2),
+          Text(
+            hint,
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+              height: 1.35,
             ),
           ),
         ],

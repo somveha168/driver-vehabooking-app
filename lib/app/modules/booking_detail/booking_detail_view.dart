@@ -6,11 +6,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/info_row.dart';
 import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/state_views.dart';
+import '../../core/widgets/stale_trip_notice.dart';
 import '../../core/widgets/step_action_button.dart';
 import '../../core/widgets/swipe_to_confirm.dart';
+import '../../core/widgets/trip_step_tracker.dart';
 import '../../data/models/booking_detail.dart';
 import '../../data/models/place.dart';
 import 'booking_detail_controller.dart';
@@ -124,14 +127,22 @@ class _StickyFooter extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _FooterTripSteps(
+            TripStepTracker(
               stage: b.stage,
               driverTripStatus: b.driverTripStatus,
+              compact: true,
             ),
             const SizedBox(height: AppSpacing.md),
             if (b.can) ...[
               if (b.isStartOverdue) ...[
                 _StartOverdueNotice(b: b),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              // A trip left running long past its departure. The start-overdue
+              // notices above only cover trips never started, so without this
+              // an abandoned in-progress trip explains itself to nobody.
+              if (b.isStaleInProgress) ...[
+                const StaleTripNotice(),
                 const SizedBox(height: AppSpacing.sm),
               ],
               _ActionBar(b: b, controller: controller),
@@ -188,155 +199,6 @@ class _StickyFooter extends StatelessWidget {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _FooterTripSteps extends StatelessWidget {
-  const _FooterTripSteps({required this.stage, this.driverTripStatus});
-
-  final String stage;
-  final String? driverTripStatus;
-
-  int get _stepIndex => switch (driverTripStatus ?? stage) {
-    'start' => 0,
-    'arrived_location' => 1,
-    'meet_passenger' => 2,
-    'drop_passenger' || 'completed' => 3,
-    _ => -1,
-  };
-
-  bool get _isCompleted =>
-      stage == 'completed' || (driverTripStatus ?? stage) == 'drop_passenger';
-
-  @override
-  Widget build(BuildContext context) {
-    const steps = [
-      (label: 'step_short_start', icon: IconsaxPlusBold.car),
-      (label: 'step_short_arrived', icon: IconsaxPlusLinear.flag),
-      (label: 'step_short_meet', icon: IconsaxPlusLinear.profile),
-      (label: 'step_short_drop', icon: IconsaxPlusLinear.location),
-    ];
-    final activeIndex = _stepIndex;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < steps.length; index++) ...[
-          Expanded(
-            child: _FooterTripStep(
-              label: steps[index].label.tr,
-              icon: steps[index].icon,
-              active: !_isCompleted && index == activeIndex,
-              done: _isCompleted || (activeIndex >= 0 && index < activeIndex),
-            ),
-          ),
-          if (index < steps.length - 1)
-            Expanded(
-              child: _FooterStepConnector(
-                done: _isCompleted || (activeIndex > 0 && index < activeIndex),
-              ),
-            ),
-        ],
-      ],
-    );
-  }
-}
-
-class _FooterTripStep extends StatelessWidget {
-  const _FooterTripStep({
-    required this.label,
-    required this.icon,
-    required this.active,
-    required this.done,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool active;
-  final bool done;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isPrimary = active || done;
-
-    // Reached steps keep the filled teal disc - it is what marks "you are
-    // here". Steps still ahead are drawn as a bare icon: no ring, no fill. The
-    // 30x30 box is kept either way so the dashed connectors stay aligned.
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          alignment: Alignment.center,
-          decoration: isPrimary
-              ? const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                )
-              : null,
-          child: Icon(
-            done ? IconsaxPlusLinear.tick_circle : icon,
-            size: 17,
-            color: isPrimary ? Colors.white : theme.colorScheme.outline,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: isPrimary ? AppColors.primary : AppColors.secondary,
-            fontWeight: FontWeight.w700,
-            fontSize: 9.5,
-            letterSpacing: 0,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _FooterStepConnector extends StatelessWidget {
-  const _FooterStepConnector({required this.done});
-
-  final bool done;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = done
-        ? AppColors.primary.withValues(alpha: 0.70)
-        : const Color(0xFFC8D3D1);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 14),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final dashCount = (constraints.maxWidth / 8).floor().clamp(2, 16);
-
-          return Row(
-            children: List.generate(dashCount, (index) {
-              return Expanded(
-                child: Container(
-                  height: 2,
-                  margin: EdgeInsets.only(
-                    right: index == dashCount - 1 ? 0 : 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              );
-            }),
-          );
-        },
       ),
     );
   }
@@ -1664,7 +1526,12 @@ class _ActionBar extends StatelessWidget {
         label: label,
         icon: icon,
         loading: controller.isActing.value,
-        onPressed: () => controller.runAction(action),
+        // Confirm first: advancing a step cannot be undone from the app.
+        onPressed: () async {
+          if (await confirmStepAction(action)) {
+            controller.runAction(action);
+          }
+        },
       );
     });
   }

@@ -129,24 +129,18 @@ const Map<String, String> enUS = {
   'section_now': 'Now',
   'section_upcoming': 'Upcoming',
   // Home empty states (status-aware)
-  'empty_ready_title': "You're ready to roll",
-  'empty_ready_hint':
-      'No trips yet. New pickups assigned to you will appear here.',
+  'empty_ready_title': 'No trip yet',
+  'empty_ready_hint': 'New trips will show here.',
   'empty_inactive_title': 'You are inactive',
-  'empty_inactive_hint':
-      'Ask your operator to activate you before new trips are assigned.',
-  'empty_pending_title': 'Almost there',
-  'empty_pending_hint':
-      'Your account is under review. You\'ll get trips once approved.',
-  'empty_rejected_title': 'Account needs attention',
-  'empty_rejected_hint':
-      'Your driver account was rejected. Please contact your operator.',
-  'empty_assigned_title': 'Trip scheduled',
-  'empty_assigned_hint':
-      'Nothing departs today — your next pickup is below in Upcoming.',
-  'empty_upcoming_title': 'No upcoming pickups',
-  'empty_upcoming_hint':
-      'Your schedule is clear. New trips will be added here.',
+  'empty_inactive_hint': 'Ask your operator to turn you on.',
+  'empty_pending_title': 'Account in review',
+  'empty_pending_hint': 'Please wait for approval.',
+  'empty_rejected_title': 'Account rejected',
+  'empty_rejected_hint': 'Please contact your operator.',
+  'empty_assigned_title': 'No trip today',
+  'empty_assigned_hint': 'See your next trip below.',
+  'empty_upcoming_title': 'No next trip',
+  'empty_upcoming_hint': 'Your schedule is empty.',
   'next_pickup': 'Next pickup',
   'no_next_pickup': 'No upcoming pickup',
   'no_next_pickup_hint': 'You have no trips awaiting pickup right now.',
@@ -395,4 +389,24 @@ const Map<String, String> enUS = {
   'retry': 'Retry',
   'error_generic': 'Something went wrong. Please try again.',
   'cancel': 'Cancel',
+  'yes': 'Yes',
+  'no': 'No',
+
+  // Step action confirmations - shown before the trip is advanced, so a
+  // mis-tap cannot move the trip forward.
+  'confirm_start_title': 'Start this trip?',
+  'confirm_start_message':
+      'Confirm you are starting this trip now and heading to the pickup point.',
+  'confirm_arrived_title': 'Mark as arrived?',
+  'confirm_arrived_message': 'Confirm you have arrived at the pickup location.',
+  'confirm_meet_title': 'Met the passenger?',
+  'confirm_meet_message':
+      'Confirm you have met the passenger and are ready to begin the trip.',
+
+  // Shown when a trip is still in progress long after its departure time -
+  // usually one the driver forgot to finish.
+  'stale_trip_title': 'This trip is still open',
+  'stale_trip_detail':
+      'This trip was due to depart a while ago and has not been finished. '
+      'Complete it, or report a pickup issue so dispatch can close it.',
 };
