@@ -405,6 +405,8 @@ const Map<String, String> enUS = {
 
   // Shown when a trip is still in progress long after its departure time -
   // usually one the driver forgot to finish.
+  'starts_at': 'Starts at @time',
+  'arrive_early_rule': 'Arrive at the pickup at least 15 minutes early',
   'stale_trip_title': 'This trip is still open',
   'stale_trip_detail':
       'This trip was due to depart a while ago and has not been finished. '

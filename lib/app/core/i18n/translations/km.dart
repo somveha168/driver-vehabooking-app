@@ -400,6 +400,8 @@ const Map<String, String> kmKH = {
 
   // Shown when a trip is still in progress long after its departure time -
   // usually one the driver forgot to finish.
+  'starts_at': 'ចាប់ផ្តើមម៉ោង @time',
+  'arrive_early_rule': 'សូមទៅដល់កន្លែងទទួលភ្ញៀវ យ៉ាងហោចណាស់មុន ១៥នាទី',
   'stale_trip_title': 'ដំណើរនេះនៅមិនទាន់បញ្ចប់',
   'stale_trip_detail':
       'ដំណើរនេះបានហួសពេលចេញដំណើរយូរហើយ ហើយមិនទាន់បានបញ្ចប់។ '

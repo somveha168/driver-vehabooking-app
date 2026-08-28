@@ -44,6 +44,7 @@ class BookingListItem {
     this.vehicleSeats,
     this.acceptedAt,
     this.startBlockedBy,
+    this.startAvailableAtRaw,
     this.allowedActions = const [],
     this.pickupIssueReasonOptions = const [],
     this.pickupIssueNoteMaxLength = 500,
@@ -89,6 +90,9 @@ class BookingListItem {
   final int? vehicleSeats;
   final String? acceptedAt;
   final BlockingTrip? startBlockedBy;
+
+  /// Raw ISO-8601 `start_available_at` from the API.
+  final String? startAvailableAtRaw;
   final List<String> allowedActions;
   final List<String> pickupIssueReasonOptions;
   final int pickupIssueNoteMaxLength;
@@ -228,6 +232,18 @@ class BookingListItem {
     return diff != null && diff >= staleTripThreshold;
   }
 
+  /// When the Start button unlocks, for a trip whose departure is still too
+  /// far away. Null once Start is available (or when the trip is not gated).
+  DateTime? get startAvailableAt {
+    final value = startAvailableAtRaw;
+    if (value == null || value.isEmpty) return null;
+    return DateTime.tryParse(value)?.toLocal();
+  }
+
+  /// Start is withheld only because departure is not close enough yet. The
+  /// trip is the driver's - it simply cannot begin before its window opens.
+  bool get isStartWindowClosed => startAvailableAt != null;
+
   bool get isStartBlocked => startBlockedBy != null && nextAction == null;
 
   factory BookingListItem.fromJson(Map<String, dynamic> json) {
@@ -276,6 +292,7 @@ class BookingListItem {
       vehicleColor: _string(vehicle['color']),
       vehicleSeats: _toInt(vehicle['seats']),
       acceptedAt: _string(json['accepted_at']),
+      startAvailableAtRaw: _string(json['start_available_at']),
       startBlockedBy: blockedBy.isEmpty
           ? null
           : BlockingTrip.fromJson(blockedBy),

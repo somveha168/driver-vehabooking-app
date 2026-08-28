@@ -5,12 +5,14 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/arrival_rule_note.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/info_row.dart';
 import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/stale_trip_notice.dart';
+import '../../core/widgets/start_window_notice.dart';
 import '../../core/widgets/step_action_button.dart';
 import '../../core/widgets/swipe_to_confirm.dart';
 import '../../core/widgets/trip_step_tracker.dart';
@@ -133,6 +135,16 @@ class _StickyFooter extends StatelessWidget {
               compact: true,
             ),
             const SizedBox(height: AppSpacing.md),
+            // The standing arrival rule, shown wherever the driver decides
+            // whether to set off.
+            if (b.can || b.isStartWindowClosed) ...[
+              const ArrivalRuleNote(),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            // Departure is still too far off for Start: `allowed_actions` is
+            // empty, so without this the footer would render nothing at all.
+            if (!b.can && b.isStartWindowClosed)
+              StartWindowNotice(startAvailableAtIso: b.startAvailableAtRaw),
             if (b.can) ...[
               if (b.isStartOverdue) ...[
                 _StartOverdueNotice(b: b),

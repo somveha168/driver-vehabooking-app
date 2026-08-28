@@ -30,6 +30,7 @@ class BookingDetail {
     this.pickupIssueNoteMaxLength = 500,
     this.allowedActions = const [],
     this.startLocked = false,
+    this.startAvailableAtRaw,
     this.customerName,
     this.customerPhone,
     this.customerEmail,
@@ -89,6 +90,9 @@ class BookingDetail {
 
   /// Start is gated behind "finish your current trip first" (another trip blocks it).
   final bool startLocked;
+
+  /// Raw ISO-8601 `start_available_at` from the API.
+  final String? startAvailableAtRaw;
 
   final String? customerName;
   final String? customerPhone;
@@ -193,6 +197,18 @@ class BookingDetail {
     return diff != null && diff >= staleTripThreshold;
   }
 
+  /// When the Start button unlocks, for a trip whose departure is still too
+  /// far away. Null once Start is available (or when the trip is not gated).
+  DateTime? get startAvailableAt {
+    final value = startAvailableAtRaw;
+    if (value == null || value.isEmpty) return null;
+    return DateTime.tryParse(value)?.toLocal();
+  }
+
+  /// Start is withheld only because departure is not close enough yet. The
+  /// trip is the driver's - it simply cannot begin before its window opens.
+  bool get isStartWindowClosed => startAvailableAt != null;
+
   /// Whether this assignment belongs to a two-leg trip contract.
   bool get hasReturn => isRoundTrip;
 
@@ -252,6 +268,7 @@ class BookingDetail {
           _toInt(json['pickup_issue_note_max_length']) ?? 500,
       allowedActions: _stringList(json['allowed_actions']),
       startLocked: json['start_locked'] == true,
+      startAvailableAtRaw: _string(json['start_available_at']),
       customerName: _string(customer['name']),
       customerPhone: _string(customer['phone']),
       customerEmail: _string(customer['email']),
