@@ -30,5 +30,25 @@ void main() {
       expect(AppConfig.platformInfoApiUrl, '$base/api/v1/platform/info');
       expect(AppConfig.authApiUrl, isNot(contains('//api')));
     });
+
+    test('rewrites Herd media URLs to the configured API host', () {
+      const path = '/storage/uploads/avatar.jpg';
+      final resolved = Uri.parse(
+        AppConfig.resolveBackendAssetUrl('http://vehabooking.test$path'),
+      );
+      final configured = Uri.parse(AppConfig.baseUrl);
+
+      expect(resolved.scheme, configured.scheme);
+      expect(resolved.host, configured.host);
+      expect(resolved.hasPort, configured.hasPort);
+      if (configured.hasPort) expect(resolved.port, configured.port);
+      expect(resolved.path, path);
+    });
+
+    test('preserves external media URLs', () {
+      const url = 'https://cdn.example.com/drivers/avatar.jpg';
+
+      expect(AppConfig.resolveBackendAssetUrl(url), url);
+    });
   });
 }

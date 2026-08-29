@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/utils/profile_image_processor.dart';
 import '../../data/models/auth_user.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/settings_service.dart';
@@ -37,6 +42,7 @@ class ProfileController extends GetxController {
   /// Local path of a newly picked photo, before it's uploaded. Drives the
   /// preview + the "Save photo" button.
   final pickedPhotoPath = RxnString();
+  final isProcessingPhoto = false.obs;
   final isUploadingPhoto = false.obs;
 
   AuthUser? get user => _auth.currentUser.value;
@@ -131,32 +137,68 @@ class ProfileController extends GetxController {
 
   // ---- Photo ---------------------------------------------------------------
 
-  Future<void> pickPhoto(ImageSource source) async {
-    final picked = await _picker.pickImage(
-      source: source,
-      maxWidth: 1080,
-      imageQuality: 85,
-    );
-    if (picked != null) pickedPhotoPath.value = picked.path;
+  Future<bool> pickPhoto(ImageSource source) async {
+    if (isProcessingPhoto.value || isUploadingPhoto.value) return false;
+
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 88,
+        requestFullMetadata: false,
+      );
+      if (picked == null) return false;
+
+      isProcessingPhoto.value = true;
+      final prepared = await prepareProfileImage(picked.path);
+      await _deletePreparedPhoto();
+      pickedPhotoPath.value = prepared.path;
+      return true;
+    } on ProfileImageProcessingException {
+      AppSnackbar.error('photo_processing_failed'.tr);
+    } on PlatformException {
+      AppSnackbar.error('photo_picker_failed'.tr);
+    } catch (_) {
+      AppSnackbar.error('photo_processing_failed'.tr);
+    } finally {
+      isProcessingPhoto.value = false;
+    }
+    return false;
   }
 
-  void discardPhoto() => pickedPhotoPath.value = null;
+  Future<void> discardPhoto() => _deletePreparedPhoto();
 
-  Future<void> savePhoto() async {
+  Future<bool> savePhoto() async {
     final path = pickedPhotoPath.value;
-    if (path == null || isUploadingPhoto.value) return;
+    if (path == null || isUploadingPhoto.value) return false;
 
     isUploadingPhoto.value = true;
     try {
       await _auth.uploadAvatar(path);
-      pickedPhotoPath.value = null;
+      await _deletePreparedPhoto();
       AppSnackbar.success('photo_updated'.tr);
+      return true;
     } on ApiException catch (e) {
       AppSnackbar.error(e.message);
     } catch (_) {
       AppSnackbar.error('error_generic'.tr);
     } finally {
       isUploadingPhoto.value = false;
+    }
+    return false;
+  }
+
+  Future<void> _deletePreparedPhoto() async {
+    final path = pickedPhotoPath.value;
+    pickedPhotoPath.value = null;
+    if (path == null || !path.contains('veha_profile_')) return;
+
+    try {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    } catch (_) {
+      // Picker cache cleanup is best-effort and must not block the profile.
     }
   }
 
@@ -172,6 +214,7 @@ class ProfileController extends GetxController {
 
   @override
   void onClose() {
+    unawaited(_deletePreparedPhoto());
     firstNameCtrl.dispose();
     lastNameCtrl.dispose();
     phoneCtrl.dispose();

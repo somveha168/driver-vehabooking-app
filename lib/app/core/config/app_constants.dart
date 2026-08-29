@@ -24,4 +24,11 @@ class AppConstants {
 
   // Default list page size (backend honours `limit`).
   static const int pageSize = 20;
+
+  // Profile photos are normalized before upload. Keep this comfortably below
+  // the backend's 5 MiB validation limit so multipart overhead and platform
+  // differences cannot push a valid selection over the server limit.
+  static const int avatarMaxDimension = 1280;
+  static const int avatarTargetBytes = 1536 * 1024; // 1.5 MiB.
+  static const int avatarMaxUploadBytes = 2 * 1024 * 1024; // 2 MiB.
 }

@@ -362,9 +362,18 @@ const Map<String, String> kmKH = {
   'address': 'អាសយដ្ឋាន',
   'email_invalid': 'សូមបញ្ចូលអ៊ីមែលឲ្យត្រឹមត្រូវ',
   'save_photo': 'រក្សាទុករូបភាព',
+  'update_profile_photo': 'កែប្រែរូបភាពប្រវត្តិរូប',
+  'review_photo_hint': 'សូមពិនិត្យរូបភាពថ្មី មុនពេលរក្សាទុកក្នុងប្រវត្តិរូប។',
+  'photo_ready_status': 'បានកែសម្រួល និងរួចរាល់សម្រាប់ផ្ទុកឡើង',
+  'uploading_photo': 'កំពុងរក្សាទុក…',
   'take_photo': 'ថតរូប',
   'choose_gallery': 'ជ្រើសពីវិចិត្រសាល',
   'photo_updated': 'បានធ្វើបច្ចុប្បន្នភាពរូបភាព។',
+  'preparing_photo': 'កំពុងរៀបចំរូបភាព…',
+  'photo_processing_failed':
+      'មិនអាចរៀបចំរូបភាពនេះបានទេ។ សូមជ្រើសរើសរូបភាពផ្សេង។',
+  'photo_picker_failed':
+      'មិនអាចបើកកាមេរ៉ា ឬវិចិត្រសាលបានទេ។ សូមពិនិត្យសិទ្ធិកម្មវិធី។',
   'first_name_required': 'តម្រូវឲ្យបញ្ចូលនាមខ្លួន',
   'last_name_required': 'តម្រូវឲ្យបញ្ចូលនាមត្រកូល',
   'app_version': 'កំណែកម្មវិធី',

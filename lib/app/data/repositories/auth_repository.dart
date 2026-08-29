@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:get/get.dart';
 
 import '../../core/config/app_config.dart';
+import '../../core/config/app_constants.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_exception.dart';
 import '../models/auth_user.dart';
@@ -144,11 +145,16 @@ class AuthRepository {
   }
 
   /// Upload a new profile photo (multipart). Returns the new image URL.
-  Future<String?> uploadAvatar(String filePath) async {
+  Future<String> uploadAvatar(String filePath) async {
     final file = File(filePath);
     if (!await file.exists()) {
       throw const ApiException(
         message: 'Selected photo is no longer available.',
+      );
+    }
+    if (await file.length() > AppConstants.avatarMaxUploadBytes) {
+      throw const ApiException(
+        message: 'Profile photo is too large. Please choose another photo.',
       );
     }
 
@@ -167,7 +173,13 @@ class AuthRepository {
       data: form,
     );
     final data = (res as Map)['data'] as Map<String, dynamic>;
-    return data['image_url']?.toString();
+    final imageUrl = data['image_url']?.toString().trim();
+    if (imageUrl == null || imageUrl.isEmpty) {
+      throw const ApiException(
+        message: 'The server did not confirm the saved profile photo.',
+      );
+    }
+    return imageUrl;
   }
 
   String _imageContentType(String filename) {

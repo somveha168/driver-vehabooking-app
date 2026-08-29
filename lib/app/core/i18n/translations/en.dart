@@ -367,9 +367,19 @@ const Map<String, String> enUS = {
   'address': 'Address',
   'email_invalid': 'Enter a valid email',
   'save_photo': 'Save photo',
+  'update_profile_photo': 'Update profile photo',
+  'review_photo_hint':
+      'Review your new photo before saving it to your profile.',
+  'photo_ready_status': 'Optimized and ready to upload',
+  'uploading_photo': 'Saving…',
   'take_photo': 'Take photo',
   'choose_gallery': 'Choose from gallery',
   'photo_updated': 'Photo updated.',
+  'preparing_photo': 'Preparing photo…',
+  'photo_processing_failed':
+      'Could not prepare this photo. Please choose another image.',
+  'photo_picker_failed':
+      'Could not open your camera or gallery. Check app permissions.',
   'first_name_required': 'First name is required',
   'last_name_required': 'Last name is required',
   'app_version': 'App version',

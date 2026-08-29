@@ -35,6 +35,40 @@ class AppConfig {
 
   static String get platformInfoApiUrl => '$baseUrl/api/v1/platform/info';
 
+  /// Resolves backend-owned media URLs against the host configured for this
+  /// app. Herd returns `.test` URLs locally, which Android devices cannot
+  /// resolve when the API is reached through a LAN IP or emulator alias.
+  static String resolveBackendAssetUrl(String value) {
+    final raw = value.trim();
+    if (raw.isEmpty) return raw;
+
+    final configuredBase = Uri.tryParse(baseUrl);
+    final asset = Uri.tryParse(raw);
+    if (configuredBase == null || asset == null) return raw;
+
+    if (!asset.hasScheme) {
+      return configuredBase.resolve(raw).toString();
+    }
+
+    if (!_isLocalBackendHost(asset.host)) return raw;
+
+    return asset
+        .replace(
+          scheme: configuredBase.scheme,
+          host: configuredBase.host,
+          port: configuredBase.hasPort ? configuredBase.port : null,
+        )
+        .toString();
+  }
+
+  static bool _isLocalBackendHost(String host) {
+    final normalized = host.toLowerCase();
+    return normalized == 'localhost' ||
+        normalized == '127.0.0.1' ||
+        normalized == '10.0.2.2' ||
+        normalized.endsWith('.test');
+  }
+
   static const Duration connectTimeout = Duration(seconds: 20);
   static const Duration receiveTimeout = Duration(seconds: 20);
 

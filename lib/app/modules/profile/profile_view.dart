@@ -178,45 +178,6 @@ class _CoverHeader extends StatelessWidget {
             ],
           ),
         ),
-        // Save / cancel for a freshly picked photo — directly under the
-        // avatar so submitting just the avatar is obvious. When no photo is
-        // picked it simply holds the normal gap before the name.
-        Obx(() {
-          if (controller.pickedPhotoPath.value == null) {
-            return const SizedBox(height: AppSpacing.md);
-          }
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FilledButton.icon(
-                  onPressed: controller.isUploadingPhoto.value
-                      ? null
-                      : controller.savePhoto,
-                  icon: controller.isUploadingPhoto.value
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(IconsaxPlusLinear.tick_circle, size: 18),
-                  label: Text('save_photo'.tr),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                TextButton(
-                  onPressed: controller.isUploadingPhoto.value
-                      ? null
-                      : controller.discardPhoto,
-                  child: Text('cancel'.tr),
-                ),
-              ],
-            ),
-          );
-        }),
         Obx(
           () => Text(
             controller.displayName,
@@ -226,6 +187,7 @@ class _CoverHeader extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: AppSpacing.md),
       ],
     );
   }
@@ -690,12 +652,18 @@ class _AvatarCircle extends StatelessWidget {
     return Obx(() {
       final user = controller.user;
       final picked = controller.pickedPhotoPath.value;
-      final url = user?.imageUrl;
+      final rawUrl = user?.imageUrl?.trim();
+      final url = rawUrl == null || rawUrl.isEmpty
+          ? null
+          : AppConfig.resolveBackendAssetUrl(rawUrl);
+      final isBusy =
+          controller.isProcessingPhoto.value ||
+          controller.isUploadingPhoto.value;
 
       ImageProvider? image;
       if (picked != null) {
         image = FileImage(File(picked));
-      } else if (url != null && url.isNotEmpty) {
+      } else if (url != null) {
         image = NetworkImage(url);
       }
 
@@ -744,22 +712,33 @@ class _AvatarCircle extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: GestureDetector(
-              onTap: () => _pickSheet(context),
+              onTap: isBusy ? null : () => _pickSheet(context),
               child: Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: isBusy
+                      ? AppColors.primary.withValues(alpha: 0.48)
+                      : AppColors.primary,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).scaffoldBackgroundColor,
                     width: 2,
                   ),
                 ),
-                child: const Icon(
-                  IconsaxPlusLinear.camera,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                child: isBusy
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        IconsaxPlusLinear.camera,
+                        size: 16,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ),
@@ -768,40 +747,197 @@ class _AvatarCircle extends StatelessWidget {
     });
   }
 
-  void _pickSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+  Future<void> _pickSheet(BuildContext context) async {
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
-      builder: (_) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(IconsaxPlusLinear.camera),
               title: Text('take_photo'.tr),
-              onTap: () {
-                Navigator.of(context).pop();
-                controller.pickPhoto(ImageSource.camera);
-              },
+              onTap: () => Navigator.of(sheetContext).pop(ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(IconsaxPlusLinear.gallery),
               title: Text('choose_gallery'.tr),
-              onTap: () {
-                Navigator.of(context).pop();
-                controller.pickPhoto(ImageSource.gallery);
-              },
+              onTap: () => Navigator.of(sheetContext).pop(ImageSource.gallery),
             ),
           ],
         ),
       ),
     );
+
+    if (source == null || !context.mounted) return;
+    final prepared = await controller.pickPhoto(source);
+    if (!prepared || !context.mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      showDragHandle: true,
+      builder: (sheetContext) => _PhotoConfirmationSheet(
+        controller: controller,
+        onSaved: () => Navigator.of(sheetContext).pop(),
+        onCancel: () async {
+          await controller.discardPhoto();
+          if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+        },
+      ),
+    );
+
+    // Covers route changes or other programmatic sheet dismissal.
+    if (controller.pickedPhotoPath.value != null &&
+        !controller.isUploadingPhoto.value) {
+      await controller.discardPhoto();
+    }
   }
 
   String _initials(String? name) {
     if (name == null || name.trim().isEmpty) return '?';
     final parts = name.trim().split(RegExp(r'\s+'));
     return parts.take(2).map((p) => p[0].toUpperCase()).join();
+  }
+}
+
+class _PhotoConfirmationSheet extends StatelessWidget {
+  const _PhotoConfirmationSheet({
+    required this.controller,
+    required this.onSaved,
+    required this.onCancel,
+  });
+
+  final ProfileController controller;
+  final VoidCallback onSaved;
+  final Future<void> Function() onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'update_profile_photo'.tr,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'review_photo_hint'.tr,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Obx(() {
+              final path = controller.pickedPhotoPath.value;
+              return Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.surface,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.28),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.10),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 58,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                  backgroundImage: path == null
+                      ? null
+                      : FileImage(File(path)) as ImageProvider,
+                ),
+              );
+            }),
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.09),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    IconsaxPlusLinear.tick_circle,
+                    size: 15,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'photo_ready_status'.tr,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Obx(() {
+              final uploading = controller.isUploadingPhoto.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton.icon(
+                    onPressed: uploading
+                        ? null
+                        : () async {
+                            if (await controller.savePhoto()) onSaved();
+                          },
+                    icon: uploading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(IconsaxPlusLinear.export_1, size: 19),
+                    label: Text(
+                      uploading ? 'uploading_photo'.tr : 'save_photo'.tr,
+                    ),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(54),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton(
+                    onPressed: uploading ? null : onCancel,
+                    child: Text('cancel'.tr),
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 }
 
