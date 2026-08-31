@@ -10,6 +10,7 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/section_label.dart';
 import 'profile_controller.dart';
 
@@ -35,7 +36,7 @@ class ProfileView extends GetView<ProfileController> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.pageH,
-                  AppSpacing.xs,
+                  0,
                   AppSpacing.pageH,
                   0,
                 ),
@@ -109,7 +110,11 @@ class ProfileView extends GetView<ProfileController> {
                     const SizedBox(height: AppSpacing.xl),
 
                     OutlinedButton.icon(
-                      onPressed: controller.logout,
+                      onPressed: () async {
+                        if (await confirmSignOut()) {
+                          await controller.logout();
+                        }
+                      },
                       icon: const Icon(IconsaxPlusLinear.logout, size: 18),
                       label: Text('sign_out'.tr),
                       style: OutlinedButton.styleFrom(
@@ -123,7 +128,7 @@ class ProfileView extends GetView<ProfileController> {
                     const SizedBox(height: AppSpacing.md),
                     Center(
                       child: Text(
-                        '${AppConfig.appName} · 1.0.0',
+                        'version_label'.trParams({'version': '1.0.0'}),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.outline,
                         ),
@@ -156,7 +161,9 @@ class _CoverHeader extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          height: coverHeight + avatarRadius,
+          // Leave a deliberate breathing gap below the portrait so the name
+          // never appears attached to the avatar ring or camera action.
+          height: coverHeight + avatarRadius + AppSpacing.sm,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -187,7 +194,7 @@ class _CoverHeader extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.xs),
       ],
     );
   }
@@ -209,16 +216,24 @@ class _Identity extends StatelessWidget {
         children: [
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: AppSpacing.md,
-            runSpacing: AppSpacing.xs,
+            spacing: AppSpacing.lg,
+            runSpacing: 6,
             children: [
               if (user?.phone != null && user!.phone!.isNotEmpty)
-                _chip(context, user.phone!),
+                _contact(
+                  context,
+                  icon: IconsaxPlusLinear.call,
+                  value: user.phone!,
+                ),
               if (user?.email != null && user!.email!.isNotEmpty)
-                _chip(context, user.email!),
+                _contact(
+                  context,
+                  icon: IconsaxPlusLinear.sms,
+                  value: user.email!,
+                ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           FilledButton.icon(
             onPressed: controller.startEdit,
             icon: const Icon(IconsaxPlusLinear.edit_2, size: 14),
@@ -244,14 +259,25 @@ class _Identity extends StatelessWidget {
     });
   }
 
-  Widget _chip(BuildContext context, String value) {
+  Widget _contact(
+    BuildContext context, {
+    required IconData icon,
+    required String value,
+  }) {
     final theme = Theme.of(context);
-    return Text(
-      value,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w500,
-        color: theme.colorScheme.outline,
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: AppColors.primary),
+        const SizedBox(width: 5),
+        Text(
+          value,
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -305,7 +331,7 @@ class _EditForm extends StatelessWidget {
           label: 'phone'.tr,
           ctrl: controller.phoneCtrl,
           icon: IconsaxPlusLinear.call,
-          keyboardType: TextInputType.phone,
+          readOnly: true,
         ),
         const SizedBox(height: AppSpacing.sm),
         _field(
@@ -313,12 +339,31 @@ class _EditForm extends StatelessWidget {
           label: 'email'.tr,
           ctrl: controller.emailCtrl,
           icon: IconsaxPlusLinear.sms,
-          keyboardType: TextInputType.emailAddress,
-          autocorrect: false,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return null;
-            return GetUtils.isEmail(v.trim()) ? null : 'email_invalid'.tr;
-          },
+          readOnly: true,
+        ),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                IconsaxPlusLinear.lock_1,
+                size: 13,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'login_contacts_locked'.tr,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         _field(
@@ -399,6 +444,7 @@ class _EditForm extends StatelessWidget {
     bool autocorrect = true,
     String? hint,
     int maxLines = 1,
+    bool readOnly = false,
     String? Function(String?)? validator,
   }) {
     final theme = Theme.of(context);
@@ -415,6 +461,9 @@ class _EditForm extends StatelessWidget {
         textInputAction: textInputAction,
         autocorrect: autocorrect,
         maxLines: maxLines,
+        readOnly: readOnly,
+        showCursor: !readOnly,
+        enableInteractiveSelection: !readOnly,
         validator: validator,
         decoration: InputDecoration(
           isDense: true,
@@ -434,6 +483,17 @@ class _EditForm extends StatelessWidget {
             child: Icon(icon, size: 19),
           ),
           prefixIconConstraints: const BoxConstraints(
+            minWidth: 38,
+            minHeight: 0,
+          ),
+          suffixIcon: readOnly
+              ? Icon(
+                  IconsaxPlusLinear.lock_1,
+                  size: 16,
+                  color: theme.colorScheme.outline,
+                )
+              : null,
+          suffixIconConstraints: const BoxConstraints(
             minWidth: 38,
             minHeight: 0,
           ),

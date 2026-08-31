@@ -63,8 +63,6 @@ class AuthService extends GetxService {
   Future<void> updateProfile({
     String? firstName,
     String? lastName,
-    String? phone,
-    String? email,
     String? gender,
     String? dateOfBirth,
     String? currentAddress,
@@ -72,8 +70,6 @@ class AuthService extends GetxService {
     final user = await _repo.updateProfile(
       firstName: firstName,
       lastName: lastName,
-      phone: phone,
-      email: email,
       gender: gender,
       dateOfBirth: dateOfBirth,
       currentAddress: currentAddress,

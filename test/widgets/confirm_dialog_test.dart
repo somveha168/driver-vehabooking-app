@@ -78,4 +78,25 @@ void main() {
     expect(ran, isTrue);
     expect(find.byType(AlertDialog), findsNothing);
   });
+
+  testWidgets('sign out requires explicit destructive confirmation', (
+    tester,
+  ) async {
+    var confirmed = false;
+    await pumpHost(tester, () async {
+      confirmed = await confirmSignOut();
+    });
+
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('confirm_sign_out_title'), findsOneWidget);
+    expect(find.text('confirm_sign_out_message'), findsOneWidget);
+
+    await tester.tap(find.text('sign_out'));
+    await tester.pumpAndSettle();
+
+    expect(confirmed, isTrue);
+    expect(find.byType(AlertDialog), findsNothing);
+  });
 }

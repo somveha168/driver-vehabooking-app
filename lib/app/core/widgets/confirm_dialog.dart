@@ -128,3 +128,12 @@ Future<bool> confirmStepAction(String action) {
 
   return showConfirmDialog(title: title, message: message);
 }
+
+/// Confirmation shown before ending the authenticated driver session.
+Future<bool> confirmSignOut() => showConfirmDialog(
+  title: 'confirm_sign_out_title'.tr,
+  message: 'confirm_sign_out_message'.tr,
+  confirmLabel: 'sign_out'.tr,
+  cancelLabel: 'cancel'.tr,
+  destructive: true,
+);

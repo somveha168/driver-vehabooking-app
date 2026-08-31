@@ -122,8 +122,6 @@ class AuthRepository {
   Future<AuthUser> updateProfile({
     String? firstName,
     String? lastName,
-    String? phone,
-    String? email,
     String? gender,
     String? dateOfBirth,
     String? currentAddress,
@@ -133,8 +131,6 @@ class AuthRepository {
       data: {
         'first_name': ?firstName,
         'last_name': ?lastName,
-        'phone': ?phone,
-        'email': ?email,
         'gender': ?gender,
         'date_of_birth': ?dateOfBirth,
         'current_address': ?currentAddress,

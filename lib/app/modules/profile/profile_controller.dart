@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -81,18 +82,110 @@ class ProfileController extends GetxController {
 
   void setGender(String value) => gender.value = value;
 
-  /// Open a calendar to choose the date of birth (drivers are 18+).
+  /// Open an iOS-style wheel picker for date of birth (drivers are 18+).
   Future<void> pickDateOfBirth(BuildContext context) async {
     final now = DateTime.now();
-    final initial = dateOfBirth.value ?? DateTime(now.year - 25, 1, 1);
-    final picked = await showDatePicker(
+    final minimumDate = DateTime(1940);
+    final maximumDate = DateTime(now.year - 18, now.month, now.day);
+    var selected = dateOfBirth.value ?? DateTime(now.year - 25, 1, 1);
+
+    if (selected.isBefore(minimumDate)) selected = minimumDate;
+    if (selected.isAfter(maximumDate)) selected = maximumDate;
+
+    final theme = Theme.of(context);
+    await showCupertinoModalPopup<void>(
       context: context,
-      initialDate: initial,
-      firstDate: DateTime(1940),
-      lastDate: DateTime(now.year - 18, now.month, now.day),
-      helpText: 'date_of_birth'.tr,
+      barrierColor: Colors.black.withValues(alpha: 0.42),
+      builder: (sheetContext) => CupertinoTheme(
+        data: CupertinoThemeData(
+          brightness: theme.brightness,
+          primaryColor: theme.colorScheme.primary,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+                SizedBox(
+                  height: 54,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CupertinoButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                            child: Text('cancel'.tr),
+                          ),
+                          CupertinoButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            onPressed: () {
+                              dateOfBirth.value = selected;
+                              Navigator.of(sheetContext).pop();
+                            },
+                            child: Text(
+                              'done'.tr,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IgnorePointer(
+                        child: Text(
+                          'date_of_birth'.tr,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.55,
+                  ),
+                ),
+                SizedBox(
+                  height: 230,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: selected,
+                    minimumDate: minimumDate,
+                    maximumDate: maximumDate,
+                    minimumYear: minimumDate.year,
+                    maximumYear: maximumDate.year,
+                    itemExtent: 40,
+                    onDateTimeChanged: (value) => selected = value,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
-    if (picked != null) dateOfBirth.value = picked;
   }
 
   /// Collapse the form and restore fields to the saved values.
@@ -118,8 +211,6 @@ class ProfileController extends GetxController {
       await _auth.updateProfile(
         firstName: firstNameCtrl.text.trim(),
         lastName: lastNameCtrl.text.trim(),
-        phone: phoneCtrl.text.trim(),
-        email: emailCtrl.text.trim(),
         gender: gender.value,
         dateOfBirth: dob == null ? null : DateFormat('yyyy-MM-dd').format(dob),
         currentAddress: currentAddressCtrl.text.trim(),

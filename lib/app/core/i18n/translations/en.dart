@@ -22,6 +22,10 @@ const Map<String, String> enUS = {
   'password_hint': 'Enter your password',
   'sign_in': 'Sign in',
   'sign_out': 'Sign out',
+  'confirm_sign_out_title': 'Sign out of your account?',
+  'confirm_sign_out_message':
+      'You’ll need to sign in again to access your trips and driver account.',
+  'version_label': 'Version @version',
   'login_field_required': 'Enter your phone or email',
   'password_required': 'Enter your password',
   'forgot_password': 'Forgot password?',
@@ -364,6 +368,8 @@ const Map<String, String> enUS = {
   'save_changes': 'Save changes',
   'profile_updated': 'Profile updated.',
   'email': 'Email',
+  'login_contacts_locked':
+      'Phone and email are used for sign-in. Contact support to change them.',
   'address': 'Address',
   'email_invalid': 'Enter a valid email',
   'save_photo': 'Save photo',
@@ -399,6 +405,7 @@ const Map<String, String> enUS = {
   'retry': 'Retry',
   'error_generic': 'Something went wrong. Please try again.',
   'cancel': 'Cancel',
+  'done': 'Done',
   'yes': 'Yes',
   'no': 'No',
 

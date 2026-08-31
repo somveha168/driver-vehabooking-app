@@ -21,6 +21,10 @@ const Map<String, String> kmKH = {
   'password_hint': 'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក',
   'sign_in': 'ចូលគណនី',
   'sign_out': 'ចាកចេញ',
+  'confirm_sign_out_title': 'ចាកចេញពីគណនីរបស់អ្នក?',
+  'confirm_sign_out_message':
+      'អ្នកនឹងត្រូវចូលគណនីម្តងទៀត ដើម្បីមើលដំណើរ និងគណនីអ្នកបើកបរ។',
+  'version_label': 'កំណែ @version',
   'login_field_required': 'សូមបញ្ចូលលេខទូរស័ព្ទ ឬ អ៊ីមែល',
   'password_required': 'សូមបញ្ចូលពាក្យសម្ងាត់',
   'forgot_password': 'ភ្លេចពាក្យសម្ងាត់?',
@@ -359,6 +363,8 @@ const Map<String, String> kmKH = {
   'save_changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
   'profile_updated': 'បានធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប។',
   'email': 'អ៊ីមែល',
+  'login_contacts_locked':
+      'លេខទូរស័ព្ទ និងអ៊ីមែលប្រើសម្រាប់ចូលគណនី។ សូមទាក់ទងផ្នែកជំនួយដើម្បីផ្លាស់ប្តូរ។',
   'address': 'អាសយដ្ឋាន',
   'email_invalid': 'សូមបញ្ចូលអ៊ីមែលឲ្យត្រឹមត្រូវ',
   'save_photo': 'រក្សាទុករូបភាព',
@@ -393,6 +399,7 @@ const Map<String, String> kmKH = {
   'retry': 'ព្យាយាមម្តងទៀត',
   'error_generic': 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។',
   'cancel': 'បោះបង់',
+  'done': 'រួចរាល់',
   'yes': 'បាទ/ចាស',
   'no': 'ទេ',
 
