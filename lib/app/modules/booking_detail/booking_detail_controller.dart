@@ -343,7 +343,7 @@ class BookingDetailController extends GetxController {
         navigateToDropoff:
             b.stage == 'meet_passenger' || b.stage == 'drop_passenger',
       ),
-    );
+    )?.then((_) => load());
   }
 
   Future<bool> _ensureLocationReady() async {

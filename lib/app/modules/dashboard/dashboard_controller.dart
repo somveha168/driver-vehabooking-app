@@ -105,7 +105,15 @@ class DashboardController extends GetxController {
       return;
     }
 
-    if (!await _ensureLocationReady()) {
+    await _openNextPickupMapFor(next);
+  }
+
+  Future<void> _openNextPickupMapFor(
+    BookingListItem next, {
+    bool locationIsReady = false,
+    bool? navigateToDropoff,
+  }) async {
+    if (!locationIsReady && !await _ensureLocationReady()) {
       return;
     }
 
@@ -143,9 +151,11 @@ class DashboardController extends GetxController {
         subtitle: next.code ?? next.customerName ?? '',
         pickup: pickup,
         dropoff: dropoff,
-        navigateToDropoff: _navigatesToDropoff(next.stage, next.nextAction),
+        navigateToDropoff:
+            navigateToDropoff ??
+            _navigatesToDropoff(next.stage, next.nextAction),
       ),
-    );
+    )?.then((_) => load());
   }
 
   /// Open any booking leg's detail by uuid + assignment id; refresh on return.
@@ -189,7 +199,8 @@ class DashboardController extends GetxController {
   }
 
   /// Advance the NOW pickup one step (start / arrived / meet_passenger /
-  /// complete) straight from the Home card, then refresh the dashboard.
+  /// complete) straight from the Home card, then refresh the dashboard. A
+  /// successful start continues directly to the live route-to-pickup map.
   Future<void> runNextAction(String action) async {
     final next = summary.value?.nextPickup;
     if (next == null || isActing.value) return;
@@ -226,6 +237,16 @@ class DashboardController extends GetxController {
       }
       if (action != 'complete') {
         await _syncNextPickupLocation();
+      }
+      if (action == 'start') {
+        // Location permission was confirmed before the lifecycle request.
+        // Open only after the backend accepts Start, and force pickup mode so
+        // the camera frames the driver's live position and customer pickup.
+        await _openNextPickupMapFor(
+          next,
+          locationIsReady: true,
+          navigateToDropoff: false,
+        );
       }
       await load();
     } on ApiException catch (e) {

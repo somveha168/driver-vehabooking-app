@@ -538,6 +538,10 @@ class _NextPickupCard extends StatelessWidget {
               _cardHeader(theme),
               const SizedBox(height: AppSpacing.md),
               _routeScheduleGrid(theme),
+              if (next.hasDropoff) ...[
+                const SizedBox(height: AppSpacing.sm),
+                _routeActionButton(theme),
+              ],
               if (next.isStartOverdue && !next.isStartTooOld) ...[
                 const SizedBox(height: AppSpacing.sm),
                 _startOverdueNotice(theme),
@@ -683,10 +687,6 @@ class _NextPickupCard extends StatelessWidget {
                 label: 'destination'.tr,
                 title: next.driverRouteDestinationLabel,
               ),
-              if (next.hasDropoff) ...[
-                const SizedBox(height: 4),
-                _routeActionButton(theme),
-              ],
             ],
           ),
         ),
@@ -965,33 +965,94 @@ class _NextPickupCard extends StatelessWidget {
   }
 
   Widget _routeActionButton(ThemeData theme) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      onTap: controller.openNextPickupMap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              IconsaxPlusLinear.map,
-              size: 12,
-              color: AppColors.primary,
+    final label =
+        (_showsDropoffRoute ? 'view_dropoff_route' : 'view_pickup_route').tr;
+
+    return Semantics(
+      button: true,
+      label: label,
+      child: Material(
+        color: AppColors.primary.withValues(alpha: 0.075),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.20)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const ValueKey('next-pickup-route-action'),
+          onTap: controller.openNextPickupMap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.22),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    IconsaxPlusLinear.routing_2,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12.5,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'route_action_hint'.tr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 9.5,
+                          height: 1.15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface.withValues(alpha: 0.72),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    IconsaxPlusLinear.arrow_right_3,
+                    size: 15,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            Text(
-              (_showsDropoffRoute ? 'view_dropoff_route' : 'view_pickup_route')
-                  .tr,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 9.5,
-                letterSpacing: 0,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1116,7 +1177,7 @@ class _NextPickupCard extends StatelessWidget {
         // this button sits right under the trip card where a mis-tap is easy.
         onPressed: () async {
           if (await confirmStepAction(action)) {
-            controller.runNextAction(action);
+            await controller.runNextAction(action);
           }
         },
       ),

@@ -10,9 +10,14 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../../core/location/location_service.dart';
 import '../../core/maps/route_map_args.dart';
+import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/app_snackbar.dart';
 import '../../core/utils/external_launcher.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../../core/widgets/confirm_dialog.dart';
+import '../../core/widgets/step_action_button.dart';
+import '../../data/models/booking_detail.dart';
 import '../../data/models/place.dart';
 import '../../data/models/trip_route.dart';
 import '../../data/repositories/booking_repository.dart';
@@ -34,6 +39,8 @@ const _routeRefreshDistanceMeters = 80.0;
 const _markerUpdateDistanceMeters = 2.0;
 const _locationSyncInterval = Duration(seconds: 20);
 const _locationSyncDistanceMeters = 20.0;
+const _pickupApproachingDistanceMeters = 1000.0;
+const _pickupArrivalDistanceMeters = 200.0;
 
 class TripMapView extends StatefulWidget {
   const TripMapView({super.key});
@@ -59,6 +66,9 @@ class _TripMapViewState extends State<TripMapView> {
   bool _isLoadingRoute = false;
   bool _isSyncingLocation = false;
   bool _isSheetCollapsed = false;
+  bool _isLoadingBooking = false;
+  bool _isActing = false;
+  BookingDetail? _booking;
 
   RouteMapArgs get args => Get.arguments as RouteMapArgs;
 
@@ -66,6 +76,7 @@ class _TripMapViewState extends State<TripMapView> {
   void initState() {
     super.initState();
     unawaited(_prepareMarkerIcons());
+    unawaited(_loadBooking());
     unawaited(_refreshLocation());
     _startLiveLocationStream();
     _startRouteRefreshTimer();
@@ -110,15 +121,77 @@ class _TripMapViewState extends State<TripMapView> {
                 showsPassengerRoute: _routeMode == 'passenger',
                 usesDriverLocation: _hasUsableDriverLocation,
                 collapsed: _isSheetCollapsed,
+                action: _mapAction,
+                acting: _isActing,
+                pickupDistanceMeters: _pickupDistanceMeters,
                 onToggleCollapsed: () =>
                     setState(() => _isSheetCollapsed = !_isSheetCollapsed),
                 onNavigate: _navigate,
+                onAction: _runMapAction,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _loadBooking() async {
+    if (_isLoadingBooking || args.uuid.isEmpty) return;
+
+    _isLoadingBooking = true;
+    try {
+      final booking = await Get.find<BookingRepository>().show(
+        args.uuid,
+        assignmentId: args.assignmentId,
+      );
+      if (!mounted) return;
+      setState(() => _booking = booking);
+    } catch (_) {
+      // Route navigation stays usable when booking refresh is unavailable.
+    } finally {
+      _isLoadingBooking = false;
+    }
+  }
+
+  String? get _mapAction {
+    if (args.navigateToDropoff) return null;
+    return _booking?.allows('arrived') == true ? 'arrived' : null;
+  }
+
+  double? get _pickupDistanceMeters {
+    final driver = _driverLocation;
+    if (driver == null || !args.pickup.hasCoordinates) return null;
+
+    return _distanceMeters(
+      driver.latitude,
+      driver.longitude,
+      args.pickup.latitude!,
+      args.pickup.longitude!,
+    );
+  }
+
+  Future<void> _runMapAction() async {
+    final action = _mapAction;
+    if (action == null || _isActing) return;
+    if (!await confirmStepAction(action)) return;
+
+    setState(() => _isActing = true);
+    try {
+      final booking = await Get.find<BookingRepository>().arrived(
+        args.uuid,
+        assignmentId: args.assignmentId,
+      );
+      if (!mounted) return;
+      setState(() => _booking = booking);
+      AppSnackbar.success('arrived_done'.tr);
+    } on ApiException catch (error) {
+      AppSnackbar.error(error.message);
+    } catch (_) {
+      AppSnackbar.error('error_generic'.tr);
+    } finally {
+      if (mounted) setState(() => _isActing = false);
+    }
   }
 
   Widget _googleMap() {
@@ -875,9 +948,13 @@ class _RouteSheet extends StatelessWidget {
     required this.routeUnavailable,
     required this.showsPassengerRoute,
     required this.collapsed,
+    required this.acting,
     required this.onToggleCollapsed,
+    required this.onAction,
     this.distanceLabel,
     this.durationLabel,
+    this.action,
+    this.pickupDistanceMeters,
   });
 
   final RouteMapArgs args;
@@ -888,8 +965,12 @@ class _RouteSheet extends StatelessWidget {
   final bool routeUnavailable;
   final bool showsPassengerRoute;
   final bool collapsed;
+  final bool acting;
+  final String? action;
+  final double? pickupDistanceMeters;
   final VoidCallback onToggleCollapsed;
   final VoidCallback onNavigate;
+  final VoidCallback onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -970,6 +1051,99 @@ class _RouteSheet extends StatelessWidget {
             firstCurve: Curves.easeOut,
             secondCurve: Curves.easeOut,
             sizeCurve: Curves.easeOut,
+          ),
+          if (action == 'arrived') ...[
+            if (pickupDistanceMeters != null &&
+                pickupDistanceMeters! <= _pickupApproachingDistanceMeters) ...[
+              const SizedBox(height: 10),
+              _PickupProximityNotice(
+                distanceMeters: pickupDistanceMeters!,
+                isArrivalZone:
+                    pickupDistanceMeters! <= _pickupArrivalDistanceMeters,
+              ),
+            ],
+            const SizedBox(height: 10),
+            StepActionButton(
+              label: 'mark_arrived'.tr,
+              icon: IconsaxPlusLinear.location_tick,
+              loading: acting,
+              onPressed: onAction,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PickupProximityNotice extends StatelessWidget {
+  const _PickupProximityNotice({
+    required this.distanceMeters,
+    required this.isArrivalZone,
+  });
+
+  final double distanceMeters;
+  final bool isArrivalZone;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final label = distanceMeters < 1000
+        ? '${distanceMeters.round()} m'
+        : '${(distanceMeters / 1000).toStringAsFixed(1)} km';
+    final color = isArrivalZone ? AppColors.primary : const Color(0xFFB7791F);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isArrivalZone
+                  ? IconsaxPlusLinear.location_tick
+                  : IconsaxPlusLinear.location,
+              size: 18,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isArrivalZone
+                      ? 'pickup_arrival_zone_title'.tr
+                      : 'pickup_nearby_title'.tr,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isArrivalZone
+                      ? 'pickup_arrival_zone_message'.tr
+                      : 'pickup_nearby_message'.trParams({'distance': label}),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

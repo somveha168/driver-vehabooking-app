@@ -299,6 +299,7 @@ const Map<String, String> kmKH = {
   'view_map': 'មើលផែនទី',
   'view_pickup_route': 'មើលផ្លូវទៅទទួល',
   'view_dropoff_route': 'មើលផ្លូវទៅចុះ',
+  'route_action_hint': 'បើកផែនទី និងការណែនាំផ្លូវ',
   'open_google_maps': 'បើកក្នុង Google Maps',
   'trip_map': 'ផែនទីដំណើរ',
   'route_preview': 'មើលផ្លូវ',
@@ -329,6 +330,10 @@ const Map<String, String> kmKH = {
   'pickup_soon': 'ពេលទទួលជិតមកដល់ — សូមបញ្ជាក់ពេលអ្នកដំណើរនៅលើរថយន្ត។',
   'near_pickup_attention':
       'អ្នកនៅជិតទីតាំងទទួលអ្នកដំណើរ។ សូមប្រុងប្រយ័ត្ន និងត្រៀមជួបអ្នកដំណើរ។',
+  'pickup_nearby_title': 'ទីតាំងទទួលអ្នកដំណើរនៅជិតហើយ',
+  'pickup_nearby_message': 'នៅចម្ងាយប្រហែល @distance ពីទីតាំងទទួល។',
+  'pickup_arrival_zone_title': 'អ្នកបានមកដល់ទីតាំងទទួល',
+  'pickup_arrival_zone_message': 'សូមបញ្ជាក់ក្រោយពេលអ្នកឈប់ដោយសុវត្ថិភាព។',
   'tracking_action_required':
       'ការតាមដានដំណើរបានបញ្ឈប់។ ប្រសិនបើអ្នកបានជូនអ្នកដំណើរដល់គោលដៅហើយ សូមបញ្ចប់ដំណើរ។',
 

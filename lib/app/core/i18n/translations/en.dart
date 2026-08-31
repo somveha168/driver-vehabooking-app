@@ -303,6 +303,7 @@ const Map<String, String> enUS = {
   'view_map': 'View map',
   'view_pickup_route': 'View pickup route',
   'view_dropoff_route': 'View drop-off route',
+  'route_action_hint': 'Open map and directions',
   'open_google_maps': 'Open in Google Maps',
   'trip_map': 'Trip map',
   'route_preview': 'Route preview',
@@ -334,6 +335,10 @@ const Map<String, String> enUS = {
       'Pickup time is near — confirm when the passenger is on board.',
   'near_pickup_attention':
       'You are near the passenger pickup point. Please pay attention and prepare to meet the passenger.',
+  'pickup_nearby_title': 'Pickup is nearby',
+  'pickup_nearby_message': 'About @distance from the pickup point.',
+  'pickup_arrival_zone_title': 'You are at the pickup point',
+  'pickup_arrival_zone_message': 'Confirm after you have stopped safely.',
   'tracking_action_required':
       'Trip tracking stopped. If you already dropped the passenger, please complete the trip.',
 
