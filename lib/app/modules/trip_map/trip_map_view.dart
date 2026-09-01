@@ -979,12 +979,13 @@ class _RouteSheet extends StatelessWidget {
     final bottomPadding = collapsed
         ? math.max(bottomInset + 2, 10.0)
         : math.max(bottomInset + 8, 20.0);
-    final targetLabel = showsPassengerRoute
+    final String? targetLabel =
+        usesDriverLocation && !args.navigateToDropoff && !showsPassengerRoute
+        ? null
+        : showsPassengerRoute
         ? 'preview_passenger_route'.tr
         : usesDriverLocation
-        ? (args.navigateToDropoff
-              ? 'you_are_heading_to_dropoff'.tr
-              : 'you_are_heading_to_pickup'.tr)
+        ? 'you_are_heading_to_dropoff'.tr
         : 'preview_passenger_route'.tr;
     final routeCaption = showsPassengerRoute
         ? '${args.pickup.label} -> ${args.dropoff.label}'
@@ -1164,7 +1165,7 @@ class _ExpandedRouteSheetBody extends StatelessWidget {
   });
 
   final RouteMapArgs args;
-  final String targetLabel;
+  final String? targetLabel;
   final String routeCaption;
   final String? distanceLabel;
   final String? durationLabel;
@@ -1188,17 +1189,19 @@ class _ExpandedRouteSheetBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    targetLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
+                  if (targetLabel != null) ...[
+                    Text(
+                      targetLabel!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 6),
+                  ],
                   Text(
                     distanceLabel ?? 'route_preview'.tr,
                     style: theme.textTheme.titleLarge?.copyWith(
@@ -1363,7 +1366,7 @@ class _CollapsedRouteSheetBody extends StatelessWidget {
     this.durationLabel,
   });
 
-  final String targetLabel;
+  final String? targetLabel;
   final String routeCaption;
   final String? distanceLabel;
   final String? durationLabel;
@@ -1384,17 +1387,19 @@ class _CollapsedRouteSheetBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    targetLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
+                  if (targetLabel != null) ...[
+                    Text(
+                      targetLabel!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
+                    const SizedBox(height: 5),
+                  ],
                   Row(
                     children: [
                       Text(
