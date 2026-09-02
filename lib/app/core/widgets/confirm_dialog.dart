@@ -137,3 +137,13 @@ Future<bool> confirmSignOut() => showConfirmDialog(
   cancelLabel: 'cancel'.tr,
   destructive: true,
 );
+
+/// Guarded recovery for a trip that was completed in reality but left open in
+/// the app. The separate wording prevents drivers from using it as a shortcut
+/// through a current trip.
+Future<bool> confirmLateTripCompletion() => showConfirmDialog(
+  title: 'confirm_late_completion_title'.tr,
+  message: 'confirm_late_completion_message'.tr,
+  confirmLabel: 'complete_old_trip'.tr,
+  cancelLabel: 'not_now'.tr,
+);

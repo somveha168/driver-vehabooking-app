@@ -418,6 +418,14 @@ const Map<String, String> kmKH = {
   'confirm_meet_title': 'បានជួបភ្ញៀវ?',
   'confirm_meet_message':
       'បញ្ជាក់ថាអ្នកបានជួបភ្ញៀវ ហើយត្រៀមខ្លួនចាប់ផ្តើមដំណើរ។',
+  'confirm_late_completion_title': 'បញ្ចប់ដំណើរចាស់នេះ?',
+  'confirm_late_completion_message':
+      'សូមបញ្ជាក់តែក្នុងករណីដែលអ្នកបានដឹកអ្នកដំណើរ និងដំណើរបានបញ្ចប់ពិតប្រាកដ។ ដំណើរចាស់នេះនឹងត្រូវបិទ និងកត់ត្រាថាបានបញ្ចប់យឺត។',
+  'complete_old_trip': 'បាទ/ចាស បញ្ចប់ដំណើរ',
+  'not_now': 'មិនទាន់ទេ',
+  'resolve_trip': 'ដោះស្រាយដំណើរ',
+  'old_trip_resolved': 'ដំណើរចាស់ត្រូវបានដោះស្រាយ និងបញ្ចប់។',
+  'trip_needs_review': 'ដំណើរត្រូវការពិនិត្យ',
 
   // Shown when a trip is still in progress long after its departure time -
   // usually one the driver forgot to finish.
@@ -425,6 +433,5 @@ const Map<String, String> kmKH = {
   'arrive_early_rule': 'សូមទៅដល់កន្លែងទទួលភ្ញៀវ យ៉ាងហោចណាស់មុន ១៥នាទី',
   'stale_trip_title': 'ដំណើរនេះនៅមិនទាន់បញ្ចប់',
   'stale_trip_detail':
-      'ដំណើរនេះបានហួសពេលចេញដំណើរយូរហើយ ហើយមិនទាន់បានបញ្ចប់។ '
-      'សូមបញ្ចប់វា ឬរាយការណ៍បញ្ហាទទួលភ្ញៀវ ដើម្បីឱ្យផ្នែកគ្រប់គ្រងបិទវា។',
+      'ពេលវេលារំពឹងទុកនៃដំណើរបានកន្លងផុត។ ប្រសិនបើដំណើរបានបញ្ចប់ សូមដោះស្រាយខាងក្រោម។ បើមិនដូច្នោះទេ សូមរាយការណ៍បញ្ហាទទួលភ្ញៀវ។',
 };

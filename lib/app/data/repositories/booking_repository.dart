@@ -85,6 +85,20 @@ class BookingRepository {
     ),
   );
 
+  Future<BookingDetail> resolveLateCompletion(
+    String uuid, {
+    required int assignmentId,
+    String? note,
+  }) => _detail(
+    _api.postJson(
+      '$_base/bookings/$uuid/resolve-late-completion',
+      data: {
+        'assignment_id': assignmentId,
+        if (note != null && note.isNotEmpty) 'note': note,
+      },
+    ),
+  );
+
   /// Pickup issue → terminal outcome for this exact assignment leg.
   Future<BookingDetail> reportPickupIssue(
     String uuid, {

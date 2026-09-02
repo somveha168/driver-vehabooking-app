@@ -234,8 +234,20 @@ class DashboardController extends GetxController {
             assignmentId: next.assignmentId,
           );
           break;
+        case 'resolve_completed':
+          final assignmentId = next.assignmentId;
+          if (assignmentId == null) {
+            AppSnackbar.error('error_generic'.tr);
+            return;
+          }
+          await _bookingRepo.resolveLateCompletion(
+            next.uuid,
+            assignmentId: assignmentId,
+          );
+          AppSnackbar.success('old_trip_resolved'.tr);
+          break;
       }
-      if (action != 'complete') {
+      if (action != 'complete' && action != 'resolve_completed') {
         await _syncNextPickupLocation();
       }
       if (action == 'start') {

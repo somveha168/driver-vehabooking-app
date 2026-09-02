@@ -45,6 +45,8 @@ class BookingListItem {
     this.acceptedAt,
     this.startBlockedBy,
     this.startAvailableAtRaw,
+    this.needsResolution = false,
+    this.resolutionAvailableAt,
     this.allowedActions = const [],
     this.pickupIssueReasonOptions = const [],
     this.pickupIssueNoteMaxLength = 500,
@@ -93,6 +95,8 @@ class BookingListItem {
 
   /// Raw ISO-8601 `start_available_at` from the API.
   final String? startAvailableAtRaw;
+  final bool needsResolution;
+  final String? resolutionAvailableAt;
   final List<String> allowedActions;
   final List<String> pickupIssueReasonOptions;
   final int pickupIssueNoteMaxLength;
@@ -226,6 +230,7 @@ class BookingListItem {
   /// Distinct from [isStartTooOld], which only covers trips that were never
   /// started: every `isStart*` getter switches off the moment the trip begins.
   bool get isStaleInProgress {
+    if (needsResolution) return true;
     final action = nextAction;
     if (action == null || action == 'start') return false;
     final diff = departedAgo;
@@ -293,6 +298,8 @@ class BookingListItem {
       vehicleSeats: _toInt(vehicle['seats']),
       acceptedAt: _string(json['accepted_at']),
       startAvailableAtRaw: _string(json['start_available_at']),
+      needsResolution: json['needs_resolution'] == true,
+      resolutionAvailableAt: _string(json['resolution_available_at']),
       startBlockedBy: blockedBy.isEmpty
           ? null
           : BlockingTrip.fromJson(blockedBy),

@@ -17,6 +17,8 @@ import '../../core/utils/external_launcher.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/step_action_button.dart';
+import '../../core/widgets/swipe_to_confirm.dart';
+import '../../core/widgets/trip_step_tracker.dart';
 import '../../data/models/booking_detail.dart';
 import '../../data/models/place.dart';
 import '../../data/models/trip_route.dart';
@@ -120,9 +122,13 @@ class _TripMapViewState extends State<TripMapView> {
                 routeUnavailable: _routeUnavailable,
                 showsPassengerRoute: _routeMode == 'passenger',
                 usesDriverLocation: _hasUsableDriverLocation,
+                activeTarget: _activeTarget,
+                navigateToDropoff: _navigateToDropoff,
                 collapsed: _isSheetCollapsed,
                 action: _mapAction,
                 acting: _isActing,
+                stage: _booking?.stage,
+                driverTripStatus: _booking?.driverTripStatus,
                 pickupDistanceMeters: _pickupDistanceMeters,
                 onToggleCollapsed: () =>
                     setState(() => _isSheetCollapsed = !_isSheetCollapsed),
@@ -155,9 +161,32 @@ class _TripMapViewState extends State<TripMapView> {
   }
 
   String? get _mapAction {
-    if (args.navigateToDropoff) return null;
-    return _booking?.allows('arrived') == true ? 'arrived' : null;
+    final booking = _booking;
+    if (booking == null) return null;
+
+    for (final action in const [
+      'start',
+      'arrived',
+      'meet_passenger',
+      'complete',
+    ]) {
+      if (booking.allows(action)) return action;
+    }
+
+    return null;
   }
+
+  bool get _navigateToDropoff {
+    final booking = _booking;
+    return args.navigateToDropoff ||
+        booking?.allows('complete') == true ||
+        booking?.driverTripStatus == 'meet_passenger' ||
+        booking?.driverTripStatus == 'drop_passenger' ||
+        booking?.stage == 'meet_passenger' ||
+        booking?.stage == 'drop_passenger';
+  }
+
+  Place get _activeTarget => _navigateToDropoff ? args.dropoff : args.pickup;
 
   double? get _pickupDistanceMeters {
     final driver = _driverLocation;
@@ -178,13 +207,63 @@ class _TripMapViewState extends State<TripMapView> {
 
     setState(() => _isActing = true);
     try {
-      final booking = await Get.find<BookingRepository>().arrived(
-        args.uuid,
-        assignmentId: args.assignmentId,
-      );
+      final repo = Get.find<BookingRepository>();
+      if (action == 'complete') {
+        final location = _driverLocation;
+        final assignmentId = args.assignmentId;
+        if (location != null && assignmentId != null) {
+          await repo.storeLocation(
+            args.uuid,
+            assignmentId: assignmentId,
+            location: location,
+          );
+        }
+      }
+
+      final wasNavigatingToDropoff = _navigateToDropoff;
+      final booking = switch (action) {
+        'start' => await repo.start(args.uuid, assignmentId: args.assignmentId),
+        'arrived' => await repo.arrived(
+          args.uuid,
+          assignmentId: args.assignmentId,
+        ),
+        'meet_passenger' => await repo.meetPassenger(
+          args.uuid,
+          assignmentId: args.assignmentId,
+        ),
+        'complete' => await repo.complete(
+          args.uuid,
+          assignmentId: args.assignmentId,
+        ),
+        _ => throw StateError('Unsupported map action: $action'),
+      };
       if (!mounted) return;
-      setState(() => _booking = booking);
-      AppSnackbar.success('arrived_done'.tr);
+      setState(() {
+        _booking = booking;
+        if (wasNavigatingToDropoff != _navigateToDropoff) {
+          _roadRoute = null;
+          _lastRouteMode = null;
+          _lastRouteLocation = null;
+        }
+      });
+
+      final message = switch (action) {
+        'start' => 'started_done'.tr,
+        'arrived' => 'arrived_done'.tr,
+        'meet_passenger' => 'met_done'.tr,
+        'complete' => 'completed_done'.tr,
+        _ => '',
+      };
+      if (message.isNotEmpty) AppSnackbar.success(message);
+
+      if (action == 'complete') {
+        Get.back(result: true);
+        return;
+      }
+
+      if (wasNavigatingToDropoff != _navigateToDropoff) {
+        unawaited(_reloadRouteAfterStepChange());
+      }
     } on ApiException catch (error) {
       AppSnackbar.error(error.message);
     } catch (_) {
@@ -192,6 +271,14 @@ class _TripMapViewState extends State<TripMapView> {
     } finally {
       if (mounted) setState(() => _isActing = false);
     }
+  }
+
+  Future<void> _reloadRouteAfterStepChange() async {
+    while (mounted && _isLoadingRoute) {
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+    }
+    if (!mounted) return;
+    await _loadRoadRoute(force: true);
   }
 
   Widget _googleMap() {
@@ -294,7 +381,7 @@ class _TripMapViewState extends State<TripMapView> {
       return IconsaxPlusLinear.route_square;
     }
 
-    return args.navigateToDropoff
+    return _navigateToDropoff
         ? IconsaxPlusLinear.flag
         : IconsaxPlusLinear.location;
   }
@@ -304,7 +391,7 @@ class _TripMapViewState extends State<TripMapView> {
       return 'passenger_route'.tr;
     }
 
-    return args.navigateToDropoff ? 'dropoff_route'.tr : 'pickup_route'.tr;
+    return _navigateToDropoff ? 'dropoff_route'.tr : 'pickup_route'.tr;
   }
 
   Widget _circleButton({
@@ -338,8 +425,8 @@ class _TripMapViewState extends State<TripMapView> {
       return LatLng(_driverLocation!.latitude, _driverLocation!.longitude);
     }
 
-    if (args.activeTarget.hasCoordinates) {
-      return LatLng(args.activeTarget.latitude!, args.activeTarget.longitude!);
+    if (_activeTarget.hasCoordinates) {
+      return LatLng(_activeTarget.latitude!, _activeTarget.longitude!);
     }
 
     return LatLng(args.pickup.latitude ?? 0, args.pickup.longitude ?? 0);
@@ -708,12 +795,12 @@ class _TripMapViewState extends State<TripMapView> {
     final meters =
         _routeMode != 'passenger' &&
             _hasUsableDriverLocation &&
-            args.activeTarget.hasCoordinates
+            _activeTarget.hasCoordinates
         ? _distanceMeters(
             _driverLocation!.latitude,
             _driverLocation!.longitude,
-            args.activeTarget.latitude!,
-            args.activeTarget.longitude!,
+            _activeTarget.latitude!,
+            _activeTarget.longitude!,
           )
         : _distanceMeters(
             args.pickup.latitude!,
@@ -749,7 +836,7 @@ class _TripMapViewState extends State<TripMapView> {
       return 'passenger';
     }
 
-    return args.navigateToDropoff ? 'to_dropoff' : 'to_pickup';
+    return _navigateToDropoff ? 'to_dropoff' : 'to_pickup';
   }
 
   List<LatLng> _cameraPoints() {
@@ -770,14 +857,14 @@ class _TripMapViewState extends State<TripMapView> {
     return [
       if (_hasUsableDriverLocation)
         LatLng(_driverLocation!.latitude, _driverLocation!.longitude),
-      if (args.activeTarget.hasCoordinates)
-        LatLng(args.activeTarget.latitude!, args.activeTarget.longitude!),
+      if (_activeTarget.hasCoordinates)
+        LatLng(_activeTarget.latitude!, _activeTarget.longitude!),
     ];
   }
 
   bool get _hasUsableDriverLocation {
     final driver = _driverLocation;
-    final target = args.activeTarget;
+    final target = _activeTarget;
     if (driver == null || !target.hasCoordinates) {
       return false;
     }
@@ -909,7 +996,7 @@ class _TripMapViewState extends State<TripMapView> {
 
   Future<void> _navigate() async {
     if (!args.pickup.hasCoordinates || !args.dropoff.hasCoordinates) {
-      final target = args.activeTarget;
+      final target = _activeTarget;
       await ExternalLauncher.navigateTo(
         latitude: target.latitude,
         longitude: target.longitude,
@@ -947,6 +1034,8 @@ class _RouteSheet extends StatelessWidget {
     required this.loadingRoute,
     required this.routeUnavailable,
     required this.showsPassengerRoute,
+    required this.activeTarget,
+    required this.navigateToDropoff,
     required this.collapsed,
     required this.acting,
     required this.onToggleCollapsed,
@@ -954,6 +1043,8 @@ class _RouteSheet extends StatelessWidget {
     this.distanceLabel,
     this.durationLabel,
     this.action,
+    this.stage,
+    this.driverTripStatus,
     this.pickupDistanceMeters,
   });
 
@@ -964,13 +1055,17 @@ class _RouteSheet extends StatelessWidget {
   final bool loadingRoute;
   final bool routeUnavailable;
   final bool showsPassengerRoute;
+  final Place activeTarget;
+  final bool navigateToDropoff;
   final bool collapsed;
   final bool acting;
   final String? action;
+  final String? stage;
+  final String? driverTripStatus;
   final double? pickupDistanceMeters;
   final VoidCallback onToggleCollapsed;
   final VoidCallback onNavigate;
-  final VoidCallback onAction;
+  final Future<void> Function() onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -980,7 +1075,7 @@ class _RouteSheet extends StatelessWidget {
         ? math.max(bottomInset + 2, 10.0)
         : math.max(bottomInset + 8, 20.0);
     final String? targetLabel =
-        usesDriverLocation && !args.navigateToDropoff && !showsPassengerRoute
+        usesDriverLocation && !navigateToDropoff && !showsPassengerRoute
         ? null
         : showsPassengerRoute
         ? 'preview_passenger_route'.tr
@@ -990,7 +1085,7 @@ class _RouteSheet extends StatelessWidget {
     final routeCaption = showsPassengerRoute
         ? '${args.pickup.label} -> ${args.dropoff.label}'
         : usesDriverLocation
-        ? '${'driver_location'.tr} -> ${args.activeTarget.label}'
+        ? '${'driver_location'.tr} -> ${activeTarget.label}'
         : '${args.pickup.label} -> ${args.dropoff.label}';
 
     return Container(
@@ -1053,8 +1148,17 @@ class _RouteSheet extends StatelessWidget {
             secondCurve: Curves.easeOut,
             sizeCurve: Curves.easeOut,
           ),
-          if (action == 'arrived') ...[
+          if (!collapsed && stage != null) ...[
+            const SizedBox(height: 10),
+            TripStepTracker(
+              stage: stage!,
+              driverTripStatus: driverTripStatus,
+              compact: true,
+            ),
+          ],
+          if (action != null) ...[
             if (pickupDistanceMeters != null &&
+                action == 'arrived' &&
                 pickupDistanceMeters! <= _pickupApproachingDistanceMeters) ...[
               const SizedBox(height: 10),
               _PickupProximityNotice(
@@ -1064,15 +1168,47 @@ class _RouteSheet extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 10),
-            StepActionButton(
-              label: 'mark_arrived'.tr,
-              icon: IconsaxPlusLinear.location_tick,
-              loading: acting,
-              onPressed: onAction,
-            ),
+            _MapStepAction(action: action!, acting: acting, onAction: onAction),
           ],
         ],
       ),
+    );
+  }
+}
+
+class _MapStepAction extends StatelessWidget {
+  const _MapStepAction({
+    required this.action,
+    required this.acting,
+    required this.onAction,
+  });
+
+  final String action;
+  final bool acting;
+  final Future<void> Function() onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    if (action == 'complete') {
+      return SwipeToConfirm(
+        label: 'swipe_to_drop'.tr,
+        loading: acting,
+        onConfirmed: onAction,
+      );
+    }
+
+    final (String label, IconData icon) = switch (action) {
+      'start' => ('start_now'.tr, IconsaxPlusLinear.play),
+      'arrived' => ('mark_arrived'.tr, IconsaxPlusLinear.location_tick),
+      'meet_passenger' => ('meet_passenger'.tr, IconsaxPlusLinear.profile_tick),
+      _ => ('start_now'.tr, IconsaxPlusLinear.play),
+    };
+
+    return StepActionButton(
+      label: label,
+      icon: icon,
+      loading: acting,
+      onPressed: () => unawaited(onAction()),
     );
   }
 }

@@ -496,6 +496,7 @@ class BookingCard extends StatelessWidget {
     final (String label, IconData icon) = switch (action) {
       'start' => ('start_now'.tr, IconsaxPlusLinear.play),
       'arrived' => ('mark_arrived'.tr, IconsaxPlusLinear.location_tick),
+      'resolve_completed' => ('resolve_trip'.tr, IconsaxPlusLinear.tick_circle),
       'meet_passenger' => ('meet_passenger'.tr, IconsaxPlusLinear.profile_tick),
       'complete' => ('drop_passenger'.tr, IconsaxPlusLinear.arrow_right_3),
       _ => ('open_trip'.tr, IconsaxPlusLinear.arrow_right_3),

@@ -31,6 +31,21 @@ void main() {
       expect(item.pickupLabel, 'Street 240');
     });
 
+    test('parses the server-authoritative unfinished trip recovery state', () {
+      final item = BookingListItem.fromJson({
+        'uuid': 'u-stale',
+        'stage': 'arrived_location',
+        'needs_resolution': true,
+        'resolution_available_at': '2026-09-01T02:00:00+07:00',
+        'allowed_actions': ['resolve_completed', 'report_pickup_issue'],
+      });
+
+      expect(item.needsResolution, isTrue);
+      expect(item.isStaleInProgress, isTrue);
+      expect(item.nextAction, 'resolve_completed');
+      expect(item.resolutionAvailableAt, isNotNull);
+    });
+
     test('uses the linked return leg route without reversing it again', () {
       final item = BookingListItem.fromJson({
         'uuid': 'u-return',

@@ -31,6 +31,11 @@ class BookingDetail {
     this.allowedActions = const [],
     this.startLocked = false,
     this.startAvailableAtRaw,
+    this.needsResolution = false,
+    this.resolutionAvailableAt,
+    this.lateResolvedAt,
+    this.lateResolutionType,
+    this.lateResolutionNote,
     this.customerName,
     this.customerPhone,
     this.customerEmail,
@@ -93,6 +98,11 @@ class BookingDetail {
 
   /// Raw ISO-8601 `start_available_at` from the API.
   final String? startAvailableAtRaw;
+  final bool needsResolution;
+  final String? resolutionAvailableAt;
+  final String? lateResolvedAt;
+  final String? lateResolutionType;
+  final String? lateResolutionNote;
 
   final String? customerName;
   final String? customerPhone;
@@ -192,6 +202,7 @@ class BookingDetail {
   /// Distinct from [isStartTooOld], which only covers trips that were never
   /// started: every `isStart*` getter switches off the moment the trip begins.
   bool get isStaleInProgress {
+    if (needsResolution) return true;
     if (allows('start') || !can) return false;
     final diff = departedAgo;
     return diff != null && diff >= staleTripThreshold;
@@ -269,6 +280,11 @@ class BookingDetail {
       allowedActions: _stringList(json['allowed_actions']),
       startLocked: json['start_locked'] == true,
       startAvailableAtRaw: _string(json['start_available_at']),
+      needsResolution: json['needs_resolution'] == true,
+      resolutionAvailableAt: _string(json['resolution_available_at']),
+      lateResolvedAt: _string(json['late_resolved_at']),
+      lateResolutionType: _string(json['late_resolution_type']),
+      lateResolutionNote: _string(json['late_resolution_note']),
       customerName: _string(customer['name']),
       customerPhone: _string(customer['phone']),
       customerEmail: _string(customer['email']),

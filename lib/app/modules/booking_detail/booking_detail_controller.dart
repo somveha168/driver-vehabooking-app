@@ -117,6 +117,20 @@ class BookingDetailController extends GetxController {
     syncAfter: false,
   );
 
+  Future<void> resolveLateCompletion() {
+    final assignmentId = _currentAssignmentId;
+    if (assignmentId == null) {
+      AppSnackbar.error('error_generic'.tr);
+      return Future.value();
+    }
+
+    return _act(
+      () => _repo.resolveLateCompletion(uuid, assignmentId: assignmentId),
+      'old_trip_resolved'.tr,
+      syncAfter: false,
+    );
+  }
+
   /// Pickup issue → terminal outcome for this exact assignment leg.
   Future<void> reportPickupIssue(String reason, String? note) => _act(
     () => _repo.reportPickupIssue(
@@ -141,6 +155,8 @@ class BookingDetailController extends GetxController {
         return meetPassenger();
       case 'complete':
         return complete();
+      case 'resolve_completed':
+        return resolveLateCompletion();
       default:
         return Future.value();
     }

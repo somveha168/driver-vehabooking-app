@@ -1516,6 +1516,19 @@ class _ActionBar extends StatelessWidget {
         );
       }
 
+      if (b.allows('resolve_completed')) {
+        return StepActionButton(
+          label: 'resolve_trip'.tr,
+          icon: IconsaxPlusLinear.tick_circle,
+          loading: controller.isActing.value,
+          onPressed: () async {
+            if (await confirmLateTripCompletion()) {
+              await controller.resolveLateCompletion();
+            }
+          },
+        );
+      }
+
       final action = b.allowedActions.isNotEmpty
           ? b.allowedActions.first
           : null;

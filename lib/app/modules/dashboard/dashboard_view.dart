@@ -13,6 +13,7 @@ import '../../core/widgets/arrival_rule_note.dart';
 import '../../core/widgets/pickup_issue_sheet.dart';
 import '../../core/widgets/section_label.dart';
 import '../../core/widgets/start_window_notice.dart';
+import '../../core/widgets/stale_trip_notice.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/step_action_button.dart';
 import '../../core/widgets/swipe_to_confirm.dart';
@@ -554,6 +555,10 @@ class _NextPickupCard extends StatelessWidget {
                   child: TripStepTracker(stage: next.stage),
                 ),
               ],
+              if (next.needsResolution) ...[
+                const SizedBox(height: AppSpacing.md),
+                const StaleTripNotice(),
+              ],
               if (next.isStartBlocked) ...[
                 const SizedBox(height: AppSpacing.md),
                 _blockingTripNotice(theme),
@@ -563,7 +568,8 @@ class _NextPickupCard extends StatelessWidget {
               // trip is the driver's, it just cannot begin yet.
               // The standing arrival rule, shown wherever the driver decides
               // whether to set off.
-              if (next.nextAction != null || next.isStartWindowClosed) ...[
+              if (!next.needsResolution &&
+                  (next.nextAction != null || next.isStartWindowClosed)) ...[
                 const SizedBox(height: AppSpacing.md),
                 const ArrivalRuleNote(),
               ],
@@ -615,22 +621,33 @@ class _NextPickupCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.10),
+            color:
+                (next.needsResolution ? AppColors.assigned : AppColors.primary)
+                    .withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                IconsaxPlusLinear.flash_1,
+              Icon(
+                next.needsResolution
+                    ? IconsaxPlusLinear.timer_1
+                    : IconsaxPlusLinear.flash_1,
                 size: 12,
-                color: AppColors.primary,
+                color: next.needsResolution
+                    ? AppColors.assigned
+                    : AppColors.primary,
               ),
               const SizedBox(width: 5),
               Text(
-                'needs_action'.tr.toUpperCase(),
+                (next.needsResolution
+                        ? 'trip_needs_review'.tr
+                        : 'needs_action'.tr)
+                    .toUpperCase(),
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: AppColors.primary,
+                  color: next.needsResolution
+                      ? AppColors.assigned
+                      : AppColors.primary,
                   fontWeight: FontWeight.w800,
                   fontSize: 9.5,
                   letterSpacing: 0.2,
@@ -1154,6 +1171,21 @@ class _NextPickupCard extends StatelessWidget {
           label: 'swipe_to_drop'.tr,
           loading: controller.isActing.value,
           onConfirmed: () => controller.runNextAction('complete'),
+        ),
+      );
+    }
+
+    if (action == 'resolve_completed') {
+      return Obx(
+        () => StepActionButton(
+          label: 'resolve_trip'.tr,
+          icon: IconsaxPlusLinear.tick_circle,
+          loading: controller.isActing.value,
+          onPressed: () async {
+            if (await confirmLateTripCompletion()) {
+              await controller.runNextAction(action);
+            }
+          },
         ),
       );
     }

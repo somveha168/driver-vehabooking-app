@@ -424,6 +424,14 @@ const Map<String, String> enUS = {
   'confirm_meet_title': 'Met the passenger?',
   'confirm_meet_message':
       'Confirm you have met the passenger and are ready to begin the trip.',
+  'confirm_late_completion_title': 'Complete this unfinished trip?',
+  'confirm_late_completion_message':
+      'Only confirm if you transported the passenger and the trip really finished. This will close the old trip and record it as completed late.',
+  'complete_old_trip': 'Yes, complete trip',
+  'not_now': 'Not now',
+  'resolve_trip': 'Resolve trip',
+  'old_trip_resolved': 'Old trip resolved and completed.',
+  'trip_needs_review': 'Trip needs review',
 
   // Shown when a trip is still in progress long after its departure time -
   // usually one the driver forgot to finish.
@@ -431,6 +439,5 @@ const Map<String, String> enUS = {
   'arrive_early_rule': 'Arrive at the pickup at least 15 minutes early',
   'stale_trip_title': 'This trip is still open',
   'stale_trip_detail':
-      'This trip was due to depart a while ago and has not been finished. '
-      'Complete it, or report a pickup issue so dispatch can close it.',
+      'The expected trip window has passed. If the ride finished, resolve it below. Otherwise report a pickup issue.',
 };

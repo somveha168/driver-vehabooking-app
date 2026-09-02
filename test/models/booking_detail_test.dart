@@ -82,6 +82,20 @@ void main() {
       expect(b.allows('meet_passenger'), isTrue);
     });
 
+    test('parses late trip resolution metadata', () {
+      final b = BookingDetail.fromJson({
+        'uuid': 'u-late',
+        'stage': 'arrived_location',
+        'needs_resolution': true,
+        'resolution_available_at': '2026-09-01T02:00:00+07:00',
+        'allowed_actions': ['resolve_completed', 'report_pickup_issue'],
+      });
+
+      expect(b.needsResolution, isTrue);
+      expect(b.isStaleInProgress, isTrue);
+      expect(b.allows('resolve_completed'), isTrue);
+    });
+
     test('offers report_pickup_issue and parses the pickup issue reason', () {
       final beforeArrival = BookingDetail.fromJson({
         'uuid': 'u-before',

@@ -5,11 +5,10 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Banner for a trip that is still under way long after its departure time.
+/// Banner for a trip that is still under way after its expected route window.
 ///
-/// The backend stops such a trip claiming the dashboard's NOW card, so without
-/// this the driver would find it sitting in their list with no explanation of
-/// why it is still there or what to do about it.
+/// The trip remains prominent until resolved, because silently hiding it would
+/// leave the driver blocked from future work with no recovery path.
 class StaleTripNotice extends StatelessWidget {
   const StaleTripNotice({super.key});
 
