@@ -1,27 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/widgets/veha_logo_draw.dart';
 import 'splash_controller.dart';
 
-/// First screen on every launch — the Veha logo draws itself on a clean
-/// background, then [SplashController] routes onward.
+/// First screen on every launch — a quiet brand mark pulses while
+/// [SplashController] resolves the driver's next screen.
 class SplashView extends GetView<SplashController> {
   const SplashView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    // White matches the native splash for a seamless handoff.
-    final background = isDark ? theme.colorScheme.surface : Colors.white;
 
     return Scaffold(
-      backgroundColor: background,
-      body: const Center(
-        child: VehaLogoDraw(
-          height: 132,
-          duration: Duration(milliseconds: 1500),
+      // White matches the native launch screen for a seamless handoff.
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Align(
+              alignment: const Alignment(0, -0.08),
+              child: const VehaLogoMark(height: 112)
+                  .animate(
+                    onPlay: (animation) => animation.repeat(reverse: true),
+                  )
+                  .fade(
+                    begin: 0.38,
+                    end: 1,
+                    duration: 900.ms,
+                    curve: Curves.easeInOut,
+                  )
+                  .scaleXY(
+                    begin: 0.965,
+                    end: 1,
+                    duration: 900.ms,
+                    curve: Curves.easeInOut,
+                  ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 26),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Veha Booking Driver',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Version 1.0.0',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF8A949F),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

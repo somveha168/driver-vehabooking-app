@@ -378,7 +378,7 @@ class LoginView extends GetView<LoginController> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
                 color: active ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                borderRadius: BorderRadius.circular(11),
               ),
               child: Text(
                 label,
@@ -395,7 +395,7 @@ class LoginView extends GetView<LoginController> {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface.withValues(alpha: 0.7),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
         ),
         child: Row(

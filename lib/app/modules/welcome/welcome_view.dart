@@ -52,7 +52,7 @@ class WelcomeView extends GetView<WelcomeController> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: active ? AppColors.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              borderRadius: BorderRadius.circular(11),
             ),
             child: Text(
               label,
@@ -71,7 +71,7 @@ class WelcomeView extends GetView<WelcomeController> {
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.16)),
           boxShadow: [
             BoxShadow(

@@ -4,6 +4,29 @@ import 'package:path_drawing/path_drawing.dart';
 import '../theme/app_colors.dart';
 import 'veha_logo_paths.dart';
 
+final Path _vehaCloudPath = parseSvgPathData(VehaLogoPaths.cloud);
+final Path _vehaRoadPath = parseSvgPathData(VehaLogoPaths.road);
+
+/// Immediately painted Veha road/cloud mark for places where waiting for a
+/// large raster asset to decode would leave a visible blank frame.
+class VehaLogoMark extends StatelessWidget {
+  const VehaLogoMark({super.key, this.height = 120});
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final aspect = VehaLogoPaths.viewW / VehaLogoPaths.viewH;
+    return SizedBox(
+      width: height * aspect,
+      height: height,
+      child: CustomPaint(
+        painter: _LogoPainter(1, _vehaCloudPath, _vehaRoadPath),
+      ),
+    );
+  }
+}
+
 /// The Veha mark that "draws itself": the cloud + road outlines stroke on, then
 /// fill with brand color. A one-shot intro animation for the Welcome screen.
 class VehaLogoDraw extends StatefulWidget {
@@ -27,9 +50,6 @@ class _VehaLogoDrawState extends State<VehaLogoDraw>
     duration: widget.duration,
   )..forward();
 
-  late final Path _cloud = parseSvgPathData(VehaLogoPaths.cloud);
-  late final Path _road = parseSvgPathData(VehaLogoPaths.road);
-
   @override
   void dispose() {
     _c.dispose();
@@ -44,8 +64,9 @@ class _VehaLogoDrawState extends State<VehaLogoDraw>
       height: widget.height,
       child: AnimatedBuilder(
         animation: _c,
-        builder: (_, _) =>
-            CustomPaint(painter: _LogoPainter(_c.value, _cloud, _road)),
+        builder: (_, _) => CustomPaint(
+          painter: _LogoPainter(_c.value, _vehaCloudPath, _vehaRoadPath),
+        ),
       ),
     );
   }
