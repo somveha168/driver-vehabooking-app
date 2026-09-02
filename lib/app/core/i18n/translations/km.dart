@@ -275,7 +275,7 @@ const Map<String, String> kmKH = {
   'one_way': 'មួយជើង',
   'return_scheduled': 'ត្រឡប់',
   'outbound_scheduled': 'ចេញ',
-  'est_drop': 'ដល់ប្រមាណ',
+  'est_drop': 'ប្រហាក់ប្រហែល',
   'finish_current_trip': 'សូមបញ្ចប់ដំណើរបច្ចុប្បន្នជាមុនសិន',
   'seats': 'កៅអី',
   'vehicle_booked': 'បានកក់',
